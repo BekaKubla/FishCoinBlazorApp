@@ -1,0 +1,205 @@
+﻿@page "/order-details/{OrderNumber}"
+@using FishCoinBlazorApp.Entites.Product
+@inject FishCoinBlazorApp.Services.OrderService OrderService
+@inject NavigationManager NavigationManager
+
+<Topbar Title="შეკვეთის დეტალები" />
+
+<div class="container mt-3 mb-5">
+    @if (order == null)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+        </div>
+    }
+    else
+    {
+        @* სტატუსის სეგმენტირებული პროგრეს ბარი *@
+        <div class="card border-0 shadow-sm rounded-4 mb-3">
+            <div class="card-body p-3">
+                <h6 class="fw-bold mb-3 fs-14">შეკვეთის სტატუსი</h6>
+
+                <div class="d-flex gap-2">
+                    @{
+                        int currentStep = GetStepIndex(order.Status);
+                        bool isCancelled = order.Status == OrderStatus.Cancelled;
+                    }
+
+                    @* სეგმენტი 1: მუშავდება *@
+                    <div class="flex-grow-1">
+                        <div class="progress custom-prog-height">
+                            <div class="progress-bar @(isCancelled ? "bg-danger" : "bg-success")"
+                                 style="width: @(currentStep >= 1 ? "100%" : "0%")"></div>
+                        </div>
+                        <span class="fs-10 d-block mt-1 text-muted @(currentStep == 1 ? "fw-bold text-dark" : "")">მუშავდება</span>
+                    </div>
+
+                    @* სეგმენტი 2: გადახდილია *@
+                    <div class="flex-grow-1">
+                        <div class="progress custom-prog-height">
+                            <div class="progress-bar @(isCancelled ? "bg-danger" : (currentStep == 2 ? "bg-warning progress-bar-striped progress-bar-animated" : "bg-success"))"
+                                 style="width: @(currentStep >= 2 ? "100%" : "0%")"></div>
+                        </div>
+                        <span class="fs-10 d-block mt-1 text-muted @(currentStep == 2 ? "fw-bold text-dark" : "")">გადახდილია</span>
+                    </div>
+
+                    @* სეგმენტი 3: გზაშია *@
+                    <div class="flex-grow-1">
+                        <div class="progress custom-prog-height">
+                            <div class="progress-bar @(isCancelled ? "bg-danger" : (currentStep == 3 ? "bg-warning progress-bar-striped progress-bar-animated" : "bg-success"))"
+                                 style="width: @(currentStep >= 3 ? "100%" : "0%")"></div>
+                        </div>
+                        <span class="fs-10 d-block mt-1 text-muted @(currentStep == 3 ? "fw-bold text-dark" : "")">გზაშია</span>
+                    </div>
+
+                    @* სეგმენტი 4: ჩაბარებულია *@
+                    <div class="flex-grow-1">
+                        <div class="progress custom-prog-height">
+                            <div class="progress-bar @(isCancelled ? "bg-danger" : "bg-success")"
+                                 style="width: @(currentStep >= 4 ? "100%" : "0%")"></div>
+                        </div>
+                        <span class="fs-10 d-block mt-1 text-muted @(currentStep == 4 ? "fw-bold text-dark" : "")">ჩაბარებულია</span>
+                    </div>
+                </div>
+
+                @if (isCancelled)
+                {
+                    <div class="mt-3 p-2 bg-danger-subtle text-danger rounded-3 fs-11 text-center">
+                        <iconify-icon icon="solar:danger-bold" class="align-middle me-1"></iconify-icon>
+                        შეკვეთა გაუქმებულია
+                    </div>
+                }
+            </div>
+        </div>
+
+        @* პროდუქტების სია (იგივე რჩება) *@
+        <div class="card border-0 shadow-sm rounded-4 mb-3">
+            <div class="card-header bg-transparent border-light py-3">
+                <h6 class="mb-0 fw-bold">შეკვეთილი ნივთები</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    @foreach (var item in order.OrderItems)
+                    {
+                        <div class="list-group-item border-light py-3 px-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-0 fs-14 fw-bold">@item.Product.Name</h6>
+                                    <span class="fs-12 text-muted">@item.Quantity x @item.PriceAtPurchase.ToString("N2") ₾</span>
+                                </div>
+                                <span class="fw-bold fs-14">@((item.Quantity * item.PriceAtPurchase).ToString("N2")) ₾</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="card-footer bg-light-subtle border-0 p-3 rounded-bottom-4">
+                <div class="d-flex justify-content-between mb-1 fs-13">
+                    <span class="text-muted">პროდუქტების ჯამი:</span>
+                    <span>@((order.TotalAmountGEL - order.DeliveryFee).ToString("N2")) ₾</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2 fs-13">
+                    <span class="text-muted">მიწოდება:</span>
+                    <span>@order.DeliveryFee.ToString("N2") ₾</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="fw-bold">სულ გადახდილი:</span>
+                    <span class="fs-18 fw-black text-primary">@order.TotalAmountGEL.ToString("N2") ₾</span>
+                </div>
+            </div>
+        </div>
+
+        @* მიწოდების ინფორმაცია *@
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-body p-3">
+                <h6 class="fw-bold mb-3">მიწოდების დეტალები</h6>
+                <div class="d-flex gap-2 mb-2">
+                    <iconify-icon icon="solar:user-linear" class="text-muted fs-18"></iconify-icon>
+                    <span class="fs-13">@order.FirstNameAndLastName</span>
+                </div>
+                <div class="d-flex gap-2 mb-2">
+                    <iconify-icon icon="solar:map-point-linear" class="text-muted fs-18"></iconify-icon>
+                    <span class="fs-13 text-muted">@order.ShippingAddress</span>
+                </div>
+                <div class="d-flex gap-2">
+                    <iconify-icon icon="solar:phone-linear" class="text-muted fs-18"></iconify-icon>
+                    <span class="fs-13">@order.PhoneNumber</span>
+                </div>
+            </div>
+        </div>
+
+        <button @onclick='() => NavigationManager.NavigateTo("/orders")' class="btn btn-light w-100 rounded-3 fw-bold py-2 shadow-sm border">
+            უკან დაბრუნება
+        </button>
+    }
+</div>
+
+<style>
+    /* სეგმენტების სიმაღლე და ფორმა */
+    .custom-prog-height {
+        height: 6px !important; /* უფრო თხელი და დახვეწილი */
+        border-radius: 10px;
+        background-color: #e9ecef; /* ცარიელი სეგმენტის ფერი */
+        overflow: hidden;
+        border: none;
+    }
+
+    /* პროგრეს ბარის ფერების გადასვლა */
+    .progress-bar {
+        transition: width 0.6s ease;
+        border-radius: 10px;
+    }
+
+    /* მიმდინარე ეტაპის ანიმაცია (ყვითელი ზოლები) */
+    .progress-bar-animated {
+        background-image: linear-gradient( 45deg, rgba(255,255,255,.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.15) 50%, rgba(255,255,255,.15) 75%, transparent 75%, transparent );
+        background-size: 1rem 1rem;
+        animation: progress-bar-stripes 1s linear infinite;
+    }
+
+    /* ტექსტების სტილი */
+    .fs-10 {
+        font-size: 10px;
+        letter-spacing: -0.2px;
+    }
+
+    /* აქტიური ეტაპის ტექსტის გამოკვეთა */
+    .status-text-active {
+        color: #212529 !important;
+        font-weight: 700;
+    }
+
+    /* ზოგადი კონტეინერის დაშორება */
+    .gap-2 {
+        gap: 0.5rem !important;
+    }
+
+    .fw-black {
+        font-weight: 900;
+    }
+
+    /* გაუქმების ეფექტი */
+    .bg-danger-subtle {
+        background-color: #fee2e2 !important;
+    }
+</style>
+
+@code {
+    [Parameter] public string OrderNumber { get; set; }
+    private Order? order;
+
+    protected override async Task OnInitializedAsync()
+    {
+        order = await OrderService.GetOrderByNumberAsync(OrderNumber);
+    }
+
+    private int GetStepIndex(OrderStatus status) => status switch
+    {
+        OrderStatus.Pending => 1,
+        OrderStatus.Paid => 2,
+        OrderStatus.Shipped => 3, // გზაშია
+        OrderStatus.Delivered => 4,
+        OrderStatus.Cancelled => 4, // გაუქმებისას პროგრესი ბოლომდე მიდის, მაგრამ წითლდება
+        _ => 1
+    };
+}

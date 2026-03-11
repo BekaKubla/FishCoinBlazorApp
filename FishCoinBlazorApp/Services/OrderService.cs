@@ -48,7 +48,7 @@ namespace FishCoinBlazorApp.Services
                         OrderId = order.Id,
                         ProductId = item.Product.Id,
                         Quantity = item.Quantity,
-                        PriceAtPurchase = item.Product.DiscountPrice ?? item.Product.Price
+                        PriceAtPurchase = item.Product.DiscountPrice ?? item.Product.Price,
                     };
                     context.OrderItems.Add(orderItem);
 
@@ -88,6 +88,25 @@ namespace FishCoinBlazorApp.Services
             using var context = _contextFactory.CreateDbContext();
             return await context.Orders
                 .Include(o => o.OrderItems)
+                .FirstOrDefaultAsync(o => o.OrderNumber == orderNumber);
+        }
+
+        public async Task<List<Order>> GetUserOrdersAsync(string userId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Orders
+                .Include(o => o.OrderItems) // აი ეს აუცილებელია რაოდენობისთვის
+                .Where(o => o.UserId == userId)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+        }
+        public async Task<Order?> GetOrderByNumberAsync(string orderNumber)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            return await context.Orders
+                .Include(o => o.OrderItems)
+                .ThenInclude(o => o.Product)// აუცილებელია პროდუქტების რაოდენობისა და სიისთვის
                 .FirstOrDefaultAsync(o => o.OrderNumber == orderNumber);
         }
     }

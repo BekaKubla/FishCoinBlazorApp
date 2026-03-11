@@ -8,6 +8,7 @@ namespace FishCoinBlazorApp.Entites.Customer
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        public string? Address { get; set; }
 
         // კავშირი ლოიალობის ბარათთან (ერთი იუზერი - ერთი ბარათი)
         public virtual LoyaltyCard LoyaltyCard { get; set; }

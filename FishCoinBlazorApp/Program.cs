@@ -44,6 +44,7 @@ builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<ProductCategoryService>();
 builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<CartService>();
+builder.Services.AddScoped<UserService>();
 
 builder.Services.AddBlazoredLocalStorage();
 var app = builder.Build();

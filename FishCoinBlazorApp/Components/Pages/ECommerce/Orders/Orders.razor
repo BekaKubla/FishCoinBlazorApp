@@ -1,0 +1,186 @@
+﻿@page "/orders"
+@using FishCoinBlazorApp.Entites.Product
+@using Microsoft.AspNetCore.Components.Authorization
+@inject FishCoinBlazorApp.Services.OrderService OrderService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
+
+<Topbar Title="ჩემი შეკვეთები" />
+
+<div class="container mt-3 mb-5">
+    <AuthorizeView>
+        <Authorized>
+            @if (userOrders == null)
+            {
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="text-muted mt-2">იტვირთება ისტორია...</p>
+                </div>
+            }
+            else if (!userOrders.Any())
+            {
+                <div class="text-center py-5 animated-pop-in">
+                    <iconify-icon icon="solar:bag-smile-bold-duotone" class="text-muted display-1"></iconify-icon>
+                    <h5 class="mt-3 fw-bold">შეკვეთები არ მოიძებნა</h5>
+                    <p class="text-muted fs-13">თქვენ ჯერ არ გაგიფორმებიათ შეკვეთა</p>
+                    <a href="/" class="btn btn-primary rounded-pill px-4 mt-2">მაღაზიაში დაბრუნება</a>
+                </div>
+            }
+            else
+            {
+                <div class="row g-3">
+                    @foreach (var order in userOrders)
+                    {
+                        <div class="col-12 col-md-6">
+                            <div class="card border-0 shadow-sm rounded-4 overflow-hidden order-card"
+                                 @onclick='() => NavigationManager.NavigateTo($"/order-details/{order.OrderNumber}")'
+                                 style="cursor: pointer;">
+                                <div class="card-body p-3">
+                                    @* ზედა ნაწილი: ნომერი და სტატუსი *@
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <span class="fs-11 text-muted d-block text-uppercase fw-bold">შეკვეთის #</span>
+                                            <span class="fw-bold text-dark fs-14">@(string.IsNullOrEmpty(order.OrderNumber) ? "მუშავდება..." : order.OrderNumber)</span>
+                                        </div>
+                                        <span class="badge @GetStatusClass(order.Status) rounded-pill px-3 py-2">
+                                            @GetStatusText(order.Status)
+                                        </span>
+                                    </div>
+
+                                    @* შუა ნაწილი: თარიღი და ჯამი *@
+                                    <div class="row g-0 py-2 border-top border-bottom border-light my-2">
+                                        <div class="col-6">
+                                            <span class="fs-12 text-muted d-block">თარიღი</span>
+                                            <span class="fs-13 fw-medium">@order.OrderDate.ToString("dd.MM.yyyy HH:mm")</span>
+                                        </div>
+                                        <div class="col-6 text-end">
+                                            <span class="fs-12 text-muted d-block">ჯამი</span>
+                                            <span class="fs-15 fw-black text-primary">@order.TotalAmountGEL.ToString("N2") ₾</span>
+                                        </div>
+                                    </div>
+
+                                    @* ქვედა ნაწილი: პროდუქტების რაოდენობა და "დეტალები" *@
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <span class="fs-12 text-muted">
+                                            <iconify-icon icon="solar:box-minimalistic-linear" class="align-middle me-1"></iconify-icon>
+                                            @(order.OrderItems?.Count ?? 0) პროდუქტი
+                                        </span>
+
+                                        @* შეცვლილი ნაწილი: div-ის ნაცვლად გამოიყენე 'a' *@
+                                        <a href="/order-details/@order.OrderNumber" class="text-primary fs-12 fw-bold text-decoration-none">
+                                            დეტალები <iconify-icon icon="solar:alt-arrow-right-linear" class="align-middle"></iconify-icon>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </Authorized>
+        <NotAuthorized>
+            <div class="text-center py-5">
+                <iconify-icon icon="solar:lock-password-bold-duotone" class="text-muted display-1"></iconify-icon>
+                <h5 class="fw-bold mt-3">ავტორიზაცია აუცილებელია</h5>
+                <p class="text-muted fs-13">შეკვეთების სანახავად გთხოვთ გაიაროთ ავტორიზაცია</p>
+                <a href="login" class="btn btn-primary mt-2 px-4 rounded-pill">შესვლა</a>
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
+
+<style>
+    .order-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: 1px solid rgba(0,0,0,0.05) !important;
+    }
+
+        .order-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.08) !important;
+            border-color: var(--bs-primary) !important;
+        }
+
+    .fw-black {
+        font-weight: 900;
+    }
+
+    .fs-11 {
+        font-size: 11px;
+    }
+
+    .fs-12 {
+        font-size: 12px;
+    }
+
+    .fs-13 {
+        font-size: 13px;
+    }
+
+    .fs-14 {
+        font-size: 14px;
+    }
+
+    .fs-15 {
+        font-size: 15px;
+    }
+
+    .animated-pop-in {
+        animation: popIn 0.3s ease-out;
+    }
+
+    @@keyframes popIn {
+        from
+
+    {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    }</style>
+
+@code {
+    private List<Order>? userOrders;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                         ?? user.FindFirst("sub")?.Value;
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                userOrders = await OrderService.GetUserOrdersAsync(userId);
+            }
+        }
+    }
+
+    private string GetStatusClass(OrderStatus status) => status switch
+    {
+        OrderStatus.Pending => "bg-warning-subtle text-warning",
+        OrderStatus.Paid => "bg-info-subtle text-info",
+        OrderStatus.Shipped => "bg-primary-subtle text-primary",
+        OrderStatus.Delivered => "bg-success-subtle text-success",
+        OrderStatus.Cancelled => "bg-danger-subtle text-danger",
+        _ => "bg-secondary-subtle text-secondary"
+    };
+
+    private string GetStatusText(OrderStatus status) => status switch
+    {
+        OrderStatus.Pending => "მუშავდება",
+        OrderStatus.Paid => "გადახდილია",
+        OrderStatus.Shipped => "გზაშია",
+        OrderStatus.Delivered => "ჩაბარებულია",
+        OrderStatus.Cancelled => "გაუქმებულია",
+        _ => "უცნობია"
+    };
+}
