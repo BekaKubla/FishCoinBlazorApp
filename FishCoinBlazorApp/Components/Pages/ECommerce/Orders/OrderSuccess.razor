@@ -1,0 +1,170 @@
+﻿@page "/order-success/{OrderNumber}"
+@using FishCoinBlazorApp.Entites.Product
+@inject FishCoinBlazorApp.Services.OrderService OrderService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+
+<Topbar Title="სტატუსი" />
+
+<div class="container mt-2 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-5 col-md-7 col-sm-10">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden animated-pop-in">
+
+                @* კომპაქტური Header *@
+                <div class="card-header bg-success bg-gradient py-3 px-4 border-0">
+                    <div class="d-flex align-items-center justify-content-center gap-3">
+                        <div class="success-icon-container">
+                            <iconify-icon icon="solar:check-circle-bold" class="text-white fs-32"></iconify-icon>
+                        </div>
+                        <div class="text-start">
+                            <h5 class="text-white fw-bold mb-0 lh-1">გმადლობთ!</h5>
+                            <p class="text-white-50 fs-12 mb-0">შეკვეთა მიღებულია</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    @if (order == null)
+                    {
+                        <div class="text-center py-3">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex justify-content-between align-items-center mb-4 bg-light rounded-3 p-2 px-3 border">
+                            <span class="fs-11 text-muted text-uppercase fw-bold">შეკვეთის #</span>
+                            <span class="fw-bold text-dark fs-14">@order.OrderNumber</span>
+                        </div>
+
+                        <div class="receipt-details border rounded-4 p-3 mb-3 bg-light-subtle">
+                            <div class="d-flex justify-content-between mb-2 fs-13">
+                                <span class="text-muted">მიმღები:</span>
+                                <span class="fw-medium text-dark">@order.FirstNameAndLastName</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2 fs-13">
+                                <span class="text-muted">მისამართი:</span>
+                                <span class="fw-medium text-dark text-end ms-3">@order.ShippingAddress</span>
+                            </div>
+                            <div class="border-top border-dashed my-2"></div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted fs-13 fw-bold">სულ გადახდილი:</span>
+                                <span class="fs-18 fw-black text-primary">@order.TotalAmountGEL.ToString("N2") ₾</span>
+                            </div>
+                        </div>
+
+                        @if (order.PointsEarned > 0)
+                        {
+                            <div class="points-toast d-flex align-items-center gap-2 p-2 rounded-3 mb-4 bg-warning-subtle border-start border-warning border-3">
+                                <iconify-icon icon="solar:star-bold" class="text-warning fs-18 ms-1"></iconify-icon>
+                                <span class="fs-12 text-warning-emphasis">დაგერიცხათ <strong>@order.PointsEarned</strong> ქულა</span>
+                            </div>
+                        }
+
+                        <div class="d-grid mt-2">
+                            <button @onclick="GoHome" class="btn btn-primary py-2-5 rounded-3 fw-bold fs-14 shadow-sm">
+                                <iconify-icon icon="solar:home-2-linear" class="me-1 align-middle"></iconify-icon>
+                                მთავარი გვერდი
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .fs-32 {
+        font-size: 32px;
+    }
+
+    .fs-12 {
+        font-size: 12px;
+    }
+
+    .fs-13 {
+        font-size: 13px;
+    }
+
+    .fs-11 {
+        font-size: 11px;
+    }
+
+    .fw-black {
+        font-weight: 900;
+    }
+
+    .py-2-5 {
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+
+    .bg-light-subtle {
+        background-color: var(--bs-tertiary-bg) !important;
+    }
+
+    .border-dashed {
+        border-top: 1px dashed var(--bs-border-color) !important;
+        height: 1px;
+        width: 100%;
+    }
+
+    .animated-pop-in {
+        animation: popIn 0.3s ease-out;
+    }
+
+    @@keyframes popIn {
+        from {
+            opacity: 0;
+            transform: translateY(5px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .points-toast {
+        background-color: rgba(255, 193, 7, 0.1) !important;
+    }
+</style>
+
+@code {
+    [Parameter] public string OrderNumber { get; set; }
+    private Order? order;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            order = await OrderService.GetOrderByIdAsync(OrderNumber);
+
+            if (order == null)
+            {
+                NavigationManager.NavigateTo("/");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+            NavigationManager.NavigateTo("/");
+        }
+    }
+
+    private void GoHome()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JsRuntime.InvokeVoidAsync("window.scrollTo", 0, 0);
+            StateHasChanged();
+        }
+    }
+}

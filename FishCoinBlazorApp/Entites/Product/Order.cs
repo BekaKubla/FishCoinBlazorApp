@@ -6,6 +6,7 @@ namespace FishCoinBlazorApp.Entites.Product
     {
         public int Id { get; set; }
         public DateTime OrderDate { get; set; } = DateTime.Now;
+        public string OrderNumber { get; private set; }
 
         // გადახდის დეტალები
         public decimal TotalAmountGEL { get; set; } // სულ რამდენი ლარი გადაიხადა

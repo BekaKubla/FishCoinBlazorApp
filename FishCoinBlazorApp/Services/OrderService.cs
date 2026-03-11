@@ -17,7 +17,7 @@ namespace FishCoinBlazorApp.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<int> PlaceOrderAsync(CheckoutModel model, List<CartItemModel> items, decimal deliveryFee, decimal totalPrice)
+        public async Task<string> PlaceOrderAsync(CheckoutModel model, List<CartItemModel> items, decimal deliveryFee, decimal totalPrice)
         {
             using var context = _contextFactory.CreateDbContext();
             using var transaction = await context.Database.BeginTransactionAsync();
@@ -75,13 +75,20 @@ namespace FishCoinBlazorApp.Services
                 }
                 await context.SaveChangesAsync();
                 await transaction.CommitAsync();
-                return order.Id;
+                return order.OrderNumber;
             }
             catch
             {
                 await transaction.RollbackAsync();
                 throw;
             }
+        }
+        public async Task<Order?> GetOrderByIdAsync(string orderNumber)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Orders
+                .Include(o => o.OrderItems)
+                .FirstOrDefaultAsync(o => o.OrderNumber == orderNumber);
         }
     }
 }

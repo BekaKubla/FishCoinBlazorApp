@@ -1,4 +1,5 @@
 ﻿using FishCoinBlazorApp.Entites.Product;
+using FishCoinBlazorApp.Generator;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -12,6 +13,10 @@ namespace FishCoinBlazorApp.Data.Configurations
 
             builder.Property(o => o.TotalAmountGEL)
                 .HasPrecision(18, 2);
+
+            builder.Property(o => o.OrderNumber)
+                .HasMaxLength(30)
+                .HasValueGenerator<OrderNumberGenerator>();
 
             // Enum-ების კონვერტაცია
             builder.Property(o => o.Status)
