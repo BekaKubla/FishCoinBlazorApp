@@ -4,6 +4,8 @@ using FishCoinBlazorApp.Data;
 using FishCoinBlazorApp.Entites.Customer;
 using FishCoinBlazorApp.Services;
 using FishCoinBlazorApp.Services.Models;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
 
@@ -61,6 +63,33 @@ app.UseAuthorization();
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+
+#region Login and LogOut endpoints
+app.MapGet("Account/DoLogin", async (
+    string phone,
+    string pass,
+    bool remember,
+    IAccountService accountService,
+    NavigationManager nav) =>
+{
+    var model = new LoginModel { PhoneNumber = phone, Password = pass, RememberMe = remember };
+    var result = await accountService.LoginUserAsync(model);
+
+    if (result.Succeeded)
+    {
+        return Results.LocalRedirect("/");
+    }
+
+    // თუ ვერ შევიდა, დააბრუნე ლოგინზე შეცდომის მესიჯით
+    return Results.LocalRedirect("/login?error=true");
+});
+app.MapPost("Account/Logout", async (SignInManager<ApplicationUser> signInManager) =>
+{
+    await signInManager.SignOutAsync();
+    return Results.LocalRedirect("/");
+});
+#endregion
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

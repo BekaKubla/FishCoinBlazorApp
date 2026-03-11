@@ -1,8 +1,6 @@
 ﻿@page "/login"
-@using FishCoinBlazorApp.Services
+@rendermode InteractiveServer
 @using FishCoinBlazorApp.Services.Models
-@using Microsoft.AspNetCore.Components.Forms
-@inject IAccountService AccountService
 @inject NavigationManager NavManager
 
 <Topbar Title="ავტორიზაცია" />
@@ -11,62 +9,38 @@
     <div class="auth-card border shadow-sm">
         <div class="auth-header py-3">
             <h5 class="fw-bold mb-0">შესვლა</h5>
-            <p class="mb-0 opacity-75 fs-12">მიესალმეთ FishCoin-ს</p>
         </div>
 
         <div class="auth-body p-4 pt-3">
-            @* ვიყენებთ მუშა FormName-ს და მეთოდს *@
-            <EditForm Model="loginModel" OnValidSubmit="HandleLogin" FormName="loginForm" method="post">
+            @* ყურადღება: აქ ვიყენებთ ჩვეულებრივ EditForm-ს ყოველგვარი POST-ის გარეშე *@
+            <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
                 <DataAnnotationsValidator />
 
-                @* ტელეფონის ნომერი *@
                 <div class="mb-3">
                     <label class="auth-label">ტელეფონის ნომერი</label>
-                    <InputText @bind-Value="loginModel.PhoneNumber"
-                               Name="loginModel.PhoneNumber"
-                               class="form-control form-control-custom"
-                               placeholder="599 00 00 00" />
+                    <InputText @bind-Value="loginModel.PhoneNumber" class="form-control form-control-custom" placeholder="599 00 00 00" />
                     <ValidationMessage For="@(() => loginModel.PhoneNumber)" class="text-danger fs-10" />
                 </div>
 
-                @* პაროლი *@
                 <div class="mb-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <label class="auth-label">პაროლი</label>
-                        <a href="/forgot-password" class="fs-11 text-primary text-decoration-none fw-bold mb-1">დაგავიწყდა?</a>
-                    </div>
-                    <InputText @bind-Value="loginModel.Password"
-                               type="password"
-                               Name="loginModel.Password"
-                               class="form-control form-control-custom"
-                               placeholder="******" />
+                    <label class="auth-label">პაროლი</label>
+                    <InputText @bind-Value="loginModel.Password" type="password" class="form-control form-control-custom" placeholder="******" />
                     <ValidationMessage For="@(() => loginModel.Password)" class="text-danger fs-10" />
                 </div>
 
-                @* დამიმახსოვრე *@
-                <div class="d-flex align-items-center mb-4 ms-1">
-                    <input type="checkbox" id="rememberMe" name="loginModel.RememberMe" value="true" checked="@loginModel.RememberMe" class="form-check-input custom-check" />
-                    <label for="rememberMe" class="ms-2 fs-13 text-secondary cursor-pointer">
-                        დამიმახსოვრე
+                <div class="mb-4">
+                    <label class="fs-13">
+                        <InputCheckbox @bind-Value="loginModel.RememberMe" class="form-check-input me-2" /> დამიმახსოვრე
                     </label>
                 </div>
 
-                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold rounded-3">
-                    შესვლა
-                </button>
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold rounded-3">შესვლა</button>
             </EditForm>
 
             @if (!string.IsNullOrEmpty(errorMessage))
             {
-                <div class="alert alert-danger mt-3 py-2 fs-12 border-0 rounded-3 text-center">
-                    <iconify-icon icon="solar:danger-circle-bold" class="me-1 align-middle"></iconify-icon>
-                    @errorMessage
-                </div>
+                <div class="alert alert-danger mt-3 py-2 fs-12 text-center">@errorMessage</div>
             }
-        </div>
-
-        <div class="auth-footer py-2 border-top text-center">
-            <p class="mb-0 fs-12 text-secondary">არ გაქვს ანგარიში? <a href="/register" class="text-primary fw-bold text-decoration-none">რეგისტრაცია</a></p>
         </div>
     </div>
 </div>
@@ -140,33 +114,34 @@
 </style>
 
 @code {
-    [SupplyParameterFromForm(Name = "loginForm")]
-    public LoginModel loginModel { get; set; } = new();
-
+    private LoginModel loginModel = new();
     private string? errorMessage;
+
+    // ვიყენებთ SupplyParameterFromQuery-ს, რომ URL-იდან წამოვიღოთ error-ის სტატუსი
+    [SupplyParameterFromQuery]
+    public string? error { get; set; }
 
     protected override void OnInitialized()
     {
-        loginModel ??= new();
-    }
-
-    private async Task HandleLogin()
-    {
-        errorMessage = null;
-
-        if (string.IsNullOrEmpty(loginModel.PhoneNumber) || string.IsNullOrEmpty(loginModel.Password))
-        {
-            return;
-        }
-
-        var result = await AccountService.LoginUserAsync(loginModel);
-        if (result.Succeeded)
-        {
-            NavManager.NavigateTo("/", forceLoad: true);
-        }
-        else
+        // თუ URL-ში არის error=true, გამოვაჩინოთ შეტყობინება
+        if (error == "true")
         {
             errorMessage = "ტელეფონის ნომერი ან პაროლი არასწორია";
         }
+    }
+
+    private void HandleLogin()
+    {
+        errorMessage = null; // გასუფთავება ყოველ დაჭერაზე
+
+        // ვალიდაციის დამატებითი შემოწმება (სურვილისამებრ)
+        if (string.IsNullOrEmpty(loginModel.PhoneNumber) || string.IsNullOrEmpty(loginModel.Password))
+        {
+            errorMessage = "გთხოვთ, შეავსოთ ყველა ველი";
+            return;
+        }
+
+        var query = $"?phone={loginModel.PhoneNumber}&pass={loginModel.Password}&remember={loginModel.RememberMe}";
+        NavManager.NavigateTo($"/Account/DoLogin{query}", forceLoad: true);
     }
 }
