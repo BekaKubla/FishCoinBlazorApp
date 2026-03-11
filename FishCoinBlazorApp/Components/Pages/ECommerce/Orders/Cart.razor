@@ -57,8 +57,9 @@
 
                                     <div class="col-8 col-md-4">
                                         <h6 class="fw-bold text-body mb-1 fs-14 text-truncate">@item.Product.Name</h6>
-                                        <p class="fs-11 text-muted mb-1">ერთეული: @effectivePrice.ToString("N2") ₾</p>
-                                        <span class="badge @(item.Product.StockQuantity <= 5 ? "bg-danger-subtle text-danger" : "bg-primary-subtle text-primary") rounded-pill fs-10">
+                                        <p class="fs-11 text-muted mb-1">
+                                            ერთეული: @(effectivePrice?.ToString("N2") ?? "0.00") ₾
+                                        </p>                                        <span class="badge @(item.Product.StockQuantity <= 5 ? "bg-danger-subtle text-danger" : "bg-primary-subtle text-primary") rounded-pill fs-10">
                                             @(item.Product.StockQuantity <= 5 ? $"დარჩენილია {item.Product.StockQuantity}" : "მარაგშია")
                                         </span>
                                     </div>
@@ -84,8 +85,9 @@
                                         {
                                             <div class="text-decoration-line-through text-muted fs-11">@((item.Product.Price * item.Quantity).ToString("N2")) ₾</div>
                                         }
-                                        <span class="fs-16 fw-bold text-primary">@((effectivePrice * item.Quantity).ToString("N2")) ₾</span>
-                                        <button @onclick="() => RemoveItem(item.Product.Id)" class="btn btn-link text-danger p-0 d-block ms-auto fs-12 text-decoration-none mt-1 fw-medium">
+                                        <span class="fs-16 fw-bold text-primary">
+                                            @((effectivePrice * item.Quantity).Value.ToString("N2")) ₾
+                                        </span>                                        <button @onclick="() => RemoveItem(item.Product.Id)" class="btn btn-link text-danger p-0 d-block ms-auto fs-12 text-decoration-none mt-1 fw-medium">
                                             <iconify-icon icon="solar:trash-bin-trash-bold" class="me-1"></iconify-icon>წაშლა
                                         </button>
                                     </div>

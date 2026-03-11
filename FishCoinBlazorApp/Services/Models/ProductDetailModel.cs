@@ -13,6 +13,6 @@
         public bool IsNew { get; set; }
 
         public int? DiscountPrecentage { get; set; }
-        public decimal DiscountPrice { get; set; }
+        public decimal? DiscountPrice { get; set; }
     }
 }

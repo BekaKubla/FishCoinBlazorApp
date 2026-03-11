@@ -2,6 +2,8 @@
 @rendermode InteractiveServer
 @using System.ComponentModel.DataAnnotations
 @inject FishCoinBlazorApp.Services.CartService CartService
+@inject FishCoinBlazorApp.Services.ProductService ProductService
+@inject FishCoinBlazorApp.Services.OrderService OrderService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 
@@ -73,7 +75,7 @@
                             }
                         </div>
 
-                        @* 3. შეკვეთის შეჯამება (ჩეკი) *@
+                        @* 3. შეკვეთის შეჯამება *@
                         <div class="checkout-section bg-light-subtle rounded-4 p-3 mb-4 border border-light">
                             <div class="d-flex justify-content-between align-items-center border-bottom border-dashed pb-2 mb-2">
                                 <span class="fs-11 fw-bold text-muted text-uppercase tracking-wider">თქვენი კალათა</span>
@@ -83,13 +85,14 @@
                             <div class="order-items-scroll px-1">
                                 @foreach (var item in CartService.CartItems)
                                 {
+                                    var effectivePrice = item.Product.DiscountPrice ?? item.Product.Price;
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <div class="text-truncate me-2" style="max-width: 70%;">
                                             <span class="fs-13 fw-medium">@item.Product.Name</span>
                                             <span class="fs-11 text-muted ms-1">×@item.Quantity</span>
                                         </div>
                                         <span class="fs-13 fw-bold">
-                                            @((item.Product.DiscountPrecentage != null ? item.Product.DiscountPrice * item.Quantity : item.Product.Price * item.Quantity).ToString("N2")) ₾
+                                            @((effectivePrice * item.Quantity).ToString("N2")) ₾
                                         </span>
                                     </div>
                                 }
@@ -116,15 +119,21 @@
                             </div>
                         </div>
 
-                        @* მთავარი ქმედების ღილაკი *@
-                        <button type="submit" class="btn btn-primary w-100 py-3 rounded-3 fw-bold shadow-sm confirm-order-btn mt-2">
-                            <iconify-icon icon="solar:check-circle-bold-duotone" class="me-2 fs-20"></iconify-icon>
-                            შეკვეთის გაგზავნა
+                        <button type="submit" disabled="@isProcessing" class="btn btn-primary w-100 py-3 rounded-3 fw-bold shadow-sm confirm-order-btn mt-2">
+                            @if (isProcessing)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                                <span>მიმდინარეობს...</span>
+                            }
+                            else
+                            {
+                                <iconify-icon icon="solar:check-circle-bold-duotone" class="me-2 fs-20"></iconify-icon>
+                                <span>შეკვეთის გაგზავნა</span>
+                            }
                         </button>
                     </div>
                 </div>
             </EditForm>
-
         </div>
     </div>
 </div>
@@ -138,7 +147,6 @@
         background-color: var(--bs-tertiary-bg) !important;
     }
 
-    /* ინფუთების მინიმალისტური სტილი */
     .custom-minimal-input {
         background-color: var(--bs-tertiary-bg);
         border: 1px solid var(--bs-border-color);
@@ -155,7 +163,6 @@
             outline: none;
         }
 
-    /* ნაბიჯების ნომრები */
     .step-badge {
         width: 24px;
         height: 24px;
@@ -170,7 +177,6 @@
         box-shadow: 0 2px 4px rgba(13, 110, 253, 0.2);
     }
 
-    /* გადახდის ღილაკები */
     .payment-pill {
         flex: 1;
         display: flex;
@@ -187,10 +193,6 @@
         background: var(--bs-card-bg);
     }
 
-        .payment-pill:hover {
-            border-color: var(--bs-primary-border-subtle);
-        }
-
         .payment-pill.active {
             border-color: var(--bs-primary);
             background: rgba(13, 110, 253, 0.08);
@@ -198,47 +200,28 @@
             transform: translateY(-1px);
         }
 
-    /* ჩეკის სქროლი */
     .order-items-scroll {
         max-height: 150px;
         overflow-y: auto;
     }
 
-        .order-items-scroll::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .order-items-scroll::-webkit-scrollbar-thumb {
-            background: var(--bs-border-color);
-            border-radius: 10px;
-        }
-
     .border-dashed {
         border-top: 1px dashed var(--bs-border-color) !important;
     }
-
-    .confirm-order-btn {
-        font-size: 17px;
-        letter-spacing: 0.5px;
-        transition: all 0.2s ease;
-    }
-
-        .confirm-order-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3) !important;
-        }
-
-        .confirm-order-btn:active {
-            transform: scale(0.98);
-        }
 
     .fw-black {
         font-weight: 900;
     }
 
-    .tracking-wider {
-        letter-spacing: 0.5px;
+    .confirm-order-btn {
+        font-size: 17px;
+        transition: all 0.2s ease;
     }
+
+        .confirm-order-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3) !important;
+        }
 
     .animated-fade {
         animation: fadeIn 0.3s ease-in;
@@ -260,6 +243,7 @@
 @code {
     private CheckoutModel orderModel = new();
     private bool showPaymentError = false;
+    private bool isProcessing = false;
 
     public class CheckoutModel
     {
@@ -268,7 +252,7 @@
         public string FullName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "ტელეფონის ნომერი სავალდებულოა")]
-        [RegularExpression(@"^[0-9\s+-]+$", ErrorMessage = "გთხოვთ შეიყვანოთ მხოლოდ ციფრები")]
+        [RegularExpression(@"^5\d{8}$", ErrorMessage = "ნომერი უნდა შედგებოდეს 9 ციფრისგან და იწყებოდეს 5-ით")]
         public string Phone { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "მისამართი სავალდებულოა")]
@@ -284,7 +268,7 @@
         showPaymentError = false;
     }
 
-    private void HandleValidSubmit()
+    private async Task HandleValidSubmit()
     {
         if (string.IsNullOrEmpty(orderModel.PaymentMethod))
         {
@@ -292,25 +276,51 @@
             return;
         }
 
-        // ვალიდაცია წარმატებულია, გადავდივართ შემდეგ გვერდზე
-        NavigationManager.NavigateTo("/order-success");
-    }
+        if (isProcessing) return;
+        isProcessing = true;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
+        try
         {
-            // ეს ხაზი აიტანს სქროლს ზემოთ მხოლოდ ამ გვერდზე შემოსვლისას
-            await JsRuntime.InvokeVoidAsync("window.scrollTo", 0, 0);
-            try
+            await CartService.RefreshCartItems(ProductService);
+
+            if (!CartService.CartItems.Any())
             {
-                await JsRuntime.InvokeVoidAsync("loadThemeConfig");
-                await JsRuntime.InvokeVoidAsync("loadApps");
+                await JsRuntime.InvokeVoidAsync("alert", "კალათა ცარიელია.");
+                NavigationManager.NavigateTo("/cart");
+                return;
             }
-            catch { }
+
+            var orderId = await OrderService.PlaceOrderAsync(
+                orderModel,
+                CartService.CartItems,
+                CartService.DeliveryFee,
+                CartService.TotalPrice + CartService.DeliveryFee
+            );
+
+            await CartService.ClearCart();
+            NavigationManager.NavigateTo($"/order-success/{orderId}");
+        }
+        catch (Exception ex)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "შეცდომა შეკვეთისას.");
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            isProcessing = false;
         }
     }
 
     private int CalculateTotalPoints() =>
         CartService.CartItems.Sum(item => item.Product.PointsReward * item.Quantity);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JsRuntime.InvokeVoidAsync("window.scrollTo", 0, 0);
+            await CartService.LoadCart();
+            StateHasChanged();
+        }
+    }
 }

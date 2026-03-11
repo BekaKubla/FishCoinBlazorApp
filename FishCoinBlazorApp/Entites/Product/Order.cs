@@ -15,17 +15,18 @@ namespace FishCoinBlazorApp.Entites.Product
         public int PointsEarned { get; set; } // ამ კონკრეტულ შეკვეთაზე რამდენი ქულა დაერიცხა
 
         public OrderStatus Status { get; set; } = OrderStatus.Pending;
-        public PaymentMethod PaymentMethod { get; set; } // Card, Cash, ან FishCoins
+        public string PaymentMethod { get; set; } // Card, Cash, ან FishCoins
 
         // მიწოდების ინფორმაცია
         public string FirstNameAndLastName { get; set; }
         public string ShippingAddress { get; set; }
         public string PhoneNumber { get; set; }
+        public decimal DeliveryFee { get; set; }
 
         // კავშირი პროდუქტებთან
         public List<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
         public string UserId { get; set; } // მომხმარებლის ID (IdentityUser-დან)
-        public ApplicationUser User { get; set; } 
+        public ApplicationUser User { get; set; }
     }
 
     public enum OrderStatus

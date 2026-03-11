@@ -8,7 +8,7 @@ public class CartService
     public List<CartItemModel> CartItems { get; private set; } = new();
     public int CartCount => CartItems.Sum(i => i.Quantity);
     public decimal TotalPrice => CartItems.Sum(i =>
-        (i.Product.DiscountPrice > 0 ? i.Product.DiscountPrice : i.Product.Price) * i.Quantity);
+        (i.Product.DiscountPrice.HasValue ? i.Product.DiscountPrice.Value : i.Product.Price) * i.Quantity);
     public event Action OnChange;
 
     public CartService(ILocalStorageService localStorage) => _localStorage = localStorage;
