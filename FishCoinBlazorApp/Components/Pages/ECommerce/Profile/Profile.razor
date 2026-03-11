@@ -4,6 +4,7 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @inject FishCoinBlazorApp.Services.UserService UserService
 @inject NavigationManager NavigationManager
+@rendermode InteractiveServer
 
 <Topbar Title="ჩემი პროფილი" />
 
@@ -18,26 +19,25 @@
             }
             else
             {
-                @* გაფართოებული პრემიუმ ბარათი განახლებული "წყლის" ფონით *@
                 <div class="loyalty-card-wrapper w-100 d-flex justify-content-center mb-4">
                     <div class="card loyalty-card extreme-card border-0 shadow-lg rounded-4 text-white overflow-hidden">
 
+                        @* ბარათის შიგთავსი *@
                         <div class="card-content h-100 w-100 p-4 position-relative z-2 d-flex flex-column">
 
-                            @* 1. ზედა ბლოკი - FISHCOIN და ქულები *@
+                            @* 1. ზედა ბლოკი *@
                             <div class="text-center mb-2">
                                 <div class="d-flex flex-column align-items-center">
                                     <iconify-icon icon="solar:fish-bold-duotone" class="text-warning fs-1 pts-shadow mb-1"></iconify-icon>
                                     <h4 class="fw-black text-white card-title-shadow mb-1" style="letter-spacing: 4px;">FISHCOIN</h4>
-
                                     <div class="d-flex align-items-center justify-content-center bg-white bg-opacity-10 px-3 py-1 rounded-pill">
                                         <span class="fs-5 fw-bold text-warning me-2 pts-shadow">@loyaltyCard.CurrentPoints.ToString("N0")</span>
-                                        <iconify-icon icon="solar:coin-bold" class="text-warning fs-4 pts-shadow"></iconify-icon>
+                                        <iconify-icon icon="fa6-solid:coins" class="text-warning fs-5 pts-shadow"></iconify-icon>
                                     </div>
                                 </div>
                             </div>
 
-                            @* 2. შუა სექცია: ჩიპი და NFC *@
+                            @* 2. ჩიპი *@
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <div class="card-chip">
                                     <div class="chip-line"></div><div class="chip-line"></div><div class="chip-line"></div><div class="chip-line"></div>
@@ -45,10 +45,9 @@
                                 <iconify-icon icon="material-symbols:wifi-tethering-rounded" class="text-white-50 fs-2" style="transform: rotate(90deg); opacity: 0.6;"></iconify-icon>
                             </div>
 
-                            @* 3. ინფორმაციის სექცია *@
+                            @* 3. ინფორმაცია *@
                             <div class="info-grid flex-grow-1">
                                 <div class="row h-100 align-items-end">
-                                    @* მარცხენა სვეტი *@
                                     <div class="col-7">
                                         <div class="clickable-info mb-2" @onclick='() => OpenEditModal("name")'>
                                             <label class="card-label">ბარათის მფლობელი</label>
@@ -57,15 +56,14 @@
                                                 <iconify-icon icon="solar:pen-2-linear" class="ms-2 fs-6 text-warning opacity-75"></iconify-icon>
                                             </div>
                                         </div>
-                                        <div>
+                                        <div class="ps-1">
                                             <label class="card-label">ბარათის ნომერი</label>
                                             <div class="card-number-font fs-5 text-white fw-bold">@loyaltyCard.CardNumber</div>
                                         </div>
                                     </div>
 
-                                    @* მარჯვენა სვეტი *@
                                     <div class="col-5 text-end d-flex flex-column align-items-end">
-                                        <div class="mb-2">
+                                        <div class="mb-2 pe-1">
                                             <label class="card-label">ტელეფონი</label>
                                             <div class="fw-bold fs-6 text-white">@phoneNumber</div>
                                         </div>
@@ -80,7 +78,6 @@
                                 </div>
                             </div>
 
-                            @* 4. ქვედა სექცია *@
                             <div class="d-flex justify-content-end align-items-center mt-3">
                                 <span class="fs-9 fw-bold text-white-50 text-uppercase me-2" style="letter-spacing: 1px;">Fishcoin.ge</span>
                                 <div class="mastercard-logo">
@@ -88,41 +85,51 @@
                                     <div class="mc-circle mc-orange"></div>
                                 </div>
                             </div>
-
                         </div>
-                        @* ვიზუალური ეფექტები (არეკვლა დარჩა) *@
                         <div class="card-reflection"></div>
                     </div>
-                </div>
-
-                @* გასვლის ღილაკი *@
-                <div class="w-100 d-flex justify-content-center">
-                    <button class="btn btn-outline-danger border-0 rounded-pill px-5 py-2 fw-bold transition-active shadow-sm" style="background: rgba(220, 53, 69, 0.05);">
-                        <iconify-icon icon="solar:logout-linear" class="align-middle me-2 fs-5"></iconify-icon>
-                        სისტემიდან გასვლა
-                    </button>
                 </div>
             }
         </Authorized>
     </AuthorizeView>
 </div>
 
-@* Edit Modal (Dark Style) *@
+@* Edit Modal - Dark Mode Proof *@
 @if (isEditModalOpen)
 {
     <div class="modal-backdrop fade show"></div>
-    <div class="modal fade show d-block" tabindex="-1">
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.6);">
         <div class="modal-dialog modal-dialog-centered px-4">
-            <div class="modal-content border-0 shadow-lg rounded-4 bg-dark text-white" style="border: 1px solid rgba(255,255,255,0.1) !important;">
+            <div class="modal-content border-0 shadow-lg rounded-4"
+                 style="background-color: #121212 !important; color: #ffffff !important; border: 1px solid rgba(255,193,7,0.3) !important;">
+
                 <div class="modal-header border-bottom border-white border-opacity-10 pb-2 pt-3">
-                    <h6 class="fw-bold mb-0">@(editType == "name" ? "სახელის შეცვლა" : "მისამართის შეცვლა")</h6>
+                    <h6 class="fw-bold mb-0 text-warning" style="color: #ffc107 !important;">
+                        <iconify-icon icon="solar:pen-2-bold" class="me-2"></iconify-icon>
+                        @(editType == "name" ? "სახელის შეცვლა" : "მისამართის შეცვლა")
+                    </h6>
                 </div>
+
                 <div class="modal-body p-3">
-                    <input type="text" class="form-control bg-secondary bg-opacity-25 border-0 text-white rounded-3 py-3 fs-14 shadow-none" @bind="tempValue" autofocus />
+                    <label class="mb-2 fs-12" style="color: rgba(255,255,255,0.6) !important;">შეიყვანეთ ახალი მონაცემები:</label>
+                    <input type="text"
+                           class="form-control custom-input-field"
+                           @bind="tempValue"
+                           @bind:event="oninput"
+                           autofocus />
                 </div>
-                <div class="modal-footer border-0 p-3 pt-0">
-                    <button class="btn btn-link text-white-50 text-decoration-none fs-13 fw-bold" @onclick="CloseModal">გაუქმება</button>
-                    <button class="btn btn-warning rounded-pill px-4 py-2 fs-13 fw-bold shadow-sm text-dark" @onclick="UpdateUserInfo">შენახვა</button>
+
+                <div class="modal-footer border-0 p-3 pt-0 d-flex justify-content-end">
+                    <button class="btn btn-link text-decoration-none fs-13 fw-bold"
+                            style="color: rgba(255,255,255,0.5) !important;"
+                            @onclick="CloseModal">
+                        გაუქმება
+                    </button>
+                    <button class="btn btn-warning rounded-pill px-4 py-2 fs-13 fw-bold shadow-sm text-dark"
+                            style="background-color: #ffc107 !important; color: #000 !important; border: none !important;"
+                            @onclick="UpdateUserInfo">
+                        შენახვა
+                    </button>
                 </div>
             </div>
         </div>
@@ -134,40 +141,42 @@
         width: 100%;
         max-width: 650px;
         min-height: 245px;
-        /* განახლებული ბექგრაუნდი: მუქი ლურჯი გრადიენტი + თევზის ქერცლის პატერნი */
-        background: linear-gradient(135deg, #010614 0%, #031236 100%);
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg fill='%23061a4d' fill-opacity='0.2'%3E%3Cpath d='M12 0l-12 12 12 12 12-12-12-12zm0 2.828l9.172 9.172-9.172 9.172-9.172-9.172 9.172-9.172z'/%3E%3C/g%3E%3C/svg%3E"), linear-gradient(135deg, #010614 0%, #031236 100%);
-        border: 1px solid rgba(255,255,255,0.1) !important;
-        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.8) !important;
+        background: #050505;
+        /* დავაბრუნე ორიგინალი SVG პატერნი */
+        background-image: radial-gradient(circle at 20% 30%, rgba(30, 41, 59, 0.4) 0%, transparent 50%), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 20 20'%3E%3Cg fill='%231a1a1a' fill-opacity='0.6'%3E%3Cpath d='M0 0h20L0 20z'/%3E%3C/g%3E%3C/svg%3E");
+        border: 1px solid rgba(255,255,255,0.12) !important;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8) !important;
         position: relative;
+        transition: transform 0.2s ease;
+    }
+
+        .extreme-card:active {
+            transform: scale(0.98);
+        }
+
+    .card-content {
+        position: relative;
+        z-index: 5;
     }
 
     .clickable-info, .clickable-info-end {
         cursor: pointer;
-        padding: 4px;
-        border-radius: 8px;
+        padding: 10px 6px;
+        border-radius: 12px;
         transition: all 0.2s ease;
     }
 
-    .clickable-info {
-        margin-left: -4px;
-    }
-
-    .clickable-info-end {
-        margin-right: -4px;
-    }
-
         .clickable-info:hover, .clickable-info-end:hover {
-            background: rgba(255,255,255,0.07);
+            background: rgba(255,255,255,0.08);
         }
 
     .card-label {
         font-size: 10px;
         text-transform: uppercase;
-        color: rgba(251, 191, 36, 0.8); /* ოქროსფერი ლეიბლები */
+        color: #ffc107;
         font-weight: 800;
         letter-spacing: 1.5px;
-        margin-bottom: 0px;
+        margin-bottom: 2px;
         display: block;
     }
 
@@ -179,7 +188,6 @@
     .card-chip {
         width: 44px;
         height: 32px;
-        /* ჩიპის ფერიც ოდნავ შევცვალე, რომ ლურჯ ფონს მოუხდეს */
         background: linear-gradient(135deg, #d4af37 0%, #ffdf7e 100%);
         border-radius: 6px;
         padding: 7px;
@@ -192,7 +200,6 @@
     .chip-line {
         height: 1.5px;
         background: rgba(0,0,0,0.2);
-        border-radius: 1px;
     }
 
     .mastercard-logo {
@@ -225,16 +232,25 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 50%);
+        background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 40%, rgba(255,255,255,0.05) 100%);
         pointer-events: none;
+        z-index: 10;
     }
 
-    .line-clamp-1 {
-        display: -webkit-box;
-        -webkit-line-clamp: 1;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
+    .custom-input-field {
+        background-color: rgba(255,255,255,0.05) !important;
+        color: white !important;
+        border: 1px solid rgba(255,193,7,0.2) !important;
+        height: 50px !important;
+        border-radius: 12px !important;
     }
+
+        .custom-input-field:focus {
+            background-color: rgba(255,255,255,0.1) !important;
+            border-color: #ffc107 !important;
+            box-shadow: none !important;
+            color: white !important;
+        }
 
     .pts-shadow {
         text-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
@@ -248,12 +264,16 @@
         font-weight: 900;
     }
 
-    .transition-active:active {
-        transform: scale(0.98);
+    .fs-12 {
+        font-size: 12px;
     }
 
     .fs-13 {
         font-size: 13px;
+    }
+
+    .fs-9 {
+        font-size: 9px;
     }
 </style>
 
@@ -296,11 +316,13 @@
     private async Task UpdateUserInfo()
     {
         if (string.IsNullOrWhiteSpace(tempValue)) return;
+
         bool success = await UserService.UpdateUserProfileAsync(editType, tempValue);
         if (success)
         {
             if (editType == "name") fullName = tempValue;
             else if (editType == "address") address = tempValue;
+
             CloseModal();
             StateHasChanged();
         }
