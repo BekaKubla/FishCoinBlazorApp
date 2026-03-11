@@ -1,0 +1,131 @@
+﻿@page "/delivery-regions"
+@rendermode InteractiveServer
+@inject IJSRuntime JsRuntime
+
+<style>
+    /* Hero Section - რჩება იგივე */
+    .delivery-header {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        padding: 40px 15px;
+        border-radius: 12px;
+        color: white;
+    }
+
+    /* შეცვლილია: ამოღებულია background-color: #ffffff, რათა იმუშაოს სისტემურმა Dark Mode-მა */
+    .region-card {
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0,0,0,0.125); /* სტანდარტული ჩარჩო */
+    }
+
+        .region-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.1) !important;
+            border-color: #3498db !important;
+        }
+
+    /* ფასის წრე - შეცვლილია, რომ მუქ რეჟიმში თეთრი არ დარჩეს */
+    .price-circle {
+        width: 80px;
+        height: 80px;
+        background: rgba(52, 152, 219, 0.1);
+        border: 3px solid #3498db;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+    }
+
+    /* სიის ხაზები - გამჭვირვალე, რომ ორივე რეჟიმში გამოჩნდეს */
+    .info-list li {
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+    }
+
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+</style>
+
+<Topbar Title="მიწოდება რეგიონებში" />
+
+<div class="row pb-5">
+    <div class="col-12">
+
+        @* 1. Hero Section *@
+        <div class="delivery-header text-center mb-5 shadow-sm">
+            <div class="mb-2">
+                <iconify-icon icon="solar:global-bold-duotone" class="text-info" style="font-size: 50px;"></iconify-icon>
+            </div>
+            <h2 class="fw-bold text-white mb-2">საკურიერო მომსახურება რეგიონებში</h2>
+            <p class="text-white-50 mx-auto mb-0" style="max-width: 650px;">
+                ჩვენი სერვისი ფარავს მთელ საქართველოს. მიიღეთ სასურველი ნივთი სახლიდან გაუსვლელად, ნებისმიერ ქალაქსა თუ სოფელში.
+            </p>
+        </div>
+
+        @* 2. Main Delivery Info Card *@
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+                @* დამატებულია კლასი "card" - ეს ააქტიურებს Dark Mode-ს *@
+                <div class="card region-card shadow-sm p-4 text-center">
+                    <div class="price-circle">
+                        <span class="fw-bold fs-18">10.00</span>
+                        <span class="small text-muted">ლარი</span>
+                    </div>
+
+                    <h3 class="fw-bold mb-3">სტანდარტული ტარიფი</h3>
+                    <p class="text-muted mb-4">ნებისმიერი მოცულობისა და წონის ამანათის მიწოდება საქართველოს მასშტაბით.</p>
+
+                    <ul class="list-unstyled info-list text-start mx-auto mb-4" style="max-width: 400px;">
+                        <li class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted"><iconify-icon icon="solar:clock-circle-bold" class="me-2 text-primary"></iconify-icon> მიწოდების ვადა:</span>
+                            <span class="fw-bold">მეორე დღეს</span>
+                        </li>
+                        <li class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted"><iconify-icon icon="solar:map-point-wave-bold" class="me-2 text-primary"></iconify-icon> დაფარვის ზონა:</span>
+                            <span class="fw-bold text-primary"> მთელი საქართველო</span>
+                        </li>
+                        <li class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted"><iconify-icon icon="solar:clapperboard-edit-bold" class="me-2 text-primary"></iconify-icon> შეკვეთის მიღება:</span>
+                            <span class="fw-bold">24/7 ონლაინ</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        @* 3. Steps Visualization *@
+        <div class="row mt-5 g-4">
+            <div class="col-md-4 text-center">
+                <iconify-icon icon="solar:bag-check-bold" class="text-muted mb-2" style="font-size: 40px;"></iconify-icon>
+                <h6 class="fw-bold">გააფორმეთ შეკვეთა</h6>
+                <p class="small text-muted">აირჩიეთ სასურველი ნივთი და მიუთითეთ ზუსტი მისამართი.</p>
+            </div>
+            <div class="col-md-4 text-center">
+                <iconify-icon icon="solar:box-minimalistic-bold" class="text-muted mb-2" style="font-size: 40px;"></iconify-icon>
+                <h6 class="fw-bold">მომზადება</h6>
+                <p class="small text-muted">ჩვენი გუნდი უსაფრთხოდ შეფუთავს და გადასცემს კურიერს.</p>
+            </div>
+            <div class="col-md-4 text-center">
+                <iconify-icon icon="solar:home-smile-bold" class="text-muted mb-2" style="font-size: 40px;"></iconify-icon>
+                <h6 class="fw-bold">ჩაბარება</h6>
+                <p class="small text-muted">კურიერი მოგიტანთ ამანათს მითითებულ მისამართზე მეორე დღეს.</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // ეს ხაზი აიტანს სქროლს ზემოთ მხოლოდ ამ გვერდზე შემოსვლისას
+            await JsRuntime.InvokeVoidAsync("window.scrollTo", 0, 0);
+            await JsRuntime.InvokeVoidAsync("loadThemeConfig");
+            await JsRuntime.InvokeVoidAsync("loadApps");
+        }
+    }
+}

@@ -1,0 +1,18 @@
+<!-- ========== Page Title Start ========== -->
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box">
+            <h4 class="mb-0 fw-semibold">@Title</h4>
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="javascript: void(0);">@SubTitle</a></li>
+                <li class="breadcrumb-item active">@Title</li>
+            </ol>
+        </div>
+    </div>
+</div>
+<!-- ========== Page Title End ========== -->
+
+@code {
+    [Parameter] public required string Title { get; set; }
+    [Parameter] public required string SubTitle { get; set; }
+}

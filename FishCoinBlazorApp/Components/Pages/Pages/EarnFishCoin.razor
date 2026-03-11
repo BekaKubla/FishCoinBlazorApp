@@ -1,0 +1,162 @@
+﻿@page "/earn-fishcoin"
+@rendermode InteractiveServer
+@inject IJSRuntime JsRuntime
+
+<style>
+    .earn-header {
+        background: linear-gradient(rgba(30, 60, 114, 0.9), rgba(42, 82, 152, 0.9)), url('images/fishing-bg.jpg');
+        background-size: cover;
+        padding: 60px 0;
+        border-radius: 15px;
+        color: white;
+    }
+
+    .earning-method-card {
+        border-left: 5px solid #FFD700;
+        transition: transform 0.2s;
+    }
+
+        .earning-method-card:hover {
+            transform: scale(1.02);
+        }
+
+    .coin-float {
+        animation: floating 3s ease-in-out infinite;
+    }
+
+    @@keyframes floating {
+        0% {
+            transform: translateY(0px);
+        }
+
+        50% {
+            transform: translateY(-10px);
+        }
+
+        100% {
+            transform: translateY(0px);
+        }
+    }
+</style>
+
+<Topbar Title="როგორ დავაგროვოთ ქულები" />
+
+<div class="row pb-5">
+    <div class="col-12">
+
+        @* 1. Hero Section - კომპაქტური და დახვეწილი *@
+        <div class="earn-header text-center mb-4 shadow-sm" style="padding: 40px 15px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); border-radius: 12px;">
+
+            @* პატარა, მინიმალისტური ხატულა *@
+            <div class="mb-2">
+                <iconify-icon icon="solar:wallet-money-bold-duotone" class="text-warning" style="font-size: 45px;"></iconify-icon>
+            </div>
+
+            @* სათაური - ზომიერი (h2) *@
+            <h2 class="fw-bold text-white mb-2" style="font-size: 1.75rem;">
+                აქციე ჰობი <span class="text-warning">აქტივად</span>
+            </h2>
+
+            @* ქვესათაური - უფრო პატარა და კონკრეტული *@
+            <p class="text-white-50 mx-auto mb-0" style="max-width: 550px; font-size: 0.95rem; line-height: 1.5;">
+                ყოველი შენაძენი <span class="text-white fw-bold">FishCoin</span>-ის ბალანსს ზრდის.
+                დააგროვე ბონუსები სათევზაო და სანადირო ინვენტარზე.
+            </p>
+
+            @* მცირე სტატუსის ხაზი *@
+            <div class="mt-3">
+                <span class="badge bg-white-subtle text-white border border-white-50 px-3 py-1" style="font-size: 0.8rem; background: rgba(255,255,255,0.1);">
+                    <iconify-icon icon="solar:star-circle-bold" class="me-1 text-warning"></iconify-icon>
+                    ლოიალობის პროგრამა
+                </span>
+            </div>
+        </div>
+
+        @* 2. Main Earning Rules *@
+        <div class="row g-4">
+            @* მეთოდი 1: შენაძენი *@
+            <div class="col-md-6">
+                <div class="card earning-method-card h-100 shadow-sm p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="avatar-md bg-primary-subtle rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                            <iconify-icon icon="solar:cart-check-bold" class="fs-2 text-primary"></iconify-icon>
+                        </div>
+                        <h4 class="fw-bold mb-0">ყოველდღიური შენაძენი</h4>
+                    </div>
+                    <p class="text-muted">ყოველი გადახდილი 10 ლარი ავტომატურად გიბრუნდებათ 1 FishCoin-ის სახით. არ აქვს მნიშვნელობა, ანკესს ყიდულობთ თუ სანადირო ვაზნებს.</p>
+                    <div class="bg-light p-3 rounded">
+                        <span class="badge bg-success fs-14">მაგალითი:</span>
+                        <span class="ms-2">100 ₾ შენაძენი = <strong>+10 FishCoin</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            @* მეთოდი 2: მეგობრის მოწვევა *@
+            <div class="col-md-6">
+                <div class="card earning-method-card h-100 shadow-sm p-4" style="border-left-color: #00d2ff;">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="avatar-md bg-info-subtle rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                            <iconify-icon icon="solar:users-group-rounded-bold" class="fs-2 text-info"></iconify-icon>
+                        </div>
+                        <h4 class="fw-bold mb-0">მოიწვიე მეგობარი</h4>
+                    </div>
+                    <p class="text-muted">გაუზიარე მეგობარს შენი რეფერალური ბმული. როდესაც ის განახორციელებს პირველ შენაძენს, თქვენ ორივე მიიღებთ ბონუსს.</p>
+                    <div class="bg-light p-3 rounded">
+                        <span class="badge bg-info fs-14">ბონუსი:</span>
+                        <span class="ms-2">თითო მეგობარზე = <strong>+5 FishCoin</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            @* მეთოდი 3: მიმოხილვის დატოვება *@
+            <div class="col-md-6">
+                <div class="card earning-method-card h-100 shadow-sm p-4" style="border-left-color: #ff4b2b;">
+                    <div class="d-flex align-items-center mb-3">
+                        @* მრგვალი ოვალი - Danger ფერებში *@
+                        <div class="avatar-md bg-danger-subtle rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                            @* შეცვლილი ხატულა უფრო საიმედო ვერსიით *@
+                            <iconify-icon icon="solar:star-bold" class="fs-2 text-danger"></iconify-icon>
+                        </div>
+
+                        @* ტექსტი *@
+                        <h4 class="fw-bold mb-0">შეაფასე პროდუქტი</h4>
+                    </div>
+                    <p class="text-muted">თქვენი აზრი ჩვენთვის მნიშვნელოვანია. დატოვეთ დეტალური მიმოხილვა და ფოტო შეძენილ ნივთზე და მიიღეთ სიმბოლური საჩუქარი.</p>
+                    <div class="bg-light p-3 rounded text-danger fw-bold">
+                        <iconify-icon icon="solar:gift-bold" class="me-1"></iconify-icon> +2 FishCoin თითო რეიტინგზე
+                    </div>
+                </div>
+            </div>
+
+            @* მეთოდი 4: სადღესასწაულო აქციები *@
+            <div class="col-md-6">
+                <div class="card earning-method-card h-100 shadow-sm p-4" style="border-left-color: #a8ff78;">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="avatar-md bg-success-subtle rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                            <iconify-icon icon="solar:calendar-bold" class="fs-2 text-success"></iconify-icon>
+                        </div>
+                        <h4 class="fw-bold mb-0">სპეციალური დღეები</h4>
+                    </div>
+                    <p class="text-muted">თევზაობისა და ნადირობის სეზონის გახსნაზე ჩვენ ვაორმაგებთ დარიცხულ ქულებს გარკვეულ კატეგორიებზე.</p>
+                    <div class="bg-light p-3 rounded text-success fw-bold">
+                        🔥 x2 დარიცხვა სეზონურ აქციებზე
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // ეს ხაზი აიტანს სქროლს ზემოთ მხოლოდ ამ გვერდზე შემოსვლისას
+            await JsRuntime.InvokeVoidAsync("window.scrollTo", 0, 0);
+            await JsRuntime.InvokeVoidAsync("loadThemeConfig");
+            await JsRuntime.InvokeVoidAsync("loadApps");
+        }
+    }
+}

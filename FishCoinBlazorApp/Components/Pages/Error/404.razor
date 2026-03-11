@@ -1,0 +1,53 @@
+@page "/pages-404"
+
+@rendermode InteractiveServer
+@inject IJSRuntime JsRuntime;
+
+@using FishCoinBlazorApp.Components.Layout
+@layout BaseLayout
+
+     <div class="d-flex flex-column h-100 p-3">
+          <div class="d-flex flex-column flex-grow-1">
+               <div class="row h-100 justify-content-center">
+                    <div class="col-xxl-7">
+                         <div class="row justify-content-center h-100">
+                              <div class="col-lg-6 py-lg-5">
+                                   <div class="card mb-0 p-4 d-flex flex-column justify-content-center">
+                                        <div class="auth-logo mb-3 text-center">
+                                             <a href="/" class="logo-dark">
+                                                  <img src="/images/logo-dark.png" height="24" alt="logo dark">
+                                             </a>
+     
+                                             <a href="/" class="logo-light">
+                                                  <img src="/images/logo-light.png" height="24" alt="logo light">
+                                             </a>
+                                        </div>
+                                        <div class="mx-auto text-center">
+                                             <img src="/images/404-error.png" alt="" class="img-fluid my-3">
+                                        </div>
+                                        <h2 class="fw-bold text-center lh-base">Ooops! The Page You're Looking For Was Not Found</h2>
+                                        <p class="text-muted text-center mt-1 mb-4">Sorry, we couldn't find the page you were looking for. We suggest that you return to main sections</p>
+                                        <div class="text-center">
+                                             <a href="/" class="btn btn-primary">Back To Home</a>
+                                        </div>
+
+                                   </div>
+                              </div>
+                         </div>
+
+                    </div>
+               </div>
+          </div>
+     </div>
+
+@code {
+     protected override async Task OnAfterRenderAsync(bool firstRender)
+     {
+          if (firstRender)
+          {
+               await JsRuntime.InvokeVoidAsync("updateBodyAttributes", "class", "vh-100 bg-auth");
+               await JsRuntime.InvokeVoidAsync("loadThemeConfig");
+               await JsRuntime.InvokeVoidAsync("loadApps");
+          }
+     }
+}

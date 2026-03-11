@@ -1,0 +1,394 @@
+﻿@page "/cart"
+@rendermode InteractiveServer
+@inject FishCoinBlazorApp.Services.CartService CartService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+@implements IDisposable
+
+<Topbar Title="კალათა" />
+
+<div class="container-fluid mt-4 mb-5">
+    <div class="row g-4">
+        @if (!isLoaded)
+        {
+            <div class="col-12 text-center p-5">
+                <div class="spinner-grow text-primary" role="status"></div>
+                <p class="mt-2 fw-medium text-muted">იტვირთება მონაცემები...</p>
+            </div>
+        }
+        else if (!CartService.CartItems.Any())
+        {
+            <div class="col-12 text-center py-5 shadow-sm rounded-4 bg-card-custom">
+                <iconify-icon icon="solar:cart-cross-bold-duotone" class="text-muted display-1"></iconify-icon>
+                <h3 class="mt-3 fw-bold text-body">კალათა ცარიელია</h3>
+                <p class="text-muted">თქვენს კალათაში ჯერ არაფერია დამატებული</p>
+                <a href="/products" class="btn btn-primary px-4 py-2 mt-2 rounded-pill shadow">
+                    მაღაზიაში დაბრუნება
+                </a>
+            </div>
+        }
+        else
+        {
+            @* მარცხენა მხარე *@
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-card-custom h-100">
+                    <div class="card-header border-bottom border-light-subtle py-3 d-flex align-items-center justify-content-between bg-transparent">
+                        <h5 class="mb-0 fw-bold text-body">
+                            <iconify-icon icon="solar:cart-large-2-bold-duotone" class="text-primary me-2 align-middle"></iconify-icon>
+                            ნივთები (@CartService.CartCount)
+                        </h5>
+                        <button @onclick="ClearCart" class="btn btn-outline-danger btn-sm rounded-pill px-3 fs-12 fw-bold">კალათის გასუფთავება</button>
+                    </div>
+
+                    <div class="card-body p-0 cart-items-container">
+                        @foreach (var item in CartService.CartItems)
+                        {
+                            var hasDiscount = item.Product.DiscountPrecentage != null;
+                            var effectivePrice = hasDiscount ? item.Product.DiscountPrice : item.Product.Price;
+
+                            <div class="cart-item-row p-3 border-bottom border-light-subtle">
+                                <div class="row align-items-center">
+                                    <div class="col-4 col-md-2 text-center">
+                                        <div class="rounded-3 bg-body-secondary p-2 shadow-sm d-inline-block">
+                                            <img src="@item.Product.ImageUrl" alt="@item.Product.Name" class="img-fluid rounded" style="max-height: 70px;">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-8 col-md-4">
+                                        <h6 class="fw-bold text-body mb-1 fs-14 text-truncate">@item.Product.Name</h6>
+                                        <p class="fs-11 text-muted mb-1">ერთეული: @effectivePrice.ToString("N2") ₾</p>
+                                        <span class="badge @(item.Product.StockQuantity <= 5 ? "bg-danger-subtle text-danger" : "bg-primary-subtle text-primary") rounded-pill fs-10">
+                                            @(item.Product.StockQuantity <= 5 ? $"დარჩენილია {item.Product.StockQuantity}" : "მარაგშია")
+                                        </span>
+                                    </div>
+
+                                    <div class="col-6 col-md-3 mt-3 mt-md-0 text-center">
+                                        <div class="input-step d-inline-flex align-items-center shadow-sm">
+                                            <button @onclick="() => UpdateQty(item.Product.Id, -1)"
+                                                    disabled="@(item.Quantity <= 1)"
+                                                    class="btn btn-step-action">
+                                                <iconify-icon icon="solar:minus-circle-bold"></iconify-icon>
+                                            </button>
+                                            <div class="quantity-number">@item.Quantity</div>
+                                            <button @onclick="() => UpdateQty(item.Product.Id, 1)"
+                                                    disabled="@(item.Quantity >= item.Product.StockQuantity)"
+                                                    class="btn btn-step-action">
+                                                <iconify-icon icon="solar:add-circle-bold"></iconify-icon>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-6 col-md-3 mt-3 mt-md-0 text-end">
+                                        @if (hasDiscount)
+                                        {
+                                            <div class="text-decoration-line-through text-muted fs-11">@((item.Product.Price * item.Quantity).ToString("N2")) ₾</div>
+                                        }
+                                        <span class="fs-16 fw-bold text-primary">@((effectivePrice * item.Quantity).ToString("N2")) ₾</span>
+                                        <button @onclick="() => RemoveItem(item.Product.Id)" class="btn btn-link text-danger p-0 d-block ms-auto fs-12 text-decoration-none mt-1 fw-medium">
+                                            <iconify-icon icon="solar:trash-bin-trash-bold" class="me-1"></iconify-icon>წაშლა
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            @* მარჯვენა მხარე *@
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-lg rounded-4 sticky-summary bg-card-custom">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-4 text-body border-bottom pb-2 fs-15">შეკვეთის შეჯამება</h5>
+
+                        @* უფასო მიწოდების პროგრესი *@
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-1">
+                                @if (CartService.TotalPrice < 100)
+                                {
+                                    <span class="fs-11 text-muted">უფასო მიწოდებამდე აკლია: <b>@((100m - (decimal)CartService.TotalPrice).ToString("N2")) ₾</b></span>
+                                    <span class="fs-11 fw-bold text-primary">@((int)Math.Min((CartService.TotalPrice / 100.00m) * 100, 100))%</span>
+                                }
+                                else
+                                {
+                                    <span class="fs-11 text-success fw-bold"><iconify-icon icon="solar:check-circle-bold" class="me-1"></iconify-icon>უფასო მიწოდება აქტიურია!</span>
+                                }
+                            </div>
+                            <div class="progress" style="height: 6px; background-color: var(--bs-secondary-bg); border-radius: 10px;">
+                                <div class="progress-bar @(CartService.TotalPrice >= 100 ? "bg-success" : "bg-primary") progress-bar-striped progress-bar-animated"
+                                     style="width: @(Math.Min((CartService.TotalPrice / 100.00m) * 100, 100))%; border-radius: 10px;"></div>
+                            </div>
+                        </div>
+
+                        @* FishCoins *@
+                        <div class="points-badge-compact mb-3">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-box-warning me-2">
+                                        <iconify-icon icon="solar:star-circle-bold"></iconify-icon>
+                                    </div>
+                                    <div>
+                                        <span class="d-block fs-11 fw-bold text-body">FishCoins</span>
+                                        <span class="d-block fs-9 text-muted uppercase-tracking">დაგერიცხებათ</span>
+                                    </div>
+                                </div>
+                                <div class="points-value">
+                                    <span class="fs-14 fw-black">+@CalculateTotalPoints()</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        @* მიწოდების მეთოდები *@
+                        <div class="mb-4">
+                            <label class="fw-bold fs-10 text-muted text-uppercase mb-2">მიწოდების მეთოდი:</label>
+                            <div class="d-grid gap-2">
+                                @{
+                                    bool isFree = CartService.TotalPrice >= 100;
+                                }
+                                <div class="delivery-option-mini @(CartService.SelectedDelivery == "standard" ? "active" : "") @(isFree ? "disabled-option" : "")"
+                                     @onclick='() => { if(!isFree) SetDelivery("standard", 0); }'>
+                                    <div class="d-flex justify-content-between align-items-center w-100">
+                                        <span class="fs-12 fw-bold">სტანდარტული</span>
+                                        <span class="badge bg-success-subtle text-success fs-10">უფასო</span>
+                                    </div>
+                                </div>
+                                <div class="delivery-option-mini @(CartService.SelectedDelivery == "express" ? "active" : "") @(isFree ? "disabled-option" : "")"
+                                     @onclick='() => { if(!isFree) SetDelivery("express", 5); }'>
+                                    <div class="d-flex justify-content-between align-items-center w-100">
+                                        <span class="fs-12 fw-bold">ექსპრესი</span>
+                                        <span class="badge bg-primary-subtle text-primary fs-10">+ 5.00 ₾</span>
+                                    </div>
+                                </div>
+
+                                <div class="delivery-option-mini @(CartService.SelectedDelivery == "region" ? "active" : "") @(isFree ? "disabled-option" : "")"
+                                     @onclick='() => { if(!isFree) SetDelivery("region", 10); }'>
+                                    <div class="d-flex justify-content-between align-items-center w-100">
+                                        <span class="fs-13 fw-bold text-muted">რეგიონში მიწოდება</span>
+                                        <span class="badge bg-secondary-subtle text-muted">+ 10.00 ₾</span>
+                            </div>
+                        </div>
+                            </div>
+                        </div>
+
+                        @* ფინანსური შეჯამება *@
+                        <div class="summary-details mb-3">
+                            @{
+                                decimal originalTotal = (decimal)CartService.CartItems.Sum(x => x.Product.Price * x.Quantity);
+                                decimal discountTotal = originalTotal - (decimal)CartService.TotalPrice;
+                            }
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-muted fs-13">ჯამი:</span>
+                                <span class="text-body fw-medium fs-13">@originalTotal.ToString("N2") ₾</span>
+                            </div>
+                            @if (discountTotal > 0)
+                            {
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="text-muted fs-13">ფასდაკლება:</span>
+                                    <span class="text-danger fw-bold fs-13">- @discountTotal.ToString("N2") ₾</span>
+                                </div>
+                            }
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-muted fs-13">მიწოდება:</span>
+                                <span class="text-body fw-medium fs-13">@(CartService.DeliveryFee == 0 ? "უფასო" : CartService.DeliveryFee.ToString("N2") + " ₾")</span>
+                            </div>
+                            <hr class="border-light-subtle my-2">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="fs-15 fw-bold text-body">სულ გადასახდელი:</span>
+                                <span class="fs-18 fw-bolder text-primary">@(((decimal)CartService.TotalPrice + CartService.DeliveryFee).ToString("N2")) ₾</span>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary w-100 py-2-5 rounded-3 fw-bold shadow checkout-btn-refined"
+                                disabled="@(string.IsNullOrEmpty(CartService.SelectedDelivery))"
+                                @onclick='() => NavigationManager.NavigateTo("/checkout")'>
+                            გაფორმებაზე გადასვლა
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .bg-card-custom {
+        background-color: var(--bs-card-bg, #ffffff);
+    }
+
+    .cart-items-container {
+        max-height: 550px;
+        overflow-y: auto;
+    }
+
+        .cart-items-container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .cart-items-container::-webkit-scrollbar-thumb {
+            background: var(--bs-primary);
+            border-radius: 10px;
+        }
+
+    .sticky-summary {
+        position: sticky;
+        top: 90px;
+        z-index: 10;
+    }
+
+    /* რაოდენობა */
+    .input-step {
+        background: var(--bs-secondary-bg);
+        border-radius: 30px;
+        padding: 4px;
+        border: 1px solid var(--bs-border-color);
+    }
+
+    .btn-step-action {
+        background: var(--bs-card-bg) !important;
+        color: var(--bs-primary) !important;
+        border: none !important;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50% !important;
+        font-size: 18px;
+        transition: all 0.2s ease;
+        padding: 0;
+    }
+
+        .btn-step-action:hover:not(:disabled) {
+            background: var(--bs-primary) !important;
+            color: white !important;
+        }
+
+    .quantity-number {
+        min-width: 45px;
+        text-align: center;
+        font-weight: 800;
+        font-size: 15px;
+        color: var(--bs-emphasis-color);
+        user-select: none;
+    }
+
+    /* მიწოდება */
+    .delivery-option-mini {
+        border: 1px solid var(--bs-border-color);
+        border-radius: 10px;
+        padding: 8px 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background-color: var(--bs-body-bg);
+    }
+
+        .delivery-option-mini.active {
+            border-color: var(--bs-primary);
+            background-color: rgba(13, 110, 253, 0.05);
+        }
+
+    .disabled-option {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    /* ღილაკი და ფასი - რედაქტირებული */
+    .py-2-5 {
+        padding-top: 0.65rem;
+        padding-bottom: 0.65rem;
+    }
+
+    .checkout-btn-refined {
+        font-size: 14px;
+        letter-spacing: 0.3px;
+        transition: all 0.3s ease;
+    }
+
+        .checkout-btn-refined:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.25);
+        }
+
+    /* FishCoins */
+    .points-badge-compact {
+        background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 152, 0, 0.05) 100%);
+        border: 1px solid rgba(255, 193, 7, 0.2);
+        border-radius: 12px;
+        padding: 8px 12px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .icon-box-warning {
+        background: var(--bs-warning);
+        color: #fff;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        font-size: 18px;
+        box-shadow: 0 2px 6px rgba(255, 193, 7, 0.3);
+    }
+
+    .points-value {
+        color: var(--bs-warning);
+        background: rgba(255, 255, 255, 0.5);
+        padding: 2px 8px;
+        border-radius: 6px;
+        border: 1px solid rgba(255, 193, 7, 0.1);
+    }
+
+    .uppercase-tracking {
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .fw-black {
+        font-weight: 900;
+    }
+</style>
+
+@code {
+    private bool isLoaded = false;
+    protected override void OnInitialized() => CartService.OnChange += HandleCartChange;
+    private void HandleCartChange() { CheckFreeDelivery(); StateHasChanged(); }
+
+    private void CheckFreeDelivery()
+    {
+        if (CartService.TotalPrice >= 100)
+        {
+            CartService.SelectedDelivery = "standard";
+            CartService.DeliveryFee = 0;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // ეს ხაზი აიტანს სქროლს ზემოთ მხოლოდ ამ გვერდზე შემოსვლისას
+            await JsRuntime.InvokeVoidAsync("window.scrollTo", 0, 0);
+            try { await JsRuntime.InvokeVoidAsync("loadThemeConfig"); await JsRuntime.InvokeVoidAsync("loadApps"); } catch { }
+            await CartService.LoadCart();
+            CheckFreeDelivery();
+            isLoaded = true;
+            StateHasChanged();
+        }
+    }
+
+    private void SetDelivery(string method, decimal fee)
+    {
+        CartService.SelectedDelivery = method;
+        CartService.DeliveryFee = fee;
+    }
+
+    private int CalculateTotalPoints() =>
+        CartService.CartItems.Sum(item => item.Product.PointsReward * item.Quantity);
+
+    private async Task UpdateQty(int id, int change) => await CartService.UpdateQuantity(id, change);
+    private async Task RemoveItem(int id) => await CartService.RemoveFromCart(id);
+    private async Task ClearCart() => await CartService.ClearCart();
+    public void Dispose() => CartService.OnChange -= HandleCartChange;
+}

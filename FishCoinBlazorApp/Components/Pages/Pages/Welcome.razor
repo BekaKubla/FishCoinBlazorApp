@@ -1,0 +1,212 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@inject IJSRuntime JsRuntime
+
+<style>
+    /* 1. ძირითადი გარემო - გამოიყენებს სისტემურ ფონს */
+    .main-wrapper {
+        min-height: 100vh;
+        margin: -20px;
+        padding: 20px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* 2. Hero ბარათების სტილი - გრადიენტები რჩება, რადგან ორივე რეჟიმში ლამაზია */
+    .hero-card {
+        border-radius: 24px;
+        height: 320px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 35px;
+        position: relative;
+        overflow: hidden;
+        border: none;
+        transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+
+        .hero-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+    .bg-fishing {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    }
+
+    .bg-hunting {
+        background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+    }
+
+    .bg-icon-fishing, .bg-icon-hunting {
+        position: absolute;
+        font-size: 250px;
+        color: rgba(255, 255, 255, 0.07);
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    .bg-icon-fishing {
+        top: -40px;
+        right: 10px;
+        transform: rotate(-15deg);
+    }
+
+    .bg-icon-hunting {
+        top: -30px;
+        right: -30px;
+        transform: rotate(0deg);
+    }
+
+    .card-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .card-title {
+        font-size: 2.3rem;
+        font-weight: 800;
+        color: #ffffff;
+        margin-bottom: 8px;
+        letter-spacing: -1px;
+    }
+
+    .card-text {
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 1.05rem;
+        margin-bottom: 25px;
+        max-width: 80%;
+    }
+
+    /* 3. Quick Links & FishCoin - ამოღებულია თეთრი ფონები */
+    .quick-link-card {
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(128, 128, 128, 0.1);
+    }
+
+        .quick-link-card:hover {
+            border-color: #3498db !important;
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1) !important;
+        }
+
+    /* FishCoin ბარათი - bg-body-tertiary იდეალურია ორივე რეჟიმისთვის */
+    .fishcoin-card {
+        border-radius: 28px;
+        border: 1px solid rgba(128, 128, 128, 0.1);
+    }
+
+    .section-title {
+        font-weight: 800;
+        letter-spacing: -0.5px;
+    }
+</style>
+
+<div class="main-wrapper bg-body">
+    <Topbar Title="მთავარი" />
+
+    <div class="container-fluid px-4">
+
+        @* 1. Hero Section *@
+        <div class="row g-4 mt-2 mb-5">
+            <div class="col-lg-6">
+                <div class="hero-card bg-fishing shadow-lg">
+                    <iconify-icon icon="game-icons:fishing-pole" class="bg-icon-fishing"></iconify-icon>
+                    <div class="card-content">
+                        <h2 class="card-title">თევზაობა 🎣</h2>
+                        <p class="card-text">პრემიუმ ინვენტარი და აქსესუარები პროფესიონალებისთვის.</p>
+                        <a href="/shop/fishing" class="btn btn-light px-5 py-2 fw-bold rounded-3">კატალოგი</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="hero-card bg-hunting shadow-lg">
+                    <iconify-icon icon="solar:target-bold-duotone" class="bg-icon-hunting"></iconify-icon>
+                    <div class="card-content text-lg-end">
+                        <h2 class="card-title">ნადირობა 🦌</h2>
+                        <p class="card-text ms-lg-auto">სანადირო აღჭურვილობის სრული ხაზი.</p>
+                        <span class="badge bg-white bg-opacity-10 text-white p-2 px-3 rounded-pill border border-white border-opacity-25" style="backdrop-filter: blur(5px);">მალე დაგვემატება</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* 2. Quick Links *@
+        @if (QuickLinks != null && QuickLinks.Any())
+        {
+            <div class="row g-3 mb-5">
+                @foreach (var link in QuickLinks)
+                {
+                    <div class="col-6 col-md-3">
+                        <a href="@link.Url" class="text-decoration-none">
+                            <div class="card quick-link-card p-4 h-100 d-flex flex-column align-items-center text-center">
+                                <div class="mb-3">
+                                    <iconify-icon icon="@link.Icon" class="@link.IconClass fs-1"></iconify-icon>
+                                </div>
+                                <h6 class="fw-bold mb-0">@link.Title</h6>
+                            </div>
+                        </a>
+                    </div>
+                }
+            </div>
+        }
+
+        @* 3. FishCoin Banner *@
+        <div class="row justify-content-center mb-5">
+            <div class="col-xl-11">
+                <div class="card fishcoin-card bg-body-tertiary p-4 p-md-5 shadow-sm">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center mb-3">
+                                <iconify-icon icon="solar:star-circle-bold-duotone" class="text-warning fs-1 me-3"></iconify-icon>
+                                <h2 class="section-title mb-0" style="font-size: 2.2rem;">დააგროვე <span class="text-warning">FishCoin</span></h2>
+                            </div>
+                            <p class="text-muted fs-16 mb-4" style="max-width: 600px;">
+                                თითოეული შენაძენი გიახლოებთ ექსკლუზიურ ინვენტართან. დააგროვეთ ბონუსები მარტივად.
+                            </p>
+                            <a href="/earn-fishcoin" class="btn btn-warning px-5 py-2 fw-bold rounded-pill shadow-sm">გაიგე მეტი</a>
+                        </div>
+                        <div class="col-md-4 text-center d-none d-md-block">
+                            <iconify-icon icon="solar:box-minimalistic-bold-duotone" class="text-warning opacity-10" style="font-size: 180px;"></iconify-icon>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<LinkItem> QuickLinks = new()
+    {
+        new() { Title = "ქუთაისის მიტანა", Icon = "solar:delivery-bold-duotone", Url = "/delivery-kutaisi", IconClass = "text-primary" },
+        new() { Title = "რეგიონების მიტანა", Icon = "solar:global-bold-duotone", Url = "/delivery-regions", IconClass = "text-success" },
+        new() { Title = "ქულების გადაცვლა", Icon = "solar:spend-fishcoin", Url = "/spend-fishcoin", IconClass = "text-warning" },
+        new() { Title = "ჩვენს შესახებ", Icon = "solar:info-circle-bold-duotone", Url = "/about-us", IconClass = "text-info" }
+    };
+
+    private class LinkItem
+    {
+        public string Title { get; set; } = "";
+        public string Icon { get; set; } = "";
+        public string Url { get; set; } = "";
+        public string IconClass { get; set; } = "";
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                // ეს ხაზი აიტანს სქროლს ზემოთ მხოლოდ ამ გვერდზე შემოსვლისას
+                await JsRuntime.InvokeVoidAsync("window.scrollTo", 0, 0);
+                await JsRuntime.InvokeVoidAsync("loadThemeConfig");
+                await JsRuntime.InvokeVoidAsync("loadApps");
+            }
+            catch { }
+        }
+    }
+}

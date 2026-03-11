@@ -1,0 +1,153 @@
+﻿@page "/delivery-kutaisi"
+@rendermode InteractiveServer
+@inject IJSRuntime JsRuntime
+
+<style>
+    .delivery-header {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        padding: 40px 15px;
+        border-radius: 12px;
+        color: white;
+    }
+
+    .delivery-card {
+        transition: all 0.3s ease;
+        border: 1px solid #e2e8f0;
+    }
+
+    .delivery-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
+    }
+
+    .price-tag {
+        font-size: 24px;
+        font-weight: bold;
+        color: #1e3c72;
+    }
+
+    .free-badge {
+        background-color: #2ecc71;
+        color: white;
+        padding: 5px 15px;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+</style>
+
+<Topbar Title="მიწოდება ქუთაისში" />
+
+<div class="row pb-5">
+    <div class="col-12">
+
+        @* 1. Hero Section *@
+        <div class="delivery-header text-center mb-5 shadow-sm">
+            <div class="mb-2">
+                <iconify-icon icon="solar:delivery-bold-duotone" class="text-warning" style="font-size: 50px;"></iconify-icon>
+            </div>
+            <h2 class="fw-bold text-white mb-2">მიწოდების სერვისი ქუთაისში</h2>
+            <p class="text-white-50 mx-auto mb-0" style="max-width: 600px;">
+                მიიღეთ თქვენი შენაძენი კომფორტულად და სწრაფად. აირჩიეთ თქვენთვის სასურველი მიწოდების ტარიფი.
+            </p>
+        </div>
+
+        @* 2. Delivery Options *@
+        <div class="row g-4 justify-content-center">
+            
+            @* ვარიანტი 1: სტანდარტული (უფასო) *@
+            <div class="col-md-6 col-lg-5">
+                <div class="card delivery-card h-100 shadow-sm border-0">
+                    <div class="card-body p-4 text-center">
+                        <div class="mb-3">
+                            <span class="free-badge">უფასო</span>
+                        </div>
+                        <div class="avatar-lg bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px;">
+                            <iconify-icon icon="solar:calendar-date-bold" class="fs-1 text-primary"></iconify-icon>
+                        </div>
+                        <h4 class="fw-bold mb-2">სტანდარტული მიწოდება</h4>
+                        <p class="text-muted mb-4">იდეალური არჩევანია, თუ ნივთი სასწრაფოდ არ გჭირდებათ.</p>
+                        
+                        <div class="py-3 border-top border-bottom mb-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">ვადა:</span>
+                                <span class="fw-bold text-dark">2-3 სამუშაო დღე</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">ღირებულება:</span>
+                                <span class="fw-bold text-success">0.00 ₾</span>
+                            </div>
+                        </div>
+                        
+                        <iconify-icon icon="solar:check-circle-bold" class="text-success me-1"></iconify-icon>
+                        <span class="small text-muted">ვრცელდება ქუთაისის ნებისმიერ წერტილზე</span>
+                    </div>
+                </div>
+            </div>
+
+            @* ვარიანტი 2: ექსპრეს მიტანა *@
+            <div class="col-md-6 col-lg-5">
+                <div class="card delivery-card h-100 shadow-sm border-0 border-top border-warning border-4">
+                    <div class="card-body p-4 text-center">
+                        <div class="mb-3">
+                            <span class="badge bg-warning text-dark px-3 py-2 fw-bold" style="border-radius: 50px;">სწრაფი</span>
+                        </div>
+                        <div class="avatar-lg bg-warning-subtle rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px;">
+                            <iconify-icon icon="solar:rocket-bold" class="fs-1 text-warning"></iconify-icon>
+                        </div>
+                        <h4 class="fw-bold mb-2">ექსპრეს მიტანა</h4>
+                        <p class="text-muted mb-4">მიიღეთ შეკვეთა იმავე დღეს, რამდენიმე საათში.</p>
+                        
+                        <div class="py-3 border-top border-bottom mb-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">ვადა:</span>
+                                <span class="fw-bold text-dark">იმავე დღეს</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">ღირებულება:</span>
+                                <span class="fw-bold text-success">5.00 ₾</span>
+                            </div>
+                        </div>
+
+                        <iconify-icon icon="solar:clock-circle-bold" class="text-warning me-1"></iconify-icon>
+                        <span class="small text-muted">მოქმედებს 18:00 სთ-მდე მიღებულ შეკვეთებზე</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        @* 3. დამატებითი ინფორმაცია *@
+        <div class="row justify-content-center mt-5">
+            <div class="col-lg-10">
+                <div class="card border-0 bg-light p-4">
+                    <div class="d-flex align-items-start">
+                        <iconify-icon icon="solar:info-circle-bold" class="text-primary fs-2 me-3 mt-1"></iconify-icon>
+                        <div>
+                            <h5 class="fw-bold">ყურადღება!</h5>
+                            <p class="text-muted mb-0 small" style="line-height: 1.6;">
+                                კურიერი დაგიკავშირდებათ მითითებულ ნომერზე მიტანამდე 15-30 წუთით ადრე. 
+                                გთხოვთ, შეკვეთის გაფორმებისას ზუსტად მიუთითოთ მისამართი და საკონტაქტო ინფორმაცია. 
+                                ექსპრეს მიტანის სერვისით სარგებლობა შესაძლებელია ყოველდღე, კვირის გარდა.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // ეს ხაზი აიტანს სქროლს ზემოთ მხოლოდ ამ გვერდზე შემოსვლისას
+            await JsRuntime.InvokeVoidAsync("window.scrollTo", 0, 0);
+            await JsRuntime.InvokeVoidAsync("loadThemeConfig");
+            await JsRuntime.InvokeVoidAsync("loadApps");
+        }
+    }
+}

@@ -1,0 +1,316 @@
+﻿@page "/checkout"
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@inject FishCoinBlazorApp.Services.CartService CartService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+
+<Topbar Title="შეკვეთის გაფორმება" />
+
+<div class="container mt-3 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
+
+            <EditForm Model="@orderModel" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+
+                <div class="card border-0 shadow-sm rounded-4 bg-card-custom overflow-hidden">
+                    <div class="card-body p-4">
+
+                        @* 1. საკონტაქტო სექცია *@
+                        <div class="checkout-section mb-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="step-badge me-2">1</div>
+                                <h6 class="fw-bold mb-0 text-uppercase tracking-wider fs-13">საკონტაქტო ინფორმაცია</h6>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="fs-12 fw-bold text-muted mb-1 px-1">სახელი და გვარი</label>
+                                    <InputText @bind-Value="orderModel.FullName" class="form-control custom-minimal-input" placeholder="მაგ: გიორგი გიორგაძე" />
+                                    <ValidationMessage For="@(() => orderModel.FullName)" class="text-danger fs-11 mt-1 px-1" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="fs-12 fw-bold text-muted mb-1 px-1">ტელეფონის ნომერი</label>
+                                    <InputText @bind-Value="orderModel.Phone" class="form-control custom-minimal-input" placeholder="5xx xx xx xx" />
+                                    <ValidationMessage For="@(() => orderModel.Phone)" class="text-danger fs-11 mt-1 px-1" />
+                                </div>
+                                <div class="col-12">
+                                    <label class="fs-12 fw-bold text-muted mb-1 px-1">მიწოდების მისამართი</label>
+                                    <InputText @bind-Value="orderModel.Address" class="form-control custom-minimal-input" placeholder="ქალაქი, ქუჩა, ბინა/სადარბაზო" />
+                                    <ValidationMessage For="@(() => orderModel.Address)" class="text-danger fs-11 mt-1 px-1" />
+                                </div>
+                                <div class="col-12">
+                                    <label class="fs-12 fw-bold text-muted mb-1 px-1">კომენტარი (სურვილისამებრ)</label>
+                                    <InputTextArea @bind-Value="orderModel.Comment" class="form-control custom-minimal-input" rows="2" placeholder="დამატებითი დეტალები კურიერისთვის..." />
+                                </div>
+                            </div>
+                        </div>
+
+                        @* 2. გადახდის მეთოდი *@
+                        <div class="checkout-section mb-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="step-badge me-2">2</div>
+                                <h6 class="fw-bold mb-0 text-uppercase tracking-wider fs-13">გადახდის მეთოდი</h6>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <div class="payment-pill @(orderModel.PaymentMethod == "cash" ? "active" : "")" @onclick='() => SetPayment("cash")'>
+                                    <iconify-icon icon="solar:wallet-money-bold-duotone" class="fs-18"></iconify-icon>
+                                    <span>ნაღდი</span>
+                                </div>
+                                <div class="payment-pill @(orderModel.PaymentMethod == "transfer" ? "active" : "")" @onclick='() => SetPayment("transfer")'>
+                                    <iconify-icon icon="solar:bank-transfer-bold-duotone" class="fs-18"></iconify-icon>
+                                    <span>გადარიცხვა</span>
+                                </div>
+                            </div>
+                            @if (showPaymentError)
+                            {
+                                <div class="text-danger fs-11 mt-2 px-1 animated-fade">
+                                    <iconify-icon icon="solar:danger-triangle-bold" class="me-1"></iconify-icon>
+                                    გთხოვთ აირჩიოთ გადახდის მეთოდი
+                                </div>
+                            }
+                        </div>
+
+                        @* 3. შეკვეთის შეჯამება (ჩეკი) *@
+                        <div class="checkout-section bg-light-subtle rounded-4 p-3 mb-4 border border-light">
+                            <div class="d-flex justify-content-between align-items-center border-bottom border-dashed pb-2 mb-2">
+                                <span class="fs-11 fw-bold text-muted text-uppercase tracking-wider">თქვენი კალათა</span>
+                                <span class="badge bg-primary-subtle text-primary rounded-pill px-2 py-1 fs-11">@CartService.CartCount ნივთი</span>
+                            </div>
+
+                            <div class="order-items-scroll px-1">
+                                @foreach (var item in CartService.CartItems)
+                                {
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="text-truncate me-2" style="max-width: 70%;">
+                                            <span class="fs-13 fw-medium">@item.Product.Name</span>
+                                            <span class="fs-11 text-muted ms-1">×@item.Quantity</span>
+                                        </div>
+                                        <span class="fs-13 fw-bold">
+                                            @((item.Product.DiscountPrecentage != null ? item.Product.DiscountPrice * item.Quantity : item.Product.Price * item.Quantity).ToString("N2")) ₾
+                                        </span>
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="receipt-footer mt-3 pt-2 border-top border-dashed">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="text-muted fs-13">მიწოდება:</span>
+                                    <span class="fs-13 fw-bold @(CartService.DeliveryFee == 0 ? "text-success" : "")">
+                                        @(CartService.DeliveryFee == 0 ? "უფასო" : CartService.DeliveryFee.ToString("N2") + " ₾")
+                                    </span>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <div class="d-flex align-items-center gap-1 bg-warning-subtle px-2 py-1 rounded-2">
+                                        <iconify-icon icon="solar:star-circle-bold" class="text-warning fs-14"></iconify-icon>
+                                        <span class="fs-11 fw-bold text-warning-emphasis">+@CalculateTotalPoints() Coins</span>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="fs-13 text-muted d-block lh-1 mb-1">სულ გადასახდელი:</span>
+                                        <span class="fs-24 fw-black text-primary">@((CartService.TotalPrice + CartService.DeliveryFee).ToString("N2")) ₾</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @* მთავარი ქმედების ღილაკი *@
+                        <button type="submit" class="btn btn-primary w-100 py-3 rounded-3 fw-bold shadow-sm confirm-order-btn mt-2">
+                            <iconify-icon icon="solar:check-circle-bold-duotone" class="me-2 fs-20"></iconify-icon>
+                            შეკვეთის გაგზავნა
+                        </button>
+                    </div>
+                </div>
+            </EditForm>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-card-custom {
+        background-color: var(--bs-card-bg);
+    }
+
+    .bg-light-subtle {
+        background-color: var(--bs-tertiary-bg) !important;
+    }
+
+    /* ინფუთების მინიმალისტური სტილი */
+    .custom-minimal-input {
+        background-color: var(--bs-tertiary-bg);
+        border: 1px solid var(--bs-border-color);
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-size: 14px;
+        transition: all 0.2s ease-in-out;
+    }
+
+        .custom-minimal-input:focus {
+            background-color: var(--bs-card-bg);
+            border-color: var(--bs-primary);
+            box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1);
+            outline: none;
+        }
+
+    /* ნაბიჯების ნომრები */
+    .step-badge {
+        width: 24px;
+        height: 24px;
+        background: var(--bs-primary);
+        color: white;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 800;
+        box-shadow: 0 2px 4px rgba(13, 110, 253, 0.2);
+    }
+
+    /* გადახდის ღილაკები */
+    .payment-pill {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 14px;
+        border: 2px solid var(--bs-border-color);
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 700;
+        transition: all 0.2s;
+        background: var(--bs-card-bg);
+    }
+
+        .payment-pill:hover {
+            border-color: var(--bs-primary-border-subtle);
+        }
+
+        .payment-pill.active {
+            border-color: var(--bs-primary);
+            background: rgba(13, 110, 253, 0.08);
+            color: var(--bs-primary);
+            transform: translateY(-1px);
+        }
+
+    /* ჩეკის სქროლი */
+    .order-items-scroll {
+        max-height: 150px;
+        overflow-y: auto;
+    }
+
+        .order-items-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .order-items-scroll::-webkit-scrollbar-thumb {
+            background: var(--bs-border-color);
+            border-radius: 10px;
+        }
+
+    .border-dashed {
+        border-top: 1px dashed var(--bs-border-color) !important;
+    }
+
+    .confirm-order-btn {
+        font-size: 17px;
+        letter-spacing: 0.5px;
+        transition: all 0.2s ease;
+    }
+
+        .confirm-order-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3) !important;
+        }
+
+        .confirm-order-btn:active {
+            transform: scale(0.98);
+        }
+
+    .fw-black {
+        font-weight: 900;
+    }
+
+    .tracking-wider {
+        letter-spacing: 0.5px;
+    }
+
+    .animated-fade {
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-5px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+@code {
+    private CheckoutModel orderModel = new();
+    private bool showPaymentError = false;
+
+    public class CheckoutModel
+    {
+        [Required(ErrorMessage = "სახელი და გვარი სავალდებულოა")]
+        [MinLength(3, ErrorMessage = "გთხოვთ მიუთითოთ სრული სახელი")]
+        public string FullName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "ტელეფონის ნომერი სავალდებულოა")]
+        [RegularExpression(@"^[0-9\s+-]+$", ErrorMessage = "გთხოვთ შეიყვანოთ მხოლოდ ციფრები")]
+        public string Phone { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "მისამართი სავალდებულოა")]
+        public string Address { get; set; } = string.Empty;
+
+        public string? Comment { get; set; }
+        public string? PaymentMethod { get; set; }
+    }
+
+    private void SetPayment(string method)
+    {
+        orderModel.PaymentMethod = method;
+        showPaymentError = false;
+    }
+
+    private void HandleValidSubmit()
+    {
+        if (string.IsNullOrEmpty(orderModel.PaymentMethod))
+        {
+            showPaymentError = true;
+            return;
+        }
+
+        // ვალიდაცია წარმატებულია, გადავდივართ შემდეგ გვერდზე
+        NavigationManager.NavigateTo("/order-success");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // ეს ხაზი აიტანს სქროლს ზემოთ მხოლოდ ამ გვერდზე შემოსვლისას
+            await JsRuntime.InvokeVoidAsync("window.scrollTo", 0, 0);
+            try
+            {
+                await JsRuntime.InvokeVoidAsync("loadThemeConfig");
+                await JsRuntime.InvokeVoidAsync("loadApps");
+            }
+            catch { }
+        }
+    }
+
+    private int CalculateTotalPoints() =>
+        CartService.CartItems.Sum(item => item.Product.PointsReward * item.Quantity);
+}
