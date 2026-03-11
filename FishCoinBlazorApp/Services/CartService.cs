@@ -73,6 +73,71 @@ public class CartService
         await _localStorage.SetItemAsync("cartItems", CartItems);
     }
 
+    public async Task RefreshCartItems(ProductService productService)
+    {
+        if (CartItems == null || !CartItems.Any()) return;
+
+        bool isChanged = false;
+
+        // ToList() საჭიროა, რომ ციკლის დროს ელემენტის წაშლამ შეცდომა არ გამოიწვიოს
+        foreach (var item in CartItems.ToList())
+        {
+            // ბაზიდან ვიღებთ აქტუალურ მონაცემებს Id-ით
+            var dbProduct = await productService.GetProductById(item.Product.Id);
+
+            if (dbProduct == null)
+            {
+                // თუ პროდუქტი ბაზიდან წაიშალა
+                CartItems.Remove(item);
+                isChanged = true;
+                continue;
+            }
+
+            // 1. მარაგის შემოწმება (StockQuantity)
+            if (dbProduct.StockQuantity <= 0)
+            {
+                CartItems.Remove(item);
+                isChanged = true;
+                continue;
+            }
+            else if (item.Quantity > dbProduct.StockQuantity)
+            {
+                // თუ იუზერს მეტი უდევს ვიდრე მარაგშია, ჩამოვუყვანოთ მაქსიმუმზე
+                item.Quantity = dbProduct.StockQuantity;
+                isChanged = true;
+            }
+
+            // 2. ფასის და ფასდაკლების სინქრონიზაცია
+            // გამოვთვალოთ ახალი ფასდაკლებული ფასი ბაზის მონაცემებით
+            decimal freshDiscountPrice = dbProduct.Price;
+            if (dbProduct.DiscountPrecentage.HasValue && dbProduct.DiscountPrecentage > 0)
+            {
+                freshDiscountPrice = dbProduct.Price - (dbProduct.Price * dbProduct.DiscountPrecentage.Value / 100);
+            }
+
+            // შედარება ძველ მონაცემებთან
+            if (item.Product.Price != dbProduct.Price ||
+                item.Product.DiscountPrecentage != dbProduct.DiscountPrecentage)
+            {
+                item.Product.Price = dbProduct.Price;
+                item.Product.DiscountPrecentage = dbProduct.DiscountPrecentage;
+                item.Product.DiscountPrice = freshDiscountPrice; // დაგვჭირდება UI-სთვის
+                isChanged = true;
+            }
+
+            // 3. სხვა მნიშვნელოვანი ველების განახლება (სახელი, სურათი, ქულები)
+            item.Product.Name = dbProduct.Name;
+            item.Product.ImageUrl = dbProduct.ImageUrl;
+            item.Product.PointsReward = dbProduct.PointsReward;
+        }
+
+        if (isChanged)
+        {
+            await SaveCart();
+            NotifyStateChanged();
+        }
+    }
+
     private async Task SaveToLocalStorage() => await _localStorage.SetItemAsync("cartItems", CartItems);
     private void NotifyStateChanged() => OnChange?.Invoke();
 

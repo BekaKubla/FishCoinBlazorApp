@@ -58,7 +58,7 @@ namespace FishCoinBlazorApp.Services
 
         public async Task<ProductDetailModel?> GetProductById(int id)
         {
-            var product = await _context.Products.SingleOrDefaultAsync(p => p.Id == id);
+            var product = await _context.Products.AsNoTracking().SingleOrDefaultAsync(p => p.Id == id);
             if (product != null)
             {
                 var resultmodel = new ProductDetailModel()
