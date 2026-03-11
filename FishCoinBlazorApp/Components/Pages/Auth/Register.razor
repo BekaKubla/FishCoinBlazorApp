@@ -1,0 +1,145 @@
+﻿@page "/register"
+@using FishCoinBlazorApp.Services
+@using FishCoinBlazorApp.Services.Models
+@using System.ComponentModel.DataAnnotations
+@inject IAccountService AccountService
+@inject NavigationManager NavManager
+@rendermode InteractiveServer
+
+<Topbar Title="რეგისტრაცია" />
+
+<div class="auth-wrapper">
+    <div class="auth-card border shadow-sm">
+        <div class="auth-header py-3">
+            <h5 class="fw-bold mb-0">რეგისტრაცია</h5>
+            <p class="mb-0 opacity-75 fs-12">შექმენი FishCoin ანგარიში</p>
+        </div>
+
+        <div class="auth-body p-4 pt-3">
+            <EditForm Model="registerModel" OnValidSubmit="HandleRegistration">
+                <DataAnnotationsValidator />
+
+                @* სახელი და გვარი (ერთად) *@
+                <div class="mb-2">
+                    <label class="auth-label">სახელი და გვარი</label>
+                    <InputText @bind-Value="registerModel.FullName" class="form-control form-control-custom" placeholder="ბექა ..." />
+                    <ValidationMessage For="@(() => registerModel.FullName)" class="text-danger fs-10" />
+                </div>
+
+                @* ტელეფონის ნომერი *@
+                <div class="mb-2">
+                    <label class="auth-label">ტელეფონის ნომერი</label>
+                    <InputText @bind-Value="registerModel.PhoneNumber" class="form-control form-control-custom" placeholder="599 00 00 00" />
+                    <ValidationMessage For="@(() => registerModel.PhoneNumber)" class="text-danger fs-10" />
+                </div>
+
+                @* პაროლები (გვერდიგვერდ) *@
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="auth-label">პაროლი</label>
+                        <InputText @bind-Value="registerModel.Password" type="password" class="form-control form-control-custom" placeholder="******" />
+                        <ValidationMessage For="@(() => registerModel.Password)" class="text-danger fs-10" />
+                    </div>
+                    <div class="col-6">
+                        <label class="auth-label">გამეორება</label>
+                        <InputText @bind-Value="registerModel.ConfirmPassword" type="password" class="form-control form-control-custom" placeholder="******" />
+                        <ValidationMessage For="@(() => registerModel.ConfirmPassword)" class="text-danger fs-10" />
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center mb-3 ms-1">
+                    <input type="checkbox" id="termsCheck" required @bind="isAccepted" class="form-check-input custom-check" />
+                    <label for="termsCheck" class="ms-2 fs-13 text-secondary">
+                        ვეთანხმები <span @onclick="ShowTerms" class="text-primary fw-bold cursor-pointer underline-link">წესებს</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold rounded-3">
+                    ანგარიშის შექმნა
+                </button>
+            </EditForm>
+
+            @if (errors != null && errors.Any())
+            {
+                <div class="alert alert-danger mt-3 py-2 fs-12 border-0 rounded-3">
+                    @string.Join(", ", errors)
+                </div>
+            }
+        </div>
+
+        <div class="auth-footer py-2 border-top text-center">
+            <p class="mb-0 fs-12 text-secondary">გაქვს ანგარიში? <a href="/login" class="text-primary fw-bold text-decoration-none">შესვლა</a></p>
+        </div>
+    </div>
+</div>
+
+@* მოდალი (წესებისთვის) *@
+@if (isTermsVisible)
+{
+    <div class="custom-modal-backdrop" @onclick="HideTerms">
+        <div class="custom-modal-content shadow-lg modal-fix" @onclick:stopPropagation="true">
+            <div class="modal-header-custom">
+                <h6 class="fw-bold mb-0">წესები და პირობები</h6>
+                <button type="button" class="btn-close-custom" @onclick="HideTerms">&times;</button>
+            </div>
+            <div class="modal-body-custom">
+                <p>1. თქვენი პერსონალური მონაცემები დაცულია.</p>
+                <p>2. FishCoin-ის პლატფორმა გამოიყენება კანონიერი მიზნებისთვის.</p>
+                <p>3. უსაფრთხოება ჩვენი პრიორიტეტია.</p>
+            </div>
+            <div class="modal-footer-custom">
+                <button class="btn btn-primary btn-sm px-4 rounded-2" @onclick="HideTerms">გავიგე</button>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .auth-wrapper { display: flex; justify-content: center; align-items: flex-start; padding-top: 20px; min-height: 80vh; }
+    .auth-card { width: 100%; max-width: 500px; background-color: var(--bs-card-bg); border-radius: 16px; overflow: hidden; }
+    .auth-header { background-color: var(--bs-tertiary-bg); text-align: center; border-bottom: 1px solid var(--bs-border-color); }
+    .auth-label { font-size: 10px; font-weight: 800; color: var(--bs-secondary-color); text-transform: uppercase; margin-bottom: 4px; display: block; }
+    
+    .form-control-custom { 
+        border-radius: 10px; font-size: 14px; padding: 10px; 
+        background-color: var(--bs-body-bg); color: var(--bs-body-color); 
+        border: 1.5px solid #b4bcc7; transition: all 0.2s;
+    }
+    .form-control-custom:focus { border-color: var(--bs-primary); box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15); outline: none; }
+
+    .custom-check { width: 18px; height: 18px; cursor: pointer; }
+    .cursor-pointer { cursor: pointer; }
+    .underline-link { text-decoration: underline; text-underline-offset: 3px; }
+
+    /* Modal Styles */
+    .custom-modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 9999; }
+    .modal-fix { background-color: #ffffff !important; color: #1e293b; }
+    .custom-modal-content { width: 90%; max-width: 420px; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0,0,0,0.1); }
+    .modal-header-custom { padding: 15px 20px; border-bottom: 1px solid var(--bs-border-color); display: flex; justify-content: space-between; align-items: center; }
+    .modal-body-custom { padding: 20px; font-size: 14px; }
+    .modal-footer-custom { padding: 12px 20px; background-color: var(--bs-tertiary-bg); text-align: right; }
+    .btn-close-custom { background: none; border: none; font-size: 24px; color: gray; cursor: pointer; }
+
+    [data-bs-theme="dark"] .auth-card { background-color: #1a1a1a; }
+    [data-bs-theme="dark"] .form-control-custom { border-color: #444; }
+    [data-bs-theme="dark"] .modal-fix { background-color: #1a1a1a !important; color: #f8fafc; border-color: #333; }
+</style>
+
+@code {
+    private RegisterModel registerModel = new();
+    private string[]? errors;
+    private bool isTermsVisible = false;
+    private bool isAccepted = false;
+
+    private void ShowTerms() { isTermsVisible = true; StateHasChanged(); }
+    private void HideTerms() { isTermsVisible = false; StateHasChanged(); }
+
+    private async Task HandleRegistration()
+    {
+        if (!isAccepted) return;
+        errors = null;
+        var result = await AccountService.RegisterUserAsync(registerModel);
+        if (result.Succeeded) NavManager.NavigateTo("/login?registered=true");
+        else errors = result.Errors;
+    }
+}

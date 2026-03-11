@@ -1,0 +1,172 @@
+﻿@page "/login"
+@using FishCoinBlazorApp.Services
+@using FishCoinBlazorApp.Services.Models
+@using Microsoft.AspNetCore.Components.Forms
+@inject IAccountService AccountService
+@inject NavigationManager NavManager
+
+<Topbar Title="ავტორიზაცია" />
+
+<div class="auth-wrapper">
+    <div class="auth-card border shadow-sm">
+        <div class="auth-header py-3">
+            <h5 class="fw-bold mb-0">შესვლა</h5>
+            <p class="mb-0 opacity-75 fs-12">მიესალმეთ FishCoin-ს</p>
+        </div>
+
+        <div class="auth-body p-4 pt-3">
+            @* ვიყენებთ მუშა FormName-ს და მეთოდს *@
+            <EditForm Model="loginModel" OnValidSubmit="HandleLogin" FormName="loginForm" method="post">
+                <DataAnnotationsValidator />
+
+                @* ტელეფონის ნომერი *@
+                <div class="mb-3">
+                    <label class="auth-label">ტელეფონის ნომერი</label>
+                    <InputText @bind-Value="loginModel.PhoneNumber"
+                               Name="loginModel.PhoneNumber"
+                               class="form-control form-control-custom"
+                               placeholder="599 00 00 00" />
+                    <ValidationMessage For="@(() => loginModel.PhoneNumber)" class="text-danger fs-10" />
+                </div>
+
+                @* პაროლი *@
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <label class="auth-label">პაროლი</label>
+                        <a href="/forgot-password" class="fs-11 text-primary text-decoration-none fw-bold mb-1">დაგავიწყდა?</a>
+                    </div>
+                    <InputText @bind-Value="loginModel.Password"
+                               type="password"
+                               Name="loginModel.Password"
+                               class="form-control form-control-custom"
+                               placeholder="******" />
+                    <ValidationMessage For="@(() => loginModel.Password)" class="text-danger fs-10" />
+                </div>
+
+                @* დამიმახსოვრე *@
+                <div class="d-flex align-items-center mb-4 ms-1">
+                    <input type="checkbox" id="rememberMe" name="loginModel.RememberMe" value="true" checked="@loginModel.RememberMe" class="form-check-input custom-check" />
+                    <label for="rememberMe" class="ms-2 fs-13 text-secondary cursor-pointer">
+                        დამიმახსოვრე
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold rounded-3">
+                    შესვლა
+                </button>
+            </EditForm>
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger mt-3 py-2 fs-12 border-0 rounded-3 text-center">
+                    <iconify-icon icon="solar:danger-circle-bold" class="me-1 align-middle"></iconify-icon>
+                    @errorMessage
+                </div>
+            }
+        </div>
+
+        <div class="auth-footer py-2 border-top text-center">
+            <p class="mb-0 fs-12 text-secondary">არ გაქვს ანგარიში? <a href="/register" class="text-primary fw-bold text-decoration-none">რეგისტრაცია</a></p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .auth-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding-top: 40px;
+        min-height: 80vh;
+        background-color: var(--bs-body-bg);
+    }
+
+    .auth-card {
+        width: 100%;
+        max-width: 420px;
+        background-color: var(--bs-card-bg);
+        border-radius: 16px;
+        overflow: hidden;
+    }
+
+    .auth-header {
+        background-color: var(--bs-tertiary-bg);
+        text-align: center;
+        border-bottom: 1px solid var(--bs-border-color);
+    }
+
+    .auth-label {
+        font-size: 10px;
+        font-weight: 800;
+        color: var(--bs-secondary-color);
+        text-transform: uppercase;
+        margin-bottom: 4px;
+        display: block;
+    }
+
+    .form-control-custom {
+        border-radius: 10px;
+        font-size: 14px;
+        padding: 10px;
+        background-color: var(--bs-body-bg);
+        color: var(--bs-body-color);
+        border: 1.5px solid #b4bcc7;
+        transition: all 0.2s;
+    }
+
+        .form-control-custom:focus {
+            border-color: var(--bs-primary);
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+            outline: none;
+        }
+
+    .custom-check {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+
+    .cursor-pointer {
+        cursor: pointer;
+    }
+
+    [data-bs-theme="dark"] .auth-card {
+        background-color: #1a1a1a;
+    }
+
+    [data-bs-theme="dark"] .form-control-custom {
+        border-color: #444;
+    }
+</style>
+
+@code {
+    [SupplyParameterFromForm(Name = "loginForm")]
+    public LoginModel loginModel { get; set; } = new();
+
+    private string? errorMessage;
+
+    protected override void OnInitialized()
+    {
+        loginModel ??= new();
+    }
+
+    private async Task HandleLogin()
+    {
+        errorMessage = null;
+
+        if (string.IsNullOrEmpty(loginModel.PhoneNumber) || string.IsNullOrEmpty(loginModel.Password))
+        {
+            return;
+        }
+
+        var result = await AccountService.LoginUserAsync(loginModel);
+        if (result.Succeeded)
+        {
+            NavManager.NavigateTo("/", forceLoad: true);
+        }
+        else
+        {
+            errorMessage = "ტელეფონის ნომერი ან პაროლი არასწორია";
+        }
+    }
+}

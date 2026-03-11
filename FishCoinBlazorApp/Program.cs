@@ -1,8 +1,11 @@
-﻿using FishCoinBlazorApp.Components;
+﻿using Blazored.LocalStorage;
+using FishCoinBlazorApp.Components;
 using FishCoinBlazorApp.Data;
+using FishCoinBlazorApp.Entites.Customer;
 using FishCoinBlazorApp.Services;
+using FishCoinBlazorApp.Services.Models;
 using Microsoft.EntityFrameworkCore;
-using Blazored.LocalStorage;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +17,27 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContextFactory<FishCoinDbContext>(options =>
     options.UseSqlServer(connectionString));
 
+// Identity-ს კონფიგურაცია
+builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
+{
+    options.Password.RequiredLength = 6;
+    options.Password.RequireDigit = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+})
+.AddEntityFrameworkStores<FishCoinDbContext>();
+
+builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = Microsoft.AspNetCore.Identity.IdentityConstants.ApplicationScheme;
+    options.DefaultSignInScheme = Microsoft.AspNetCore.Identity.IdentityConstants.ExternalScheme;
+});
+
+// ჩვენი სერვისების რეგისტრაცია
+builder.Services.AddScoped<LoyaltyService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<ProductCategoryService>();
 builder.Services.AddScoped<CategoryService>();
@@ -32,7 +56,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseAntiforgery();
 
 app.MapStaticAssets();

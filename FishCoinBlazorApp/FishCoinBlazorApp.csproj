@@ -32,6 +32,8 @@
 
   <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.14" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.14" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.13" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.13">
       <PrivateAssets>all</PrivateAssets>
