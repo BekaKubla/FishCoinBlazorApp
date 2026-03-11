@@ -13,9 +13,6 @@ namespace FishCoinBlazorApp.Data.Configurations
             builder.Property(o => o.TotalAmountGEL)
                 .HasPrecision(18, 2);
 
-            builder.Property(o => o.UserId)
-                .IsRequired();
-
             // Enum-ების კონვერტაცია
             builder.Property(o => o.Status)
                 .HasConversion<string>()

@@ -25,8 +25,8 @@ namespace FishCoinBlazorApp.Entites.Product
 
         // კავშირი პროდუქტებთან
         public List<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
-        public string UserId { get; set; } // მომხმარებლის ID (IdentityUser-დან)
-        public ApplicationUser User { get; set; }
+        public string? UserId { get; set; }
+        public ApplicationUser? User { get; set; }
     }
 
     public enum OrderStatus
