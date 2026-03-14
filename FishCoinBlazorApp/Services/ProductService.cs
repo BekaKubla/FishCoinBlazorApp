@@ -99,32 +99,35 @@ namespace FishCoinBlazorApp.Services
         public async Task<List<ProductDetailModel>> GetProductByCategory(int id)
         {
             var result = new List<ProductDetailModel>();
+            var rnd = new Random();
             var product = await _context.Products
                 .Include(p => p.ProductCategory)
+                .ThenInclude(pc => pc.SubCategory)
+                .ThenInclude(sc => sc.ProductCategories)
                 .ThenInclude(pc => pc.Products)
                 .SingleOrDefaultAsync(p => p.Id == id);
             if (product != null)
             {
-                var productCategory = product.ProductCategory;
-                if (productCategory != null && productCategory.Products != null)
+                var productSubCategory = product.ProductCategory.SubCategory;
+                if (productSubCategory != null)
                 {
-                    foreach (var item in product.ProductCategory.Products.Where(p => p.Id != id).Take(4))
-                    {
-                        result.Add(new ProductDetailModel
-                        {
-                            StockQuantity = item.StockQuantity,
-                            Description = item.Description,
-                            Id = item.Id,
-                            ImageUrl = item.ImageUrl,
-                            Name = item.Name,
-                            PointsReward = item.PointsReward,
-                            Price = item.Price,
-                            TagNumber = item.TagNumber,
-                            IsNew = item.ArrivalDate.AddDays(15) >= DateTime.Now,
-                            DiscountPrecentage = item.DiscountPrecentage,
-                            DiscountPrice = item.DiscountPrice
-                        });
-                    }
+                    productSubCategory.ProductCategories!
+                         .SelectMany(pc => pc.Products!)
+                         .Where(p => p.Id != id)
+                         .Take(4).OrderBy(x => rnd.Next()).ToList().ForEach(x => result.Add(new ProductDetailModel
+                         {
+                             StockQuantity = x.StockQuantity,
+                             Description = x.Description,
+                             Id = x.Id,
+                             ImageUrl = x.ImageUrl,
+                             Name = x.Name,
+                             PointsReward = x.PointsReward,
+                             Price = x.Price,
+                             TagNumber = x.TagNumber,
+                             IsNew = x.ArrivalDate.AddDays(15) >= DateTime.Now,
+                             DiscountPrecentage = x.DiscountPrecentage,
+                             DiscountPrice = x.DiscountPrice
+                         }));
                 }
             }
             return result;
