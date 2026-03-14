@@ -4,6 +4,7 @@
 @using FishCoinBlazorApp.Services.Models
 @inject ProductService ProductService
 @inject CartService CartService
+@inject WhatsAppService WhatsAppService
 @inject IJSRuntime JsRuntime;
 
 
@@ -59,6 +60,15 @@ else
                                 <i class="bx bx-shopping-bag fs-20"></i>
                                 @(productDetail.StockQuantity >= 1 ? "ყიდვა" : "მიუწვდომელია")
                             </button>
+                        </div>
+                        @* --- WHATSAPP ღილაკი --- *@
+                        <div class="col-lg-12 mt-2">
+                            <a href="@WhatsAppService.GetProductOrderUrl(productDetail.Name, (productDetail.DiscountPrecentage.HasValue ? productDetail.DiscountPrice!.Value : productDetail.Price), productDetail.TagNumber)"
+                               target="_blank"
+                               class="btn btn-outline-success d-flex align-items-center justify-content-center gap-2 w-100 py-2 shadow-sm">
+                                <i class="bx bxl-whatsapp fs-24"></i>
+                                <span class="fw-bold">შეუკვეთე WhatsApp-ით</span>
+                            </a>
                         </div>
                     </div>
                 </div>
