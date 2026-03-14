@@ -3,25 +3,29 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FishCoin</title>
-    <meta name="description" content="სათეევზაო" />
-    <meta name="author" content="Techzaa" />
+
+    @* სტანდარტული Title, რომელიც შეიცვლება გვერდების მიხედვით *@
+    <title>FishCoin - სათევზაო მაღაზია</title>
+
+    @* ზოგადი აღწერა - ამასაც გვერდები გადაფარავს *@
+    <meta name="description" content="FishCoin - საუკეთესო სათევზაო და სამონადირეო აღჭურვილობა საქართველოში. სპინინგი, კარპი, ფიდერი და სხვა." />
+    <meta name="keywords" content="თევზაობა, ანკესი, კოჭა, სატყუარა, საქართველო, სპინინგი" />
+
+    <meta name="author" content="Beka" /> @* აქ შენი სახელი ჯობია *@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
     <link rel="shortcut icon" href="/images/favicon.ico">
-
     <base href="/" />
 
+    @* CSS ფაილები *@
     <link href="/css/vendor.min.css" rel="stylesheet" type="text/css" />
-
     <link href="/css/icons.min.css" rel="stylesheet" type="text/css" />
-
     <link href="/css/app.min.css" rel="stylesheet" type="text/css" />
 
     <script src="/js/config.js"></script>
 
     <ImportMap />
-    <HeadOutlet />
+    <HeadOutlet /> @* ეს კრიტიკულია SEO-სთვის *@
 </head>
 <body>
     <Routes />

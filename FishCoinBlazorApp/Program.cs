@@ -48,6 +48,7 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<WhatsAppService>();
 builder.Services.AddScoped<SubCategoryService>();
 
+builder.Services.AddControllers();
 builder.Services.AddBlazoredLocalStorage();
 var app = builder.Build();
 
@@ -93,6 +94,7 @@ app.MapPost("Account/Logout", async (SignInManager<ApplicationUser> signInManage
 });
 #endregion
 
+app.MapControllers();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
