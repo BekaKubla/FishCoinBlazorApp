@@ -73,6 +73,7 @@
             </div>
 
             <div class="card-footer border-top-0 bg-transparent pb-3">
+                @* გასუფთავება - ლურჯი ბექგრაუნდით *@
                 <button class="btn btn-primary btn-sm w-100 rounded-3 shadow-sm fw-bold d-flex align-items-center justify-content-center gap-2 py-2" @onclick="ResetFilters">
                     <i class='bx bx-refresh fs-18'></i> გასუფთავება
                 </button>
@@ -81,12 +82,14 @@
     </div>
 
     <div class="col-lg-9 px-2">
+        @* პროდუქტების სტატისტიკა და გამოკვეთილი Dropdown *@
         <div class="d-flex justify-content-between align-items-center mb-4 p-3 rounded-4 shadow-sm custom-bg border">
             <div>
                 <p class="mb-0 opacity-75 fs-14">ნაჩვენებია <span class="fw-bold text-reset">@totalCount</span> პროდუქტი</p>
             </div>
-            <select class="form-select form-select-sm w-auto border-0 bg-transparent shadow-none cursor-pointer fw-bold">
+            <select class="form-select form-select-sm w-auto border-0 custom-bg-alt shadow-sm cursor-pointer fw-bold rounded-3 px-3 py-2" style="min-width: 160px;">
                 <option>უახლესი</option>
+                <option>ფასდაკლებული</option>
                 <option>ფასი: კლებადობით</option>
                 <option>ფასი: ზრდადობით</option>
             </select>
@@ -186,10 +189,6 @@
         background-color: var(--bs-body-bg) !important;
     }
 
-    .custom-bg-alt {
-        background-color: var(--bs-tertiary-bg) !important;
-    }
-
     .cursor-pointer {
         cursor: pointer;
     }
@@ -200,6 +199,10 @@
 
     .fs-12 {
         font-size: 12px;
+    }
+
+    .fs-13 {
+        font-size: 13px;
     }
 
     .fs-14 {
@@ -260,6 +263,7 @@
     {
         if ((bool)(isChecked ?? false)) selectedSubCategoryIds.Add(subId);
         else selectedSubCategoryIds.Remove(subId);
+
         productCategories = new();
         foreach (var subIdItem in selectedSubCategoryIds)
         {
@@ -278,13 +282,16 @@
         await LoadPage(1);
     }
 
+    // Paging-ის მთავარი მეთოდი
     private async Task LoadPage(int page)
     {
         currentPage = page;
         var result = await ProductService.GetPagedProductsAsync(
             currentPage, pageSize,
-            selectedProductCategoryIds.Any() ? selectedProductCategoryIds : selectedSubCategoryIds,
+            selectedProductCategoryIds,
+            selectedSubCategoryIds,
             searchTerm, categoryId);
+
         products = result.Products;
         totalCount = result.TotalCount;
         StateHasChanged();

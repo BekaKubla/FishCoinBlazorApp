@@ -16,25 +16,25 @@ namespace FishCoinBlazorApp.Services
             _context = context;
         }
 
-        // ყველა პროდუქტის წამოღება
-        public async Task<List<Product>> GetAllProductsAsync()
-        {
-            return await _context.Products.ToListAsync();
-        }
-
-        public async Task<(List<Product> Products, int TotalCount)> GetPagedProductsAsync(int page, int pageSize, List<int?>? productCategoryIds = null, string? search = null, int? subCategoryId = null)
+        public async Task<(List<Product> Products, int TotalCount)> GetPagedProductsAsync(int page, int pageSize, List<int?>? productCategoryIds = null, List<int?>? subCategoryIds = null, string? search = null, int? categoryId = null)
         {
             var query = _context.Products.AsQueryable();
 
-            if (subCategoryId.HasValue)
+            if (categoryId.HasValue)
             {
-                query = query.Where(p => p.ProductCategory.SubCategoryId == subCategoryId);
+                query = query.Where(p => p.ProductCategory.SubCategory.CategoryId == categoryId);
+            }
+
+            // თუ ქვეკატეგორიები არჩეულია, ვფილტრავთ ბაზის დონეზე
+            if (subCategoryIds != null && subCategoryIds.Any())
+            {
+                query = query.Where(p => subCategoryIds.Contains(p.ProductCategory.SubCategoryId));
             }
 
             // თუ კატეგორიები არჩეულია, ვფილტრავთ ბაზის დონეზე
             if (productCategoryIds != null && productCategoryIds.Any())
             {
-                query = query.Where(p => productCategoryIds.Contains(p.ProductCategoryId));
+                query = query.Where(p => productCategoryIds.Contains(p.ProductCategory.Id));
             }
 
             // ძიების ფილტრი (ყოველ ასოზე აქ შემოვა)
