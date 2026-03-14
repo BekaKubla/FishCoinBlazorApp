@@ -19,7 +19,7 @@ namespace FishCoinBlazorApp.Data.Configurations
 
             builder.HasData(
                 new Category { Id = 1, CategoryName = "სათევზაო" },
-                new Category { Id = 2, CategoryName = "სანადირო" },
+                //new Category { Id = 2, CategoryName = "სანადირო" },
                 new Category { Id = 3, CategoryName = "საჩუქარი" }
             );
         }
