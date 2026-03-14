@@ -8,7 +8,6 @@ namespace FishCoinBlazorApp.Helpers
         {
             if (string.IsNullOrEmpty(value)) return "";
 
-            // ქართული ასოების რუკა
             var geoToLat = new Dictionary<char, string>
         {
             {'ა',"a"}, {'ბ',"b"}, {'გ',"g"}, {'დ',"d"}, {'ე',"e"}, {'ვ',"v"}, {'ზ',"z"}, {'თ',"t"}, {'ი',"i"}, {'კ',"k"},
@@ -24,7 +23,7 @@ namespace FishCoinBlazorApp.Helpers
             {
                 if (geoToLat.ContainsKey(c)) result.Append(geoToLat[c]);
                 else if (char.IsLetterOrDigit(c)) result.Append(c);
-                else if (c == ' ') result.Append('-'); // სფეისი იცვლება ტირეთი
+                else if (c == ' ') result.Append('-');
             }
 
             // ვასუფთავებთ ზედმეტ ტირეებს
