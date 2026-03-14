@@ -46,6 +46,7 @@ builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<CartService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<WhatsAppService>();
+builder.Services.AddScoped<SubCategoryService>();
 
 builder.Services.AddBlazoredLocalStorage();
 var app = builder.Build();

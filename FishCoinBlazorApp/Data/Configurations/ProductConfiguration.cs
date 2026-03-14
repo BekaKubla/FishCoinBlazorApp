@@ -22,7 +22,7 @@ namespace FishCoinBlazorApp.Data.Configurations
 
             // კავშირი კატეგორიასთან
             builder.HasOne(p => p.ProductCategory)
-                .WithMany() // თუ ProductCategory-ში არ გაქვს List<Product>
+                .WithMany(p=>p.Products)
                 .HasForeignKey(p => p.ProductCategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
         }

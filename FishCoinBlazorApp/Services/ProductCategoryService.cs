@@ -14,12 +14,12 @@ namespace FishCoinBlazorApp.Services
         }
 
         // ყველა პროდუქტის წამოღება
-        public async Task<List<ProductCategory>> GetAllProductCategoriesAsync(int? categoryId = null)
+        public async Task<List<ProductCategory>> GetAllProductCategoriesAsync(int? subCategoryId = null)
         {
-            var result = await _context.ProductCategories.ToListAsync();
-            if (categoryId.HasValue)
+            var result = await _context.ProductCategories.Include(pc => pc.SubCategory).ToListAsync();
+            if (subCategoryId.HasValue)
             {
-                result = result.Where(pc => pc.CategoryId == categoryId.Value).ToList();
+                result = result.Where(pc => pc.SubCategoryId == subCategoryId.Value).ToList();
             }
             return result;
         }

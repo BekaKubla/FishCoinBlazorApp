@@ -4,6 +4,7 @@ using FishCoinBlazorApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FishCoinBlazorApp.Migrations
 {
     [DbContext(typeof(FishCoinDbContext))]
-    partial class FishCoinDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260314091058_FixProductCategoryRelation")]
+    partial class FixProductCategoryRelation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -159,11 +162,6 @@ namespace FishCoinBlazorApp.Migrations
                         {
                             Id = 2,
                             CategoryName = "სანადირო"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CategoryName = "საჩუქარი"
                         });
                 });
 
@@ -175,59 +173,10 @@ namespace FishCoinBlazorApp.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ProductCategoryName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("SubCategoryId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SubCategoryId");
-
-                    b.ToTable("ProductCategories", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            ProductCategoryName = "ჯოხები",
-                            SubCategoryId = 1
-                        },
-                        new
-                        {
-                            Id = 2,
-                            ProductCategoryName = "კოჭები",
-                            SubCategoryId = 1
-                        },
-                        new
-                        {
-                            Id = 3,
-                            ProductCategoryName = "სატყუარები",
-                            SubCategoryId = 1
-                        },
-                        new
-                        {
-                            Id = 4,
-                            ProductCategoryName = "აქსესუარები",
-                            SubCategoryId = 1
-                        });
-                });
-
-            modelBuilder.Entity("FishCoinBlazorApp.Entites.Product.Category.SubCategory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
-                    b.Property<string>("SubCategoryName")
+                    b.Property<string>("ProductCategoryName")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -236,26 +185,32 @@ namespace FishCoinBlazorApp.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("SubCategories", (string)null);
+                    b.ToTable("ProductCategories", (string)null);
 
                     b.HasData(
                         new
                         {
                             Id = 1,
                             CategoryId = 1,
-                            SubCategoryName = "სპინინგი"
+                            ProductCategoryName = "ჯოხები"
                         },
                         new
                         {
                             Id = 2,
                             CategoryId = 1,
-                            SubCategoryName = "კარპი"
+                            ProductCategoryName = "კოჭები"
                         },
                         new
                         {
                             Id = 3,
                             CategoryId = 1,
-                            SubCategoryName = "ფიდერი"
+                            ProductCategoryName = "სატყუარები"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CategoryId = 1,
+                            ProductCategoryName = "აქსესუარები"
                         });
                 });
 
@@ -561,19 +516,8 @@ namespace FishCoinBlazorApp.Migrations
 
             modelBuilder.Entity("FishCoinBlazorApp.Entites.Product.Category.ProductCategory", b =>
                 {
-                    b.HasOne("FishCoinBlazorApp.Entites.Product.Category.SubCategory", "SubCategory")
-                        .WithMany("ProductCategories")
-                        .HasForeignKey("SubCategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("SubCategory");
-                });
-
-            modelBuilder.Entity("FishCoinBlazorApp.Entites.Product.Category.SubCategory", b =>
-                {
                     b.HasOne("FishCoinBlazorApp.Entites.Product.Category.Category", "Category")
-                        .WithMany("SubCategories")
+                        .WithMany("ProductCategories")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -682,17 +626,12 @@ namespace FishCoinBlazorApp.Migrations
 
             modelBuilder.Entity("FishCoinBlazorApp.Entites.Product.Category.Category", b =>
                 {
-                    b.Navigation("SubCategories");
+                    b.Navigation("ProductCategories");
                 });
 
             modelBuilder.Entity("FishCoinBlazorApp.Entites.Product.Category.ProductCategory", b =>
                 {
                     b.Navigation("Products");
-                });
-
-            modelBuilder.Entity("FishCoinBlazorApp.Entites.Product.Category.SubCategory", b =>
-                {
-                    b.Navigation("ProductCategories");
                 });
 
             modelBuilder.Entity("FishCoinBlazorApp.Entites.Product.Order", b =>

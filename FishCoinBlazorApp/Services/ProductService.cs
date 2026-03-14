@@ -22,13 +22,13 @@ namespace FishCoinBlazorApp.Services
             return await _context.Products.ToListAsync();
         }
 
-        public async Task<(List<Product> Products, int TotalCount)> GetPagedProductsAsync(int page, int pageSize, List<int?>? productCategoryIds = null, string? search = null, int? categoryId = null)
+        public async Task<(List<Product> Products, int TotalCount)> GetPagedProductsAsync(int page, int pageSize, List<int?>? productCategoryIds = null, string? search = null, int? subCategoryId = null)
         {
             var query = _context.Products.AsQueryable();
 
-            if (categoryId.HasValue)
+            if (subCategoryId.HasValue)
             {
-                query = query.Where(p => p.ProductCategory.Category.Id == categoryId);
+                query = query.Where(p => p.ProductCategory.SubCategoryId == subCategoryId);
             }
 
             // თუ კატეგორიები არჩეულია, ვფილტრავთ ბაზის დონეზე

@@ -6,7 +6,7 @@
         public string? ProductCategoryName { get; set; }
 
         public virtual IEnumerable<Product>? Products { get; set; }
-        public int CategoryId { get; set; }
-        public virtual Category Category { get; set; }
+        public int SubCategoryId { get; set; } // ახლა მიბმულია "სპინინგი"-ზე
+        public virtual SubCategory SubCategory { get; set; }
     }
 }

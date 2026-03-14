@@ -17,13 +17,13 @@ namespace FishCoinBlazorApp.Data.Configurations
                    .IsRequired()
                    .HasMaxLength(100);
 
-            builder.HasOne(x => x.Category).WithMany(x => x.ProductCategories).HasForeignKey(x => x.CategoryId);
+            builder.HasOne(x => x.SubCategory).WithMany(x => x.ProductCategories).HasForeignKey(x => x.SubCategoryId);
 
             builder.HasData(
-                new ProductCategory { Id = 1, ProductCategoryName = "ჯოხები", CategoryId = 1 },
-                new ProductCategory { Id = 2, ProductCategoryName = "კოჭები", CategoryId = 1 },
-                new ProductCategory { Id = 3, ProductCategoryName = "სატყუარები", CategoryId = 1 },
-                new ProductCategory { Id = 4, ProductCategoryName = "აქსესუარები", CategoryId = 1 }
+                new ProductCategory { Id = 1, ProductCategoryName = "ჯოხები", SubCategoryId = 1 },
+                new ProductCategory { Id = 2, ProductCategoryName = "კოჭები", SubCategoryId = 1 },
+                new ProductCategory { Id = 3, ProductCategoryName = "სატყუარები", SubCategoryId = 1 },
+                new ProductCategory { Id = 4, ProductCategoryName = "აქსესუარები", SubCategoryId = 1 }
             );
         }
     }
