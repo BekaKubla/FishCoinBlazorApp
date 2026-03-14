@@ -24,7 +24,7 @@ namespace FishCoinBlazorApp.Controllers
             var baseUrl = "https://fishcoin.ge";
 
             // წამოვიღოთ ID და Name, რომ Slug-ები დავაგენერიროთ
-            var products = await _context.Products
+            var products = await _context.Products.AsNoTracking()
                 .Select(p => new { p.Id, p.Name })
                 .ToListAsync();
 
