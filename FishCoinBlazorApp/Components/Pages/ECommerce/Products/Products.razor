@@ -30,10 +30,32 @@
                 </a>
                 <div id="categories" class="collapse show">
                     <div class="categories-list d-flex flex-column gap-2 mt-2">
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" id="all-categories" checked>
-                            <label class="form-check-label" for="all-categories">ყველა</label>
-                        </div>
+                        @if (productCategories == null)
+                        {
+                            <p>კატეგორიები იტვირთება...</p>
+                        }
+                        else
+                        {
+                            @foreach (var item in productCategories)
+                            {
+                                <div class="form-check">
+                                    @* id-ს ვამატებთ item.Id-ს რომ უნიკალური იყოს *@
+                                    <input type="checkbox" class="form-check-input" id="cat-@item.Id"
+                                           @onchange="(e) => OnCategorySelected(item.Id, e.Value)">
+                                    <label class="form-check-label" for="cat-@item.Id">@item.ProductCategoryName</label>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="card-body border-light">
+                <a href="#" class="btn-link d-flex align-items-center text-dark p-2 rounded fw-medium fs-16 mb-0" data-bs-toggle="collapse" data-bs-target="#categories" aria-expanded="false" aria-controls="other">
+                    ქვე-კატეგორია
+                    <i class='bx bx-chevron-down ms-auto fs-20'></i>
+                </a>
+                <div id="categories" class="collapse show">
+                    <div class="categories-list d-flex flex-column gap-2 mt-2">
                         @if (productCategories == null)
                         {
                             <p>კატეგორიები იტვირთება...</p>

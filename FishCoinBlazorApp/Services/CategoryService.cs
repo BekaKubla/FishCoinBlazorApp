@@ -17,7 +17,10 @@ namespace FishCoinBlazorApp.Services
         {
             // ყოველ ჯერზე ვქმნით ახალ კონტექსტს 'using'-ით
             using var context = await _factory.CreateDbContextAsync();
-            return await context.Categories.ToListAsync();
+            return await context.Categories
+                .Include(c => c.SubCategories!)
+                .ThenInclude(sc => sc.ProductCategories)
+                .ToListAsync();
         }
     }
 }
