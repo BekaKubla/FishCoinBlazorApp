@@ -16,7 +16,7 @@ namespace FishCoinBlazorApp.Services
             _context = context;
         }
 
-        public async Task<(List<Product> Products, int TotalCount)> GetPagedProductsAsync(int page, int pageSize, List<int?>? productCategoryIds = null, List<int?>? subCategoryIds = null, string? search = null, int? categoryId = null)
+        public async Task<(List<Product> Products, int TotalCount)> GetPagedProductsAsync(int page, int pageSize, List<int?>? productCategoryIds = null, List<int?>? subCategoryIds = null, string? search = null, int? categoryId = null, string? sortBy = null)
         {
             var query = _context.Products.AsQueryable();
 
@@ -43,6 +43,22 @@ namespace FishCoinBlazorApp.Services
                 // ეძებს სახელსა და აღწერაში (Case-insensitive მუშაობს SQL-ზე ჩვეულებრივ)
                 query = query.Where(p => p.Name.Contains(search) || (p.Description != null && p.Description.Contains(search)));
             }
+
+            query = sortBy switch
+            {
+                // თუ აქვს ფასდაკლება, ვიყენებთ ფორმულას, თუ არა - ჩვეულებრივ ფასს
+                "price_asc" => query.OrderBy(p => p.DiscountPrecentage > 0
+                    ? (p.Price - (p.Price * p.DiscountPrecentage / 100))
+                    : p.Price),
+
+                "price_desc" => query.OrderByDescending(p => p.DiscountPrecentage > 0
+                    ? (p.Price - (p.Price * p.DiscountPrecentage / 100))
+                    : p.Price),
+
+                "discount" => query.OrderByDescending(p => p.DiscountPrecentage),
+
+                "newest" or _ => query.OrderByDescending(p => p.CreateDate)
+            };
 
             // 1. გავიგოთ ჯამური რაოდენობა
             var totalCount = await query.CountAsync();
