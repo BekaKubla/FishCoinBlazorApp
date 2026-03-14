@@ -36,27 +36,27 @@ else
 {
     <HeadContent>
         @* აღწერა შემოკლებული 160 სიმბოლომდე *@
-        <meta name="description" content="@(productDetail!.Description?.Length > 160 ? productDetail.Description.Substring(0, 157) + "..." : productDetail.Description)" />
+        <meta name="description" content="@(productDetail?.Description?.Length > 160 ? productDetail.Description.Substring(0, 157) + "..." : productDetail?.Description)" />
 
         @* Open Graph (Social Media) *@
-        <meta property="og:title" content="@productDetail.Name" />
-        <meta property="og:description" content="@productDetail.Description" />
-        <meta property="og:image" content="@productDetail.ImageUrl" />
+        <meta property="og:title" content="@productDetail?.Name" />
+        <meta property="og:description" content="@productDetail?.Description" />
+        <meta property="og:image" content="@($"{NavigationManager.BaseUri}{productDetail?.ImageUrl?.TrimStart('/')}")" />        
         <meta property="og:type" content="product" /> @* დავტოვოთ product *@
         <meta property="og:url" content="@NavigationManager.Uri" />
 
         @* ფასის ტეგები (სტანდარტული დასახელებებით) *@
-        <meta property="product:price:amount" content="@productDetail.Price" />
+        <meta property="product:price:amount" content="@productDetail?.Price" />
         <meta property="product:price:currency" content="GEL" />
-        <meta property="product:availability" content="@(productDetail.StockQuantity > 0 ? "instock" : "oos")" />
+        <meta property="product:availability" content="@(productDetail?.StockQuantity > 0 ? "instock" : "oos")" />
 
         <script type="application/ld+json">
             {
               "@@context": "https://schema.org/",
               "@@type": "Product",
-              "name": "@productDetail.Name",
-              "image": "@productDetail.ImageUrl",
-              "description": "@productDetail.Description",
+              "name": "@productDetail?.Name",
+              "image": "@productDetail?.ImageUrl",
+              "description": "@productDetail?.Description",
               "brand": {
                 "@@type": "Brand",
                 "name": "FishCoin"
@@ -65,8 +65,8 @@ else
                 "@@type": "Offer",
                 "url": "@NavigationManager.Uri",
                 "priceCurrency": "GEL",
-                "price": "@productDetail.Price",
-                "availability": "https://schema.org/@(productDetail.StockQuantity > 0 ? "InStock" : "OutOfStock")",
+                "price": "@productDetail?.Price",
+                "availability": "https://schema.org/@(productDetail?.StockQuantity > 0 ? "InStock" : "OutOfStock")",
                 "itemCondition": "https://schema.org/NewCondition"
               }
             }
