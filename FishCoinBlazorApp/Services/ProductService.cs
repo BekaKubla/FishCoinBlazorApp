@@ -1,8 +1,10 @@
-﻿using FishCoinBlazorApp.Data;
+﻿using FishCoinBlazorApp.Components.Pages.ECommerce.Products;
+using FishCoinBlazorApp.Data;
 using FishCoinBlazorApp.Entites.Product;
 using FishCoinBlazorApp.Entites.Product.Category;
 using FishCoinBlazorApp.Services.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using System.Linq;
 
 namespace FishCoinBlazorApp.Services
@@ -16,7 +18,14 @@ namespace FishCoinBlazorApp.Services
             _context = context;
         }
 
-        public async Task<(List<Product> Products, int TotalCount)> GetPagedProductsAsync(int page, int pageSize, List<int?>? productCategoryIds = null, List<int?>? subCategoryIds = null, string? search = null, int? categoryId = null, string? sortBy = null)
+        public async Task<(List<Product> Products, int TotalCount)> GetPagedProductsAsync(
+            int page,
+            int pageSize,
+            List<int?>? productCategoryIds = null,
+            List<int?>? subCategoryIds = null,
+            string? search = null,
+            int? categoryId = null,
+            string? sortBy = null)
         {
             var query = _context.Products.AsQueryable();
 
@@ -131,6 +140,45 @@ namespace FishCoinBlazorApp.Services
                 }
             }
             return result;
+        }
+
+        public async Task<(List<Product> Products, int TotalCount)> GetRedeemableProducts(
+            int page,
+            int pageSize,
+            string? search = null,
+            string? sortBy = null)
+        {
+            var query = _context.Products.AsQueryable();
+            //წამოვიღოთ მხოლოდ ის პროდუქტები, რომლებიც ქულებით შეძენად არის ხელმისაწვდომი
+            query = query.Where(x => x.IsRedeemable == true && x.PointsPrice.HasValue);
+
+            // ძიების ფილტრი (ყოველ ასოზე აქ შემოვა)
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                // ეძებს სახელსა და აღწერაში (Case-insensitive მუშაობს SQL-ზე ჩვეულებრივ)
+                query = query.Where(p => p.Name.Contains(search) || (p.Description != null && p.Description.Contains(search)));
+            }
+
+            query = sortBy switch
+            {
+                // თუ აქვს ფასდაკლება, ვიყენებთ ფორმულას, თუ არა - ჩვეულებრივ ფასს
+                "price_asc" => query.OrderBy(p => p.PointsPrice),
+
+                "price_desc" => query.OrderByDescending(p => p.PointsPrice),
+
+                "newest" or _ => query.OrderByDescending(p => p.CreateDate)
+            };
+
+            // 1. გავიგოთ ჯამური რაოდენობა
+            var totalCount = await query.CountAsync();
+
+            // 2. წამოვიღოთ მხოლოდ საჭირო ნაჭერი (Pagination)
+            var products = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (products, totalCount);
         }
     }
 }

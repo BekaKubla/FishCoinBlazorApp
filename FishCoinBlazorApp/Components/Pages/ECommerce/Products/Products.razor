@@ -42,7 +42,9 @@
                                 <input type="checkbox" class="form-check-input shadow-none cursor-pointer" id="sub-@sub.Id"
                                        checked="@selectedSubCategoryIds.Contains(sub.Id)"
                                        @onchange="(e) => OnSubCategorySelected(sub.Id, e.Value)">
-                                <label class="form-check-label cursor-pointer fs-14 @(selectedSubCategoryIds.Contains(sub.Id) ? "fw-bold text-primary" : "")" for="sub-@sub.Id">
+
+                                <label class="form-check-label cursor-pointer fs-14 @(selectedSubCategoryIds.Contains(sub.Id) ? "fw-bold text-primary" : "")"
+                                       for="sub-@sub.Id">
                                     @sub.SubCategoryName
                                 </label>
                             </div>
@@ -265,17 +267,27 @@
 
     private async Task OnSubCategorySelected(int subId, object? isChecked)
     {
-        if ((bool)(isChecked ?? false)) selectedSubCategoryIds.Add(subId);
-        else selectedSubCategoryIds.Remove(subId);
+        bool isSelected = (bool)(isChecked ?? false);
+
+        selectedSubCategoryIds.Clear();
+
+        if (isSelected)
+        {
+            selectedSubCategoryIds.Add(subId);
+        }
 
         productCategories = new();
-        foreach (var subIdItem in selectedSubCategoryIds)
+
+        if (selectedSubCategoryIds.Any())
         {
-            var pCats = await ProductCategoryService.GetAllProductCategoriesAsync(subIdItem);
+            var currentSubId = selectedSubCategoryIds.First();
+            var pCats = await ProductCategoryService.GetAllProductCategoriesAsync(currentSubId);
             productCategories.AddRange(pCats);
         }
+
         selectedProductCategoryIds = selectedProductCategoryIds
             .Where(id => productCategories.Any(pc => pc.Id == id)).ToList();
+
         await LoadPage(1);
     }
 

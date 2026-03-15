@@ -18,10 +18,8 @@ namespace FishCoinBlazorApp.Entites.Product
         public int PointsReward { get; set; } // რამდენი ქულა დაერიცხება ყიდვისას (მაგ: 5%)
 
         // ნივთის ფასი ქულებში (რამდენ ქულად შეუძლია მომხმარებელს მისი წაღება)
-        // ავტომატური Property, რომელიც აბრუნებს ფასი * 10
-        public int PointsPrice => (int)(Price * 10);
-
-        public bool IsRedeemable { get; set; } // შეიძლება თუ არა ქულებით ყიდვა
+        public int? PointsPrice { get; set; } // ფასი ქულებში (თუ null, მაშინ არ იყიდება ქულებით)
+        public bool IsRedeemable { get; set; }
 
         public int StockQuantity { get; set; }
         public string? ImageUrl { get; set; }
