@@ -29,6 +29,13 @@ namespace FishCoinBlazorApp.Services
         {
             var query = _context.Products.AsQueryable();
 
+            if ((subCategoryIds != null && subCategoryIds.Count != 0 && subCategoryIds.Contains(6))
+                || (categoryId.HasValue && categoryId == 3))
+            {
+                var redeemableProducts = await GetRedeemableProducts(page, pageSize, search, sortBy);
+                return redeemableProducts;
+            }
+
             if (categoryId.HasValue)
             {
                 query = query.Where(p => p.ProductCategory.SubCategory.CategoryId == categoryId);
