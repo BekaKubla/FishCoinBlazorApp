@@ -102,13 +102,14 @@ else
                         </div>
                         <div class="col-lg-6">
                             <button class="btn @(productDetail.StockQuantity >= 1 ? "btn-dark" : "btn-secondary") d-flex align-items-center justify-content-center gap-2 w-100 py-2"
-                                    disabled="@(productDetail.StockQuantity < 1)">
+                                    disabled="@(productDetail.StockQuantity < 1)"
+                                    @onclick="BuyNow">
                                 <i class="bx bx-shopping-bag fs-20"></i>
                                 @(productDetail.StockQuantity >= 1 ? "ყიდვა" : "მიუწვდომელია")
                             </button>
                         </div>
                         <div class="col-lg-12 mt-2">
-                            <a href="@WhatsAppService.GetProductOrderUrl(productDetail.Name, (productDetail.DiscountPrecentage.HasValue ? productDetail.DiscountPrice!.Value : productDetail.Price), productDetail.TagNumber)"
+                            <a href="@WhatsAppService.GetProductOrderUrl(productDetail.Name, (productDetail.DiscountPrecentage.HasValue ? productDetail.DiscountPrice!.Value : productDetail.Price), productDetail.TagNumber, selectedQuantity)"
                                target="_blank"
                                class="btn btn-outline-success d-flex align-items-center justify-content-center gap-2 w-100 py-2 shadow-sm">
                                 <i class="bx bxl-whatsapp fs-24"></i>
@@ -159,15 +160,23 @@ else
                     <div class="quantity mt-4">
                         <h5 class="text-dark fw-medium">რაოდენობა :</h5>
                         <div class="input-step border p-1 mt-2 rounded d-inline-flex">
-                            <button type="button" class="minus btn btn-sm btn-light border-0">-</button>
+                            @* მინუს ღილაკი *@
+                            <button type="button" class="minus btn btn-sm btn-light border-0"
+                                    @onclick="DecreaseQuantity">
+                                -
+                            </button>
+
                             <input type="number"
                                    class="text-center border-0 bg-transparent"
-                                   value="@(productDetail.StockQuantity == 0 ? 0 : 1)"
-                                   min="@(productDetail.StockQuantity == 0 ? 0 : 1)"
-                                   max="@productDetail.StockQuantity"
-                                   style="width: 50px;"
-                                   disabled="disabled" />
-                            <button type="button" class="plus btn btn-sm btn-light border-0">+</button>
+                                   @bind="selectedQuantity"
+                                   readonly
+                                   style="width: 50px;" />
+
+                            @* პლუს ღილაკი *@
+                            <button type="button" class="plus btn btn-sm btn-light border-0"
+                                    @onclick="IncreaseQuantity">
+                                +
+                            </button>
                         </div>
                     </div>
 
@@ -278,10 +287,11 @@ else
     private bool showToast = false;
     private bool isNotFound = false;
     private List<ProductDetailModel>? relatedProducts;
+    private int selectedQuantity = 1;
 
     [Parameter]
     public int Id { get; set; }
-    [Parameter] 
+    [Parameter]
     public string? Slug { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -331,12 +341,42 @@ else
     {
         if (productDetail != null)
         {
-            await CartService.AddToCart(productDetail, 1);
+            await CartService.AddToCart(productDetail, selectedQuantity);
             showToast = true;
             StateHasChanged();
             await Task.Delay(3000);
             showToast = false;
             StateHasChanged();
+        }
+    }
+
+    private async Task BuyNow()
+    {
+        if (productDetail != null && productDetail.StockQuantity >= 1)
+        {
+            // ჯერ ვშლით არსებულ მონაცემებს
+            await CartService.ClearCart();
+            // ჯერ ვამატებთ კალათაში
+            await CartService.AddToCart(productDetail, selectedQuantity);
+
+            // გადავდივართ Checkout გვერდზე
+            NavigationManager.NavigateTo("/checkout");
+        }
+    }
+
+    private void IncreaseQuantity()
+    {
+        if (productDetail != null && selectedQuantity < productDetail.StockQuantity)
+        {
+            selectedQuantity++;
+        }
+    }
+
+    private void DecreaseQuantity()
+    {
+        if (selectedQuantity > 1)
+        {
+            selectedQuantity--;
         }
     }
 }

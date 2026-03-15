@@ -7,13 +7,14 @@ namespace FishCoinBlazorApp.Services
         // მნიშვნელოვანია: ნომერი უნდა იყოს მხოლოდ ციფრები, + ნიშნის გარეშე
         private readonly string _myPhoneNumber = "995551082944";
 
-        public string GetProductOrderUrl(string productName, decimal price, string? productNumber)
+        public string GetProductOrderUrl(string productName, decimal price, string? productNumber, int? quantity)
         {
             // ტექსტი ავაწყოთ ერთ ცვლადად
-            string text = $"გამარჯობა, მაინტერესებს ეს პროდუქტი:\n" +
+            string text = $"გამარჯობა, მაინტერესებს ეს პროდუქტი ({productNumber}):\n" +
                           $"დასახელება: {productName}\n" +
-                          $"ფასი: {price} ლარი\n" +
-                          $"პროდუქტის ნომერი: {productNumber}";
+                          $"საცალო ფასი: {price} ლარი\n" +
+                          $"რაოდენობა: {quantity} ცალი\n" +
+                          $"ჯამში: {price * quantity} ლარი\n";
 
             // გამოიყენე HttpUtility.UrlEncode უფრო საიმედოა დაშორებებისთვის
             string encodedText = HttpUtility.UrlEncode(text);
