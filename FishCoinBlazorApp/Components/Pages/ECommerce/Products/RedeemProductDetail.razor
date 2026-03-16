@@ -10,7 +10,7 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime;
 
-<Topbar Title="redeem პროდუქტი დეტალურად" />
+<Topbar Title="პროდუქტი დეტალურად" />
 
 @if (productDetail == null && !isNotFound)
 {
@@ -92,13 +92,15 @@ else
                     </div>
                 </div>
                 <div class="card-footer border-top bg-light-subtle">
-                    <div class="row g-2">
-                        <div class="col-lg-6">
+                    <div class="row justify-content-center">
+                        @* დაემატა justify-content-center *@
+                        <div class="col-lg-10">
+                            @* გავზარდეთ ზომა უკეთესი ვიზუალისთვის *@
                             <button class="btn btn-primary d-flex align-items-center justify-content-center gap-2 w-100 py-2"
                                     disabled="@(productDetail.StockQuantity < 1)"
                                     @onclick="() => OrderRedeemProduct(productDetail.Id, productDetail.Name)">
                                 <i class="bx bx-cart fs-20"></i>
-                                @(productDetail.StockQuantity >= 1 ? "საჩუქრის მიღება" : "ამოიწურა")
+                                <span>@(productDetail.StockQuantity >= 1 ? "საჩუქრის მიღება" : "ამოიწურა")</span>
                             </button>
                         </div>
                     </div>
@@ -183,59 +185,6 @@ else
         {
             isNotFound = false;
             relatedProducts = await ProductService.GetProductByCategory(Id);
-        }
-    }
-
-    private async Task HandleRelatedAddToCart(ProductDetailModel item)
-    {
-        await CartService.AddToCart(item, 1);
-        showToast = true;
-        StateHasChanged();
-        await Task.Delay(3000);
-        showToast = false;
-        StateHasChanged();
-    }
-
-    private async Task AddToCart()
-    {
-        if (productDetail != null)
-        {
-            await CartService.AddToCart(productDetail, selectedQuantity);
-            showToast = true;
-            StateHasChanged();
-            await Task.Delay(3000);
-            showToast = false;
-            StateHasChanged();
-        }
-    }
-
-    private async Task BuyNow()
-    {
-        if (productDetail != null && productDetail.StockQuantity >= 1)
-        {
-            // ჯერ ვშლით არსებულ მონაცემებს
-            await CartService.ClearCart();
-            // ჯერ ვამატებთ კალათაში
-            await CartService.AddToCart(productDetail, selectedQuantity);
-
-            // გადავდივართ Checkout გვერდზე
-            NavigationManager.NavigateTo("/checkout");
-        }
-    }
-
-    private void IncreaseQuantity()
-    {
-        if (productDetail != null && selectedQuantity < productDetail.StockQuantity)
-        {
-            selectedQuantity++;
-        }
-    }
-
-    private void DecreaseQuantity()
-    {
-        if (selectedQuantity > 1)
-        {
-            selectedQuantity--;
         }
     }
 
