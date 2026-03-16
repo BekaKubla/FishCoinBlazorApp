@@ -21,7 +21,6 @@ namespace FishCoinBlazorApp.Services
               $"*💰 ჯამური ღირებულება:* {price * quantity} ლარი\n\n" +
               $"_გთხოვთ, დამიდასტუროთ არის თუ არა მარაგში._";
 
-            // გამოიყენე HttpUtility.UrlEncode უფრო საიმედოა დაშორებებისთვის
             string encodedText = HttpUtility.UrlEncode(text);
 
             // საბოლოო URL
