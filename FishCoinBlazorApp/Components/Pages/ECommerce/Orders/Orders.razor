@@ -55,8 +55,12 @@
                                         </div>
                                         <div class="col-6 text-end">
                                             <span class="fs-12 text-muted d-block">ჯამი</span>
-                                            <span class="fs-15 fw-black text-primary">@order.TotalAmountGEL.ToString("N2") ₾</span>
-                                        </div>
+                                            <span class="fs-15 fw-black text-primary">
+                                                @(order.PaymentMethod == "FishCoins"
+                                                                                        ? order.TotalAmountPoints + " ქულა"
+                                                                                        : order.TotalAmountGEL.ToString("N2") + " ₾")
+                                    </span>
+                                </div>
                                     </div>
 
                                     @* ქვედა ნაწილი: პროდუქტების რაოდენობა და "დეტალები" *@

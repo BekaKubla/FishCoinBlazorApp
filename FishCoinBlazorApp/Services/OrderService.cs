@@ -103,7 +103,8 @@ namespace FishCoinBlazorApp.Services
                     TotalAmountGEL = 0,
                     DeliveryFee = 0,
                     Status = OrderStatus.Paid,
-                    UserId = userId
+                    UserId = userId,
+                    TotalAmountPoints = product.PointsPrice!.Value
                 };
 
                 context.Orders.Add(order);

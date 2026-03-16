@@ -104,7 +104,11 @@
                 </div>
                 <div class="d-flex justify-content-between align-items-center">
                     <span class="fw-bold">სულ გადახდილი:</span>
-                    <span class="fs-18 fw-black text-primary">@order.TotalAmountGEL.ToString("N2") ₾</span>
+                <span class="fs-18 fw-black text-primary">
+                    @(order.PaymentMethod == "FishCoins"
+                                        ? order.TotalAmountPoints + " ქულა"
+                                        : order.TotalAmountGEL.ToString("N2") + " ₾")
+                </span>
                 </div>
             </div>
         </div>
