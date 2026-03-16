@@ -125,9 +125,16 @@
                             }
                         </div>
 
-                        <button type="submit" disabled="@(isProcessing || !IsLimitReached || redeemProduct == null)"
-                                class="btn @(IsLimitReached ? "btn-primary" : "btn-secondary") w-100 py-3 rounded-3 fw-bold shadow-sm confirm-order-btn mt-2">
-                            @if (isProcessing)
+                        <button type="submit"
+                                disabled="@(isProcessing || !IsLimitReached || redeemProduct == null || redeemProduct.StockQuantity <= 0)"
+                                class="btn @(IsLimitReached && redeemProduct?.StockQuantity > 0 ? "btn-primary" : "btn-secondary") w-100 py-3 rounded-3 fw-bold shadow-sm confirm-order-btn mt-2">
+
+                            @if (redeemProduct?.StockQuantity <= 0)
+                            {
+                                <iconify-icon icon="solar:Box-minimalistic-bold" class="me-2 fs-20"></iconify-icon>
+                                <span>ამოიწურა</span>
+                            }
+                            else if (isProcessing)
                             {
                                 <span class="spinner-border spinner-border-sm me-2"></span>
                                 <span>მუშავდება...</span>
