@@ -126,13 +126,16 @@
                         </div>
 
                         <button type="submit"
-                                disabled="@(isProcessing || !IsLimitReached || redeemProduct == null || redeemProduct.StockQuantity <= 0)"
-                                class="btn @(IsLimitReached && redeemProduct?.StockQuantity > 0 ? "btn-primary" : "btn-secondary") w-100 py-3 rounded-3 fw-bold shadow-sm confirm-order-btn mt-2">
+                                disabled="@(isProcessing || !IsLimitReached || redeemProduct == null || redeemProduct.StockQuantity <= 0 || (UserModel?.CurrentPoints < redeemProduct?.PointsPrice))"
+                                class="btn @(IsLimitReached && redeemProduct?.StockQuantity > 0 && (UserModel?.CurrentPoints >= redeemProduct?.PointsPrice) ? "btn-primary" : "btn-secondary") w-100 py-3 rounded-3 fw-bold shadow-sm confirm-order-btn mt-2">
 
                             @if (redeemProduct?.StockQuantity <= 0)
                             {
-                                <iconify-icon icon="solar:Box-minimalistic-bold" class="me-2 fs-20"></iconify-icon>
                                 <span>ამოიწურა</span>
+                            }
+                            else if (UserModel?.CurrentPoints < redeemProduct?.PointsPrice)
+                            {
+                                <span>არასაკმარისი ქულები</span>
                             }
                             else if (isProcessing)
                             {
@@ -141,7 +144,6 @@
                             }
                             else
                             {
-                                <iconify-icon icon="solar:gift-bold-duotone" class="me-2 fs-20"></iconify-icon>
                                 <span>საჩუქრის გაფორმება</span>
                             }
                         </button>
@@ -241,6 +243,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await CheckUserAuthentication();
         // თუ URL-ში pid არ არის, ან 0-ია, მაშინ გადავიყვანოთ პროდუქტებზე
         if (ProductIdFromUrl == 0)
         {
@@ -293,5 +296,15 @@
     private async Task GetCurrentUserInfo(int productPointPrice)
     {
         UserModel = await UserService.GetCurrentUserPaidOrders(productPointPrice);
+    }
+
+    private async Task CheckUserAuthentication()
+    {
+        var user = await UserService.GetCurrentUserAsync();
+        if (user == null)
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
     }
 }
