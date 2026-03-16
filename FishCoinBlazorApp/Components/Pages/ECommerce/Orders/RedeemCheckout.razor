@@ -244,7 +244,6 @@
     protected override async Task OnInitializedAsync()
     {
         await CheckUserAuthentication();
-        // თუ URL-ში pid არ არის, ან 0-ია, მაშინ გადავიყვანოთ პროდუქტებზე
         if (ProductIdFromUrl == 0)
         {
             NavigationManager.NavigateTo("/products");
@@ -275,9 +274,7 @@
         isProcessing = true;
         try
         {
-            // აქ დაწერე შეკვეთის გაფორმების ლოგიკა
-            // await OrderService.PlaceRedeemOrder(orderModel, redeemProduct);
-            await Task.Delay(2000); // სიმულაცია
+            await OrderService.PlaceRedeemOrder(orderModel, redeemProduct);
             NavigationManager.NavigateTo("/order-success");
         }
         finally
