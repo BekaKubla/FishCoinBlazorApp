@@ -1,0 +1,253 @@
+﻿@page "/redeem-product-details/{Id:int}/{Slug}"
+@rendermode InteractiveServer
+@using FishCoinBlazorApp.Services
+@using FishCoinBlazorApp.Services.Models
+@using FishCoinBlazorApp.Helpers
+@inject ProductService ProductService
+@inject CartService CartService
+@inject UserService UserService
+@inject WhatsAppService WhatsAppService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime;
+
+<Topbar Title="redeem პროდუქტი დეტალურად" />
+
+@if (productDetail == null && !isNotFound)
+{
+    <div class="d-flex justify-content-center align-items-center" style="height: 50vh;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">იტვირთება...</span>
+        </div>
+    </div>
+}
+else if (isNotFound)
+{
+    <div class="text-center p-5">
+        <iconify-icon icon="solar:danger-bold-duotone" class="text-danger fs-64"></iconify-icon>
+        <h3 class="mt-3">პროდუქტი ვერ მოიძებნა</h3>
+        <p class="text-muted">სამწუხაროდ, მითითებული პროდუქტი არ არსებობს.</p>
+        <a href="/products" class="btn btn-primary mt-2">დაბრუნება ჩამონათვალში</a>
+    </div>
+}
+else
+{
+    @* --- SEO & Metadata Section --- *@
+    <HeadContent>
+        <meta name="description" content="@(productDetail?.Description?.Length > 160 ? productDetail.Description.Substring(0, 157) + "..." : productDetail?.Description)" />
+        <meta property="og:title" content="@productDetail?.Name" />
+        <meta property="og:description" content="@productDetail?.Description" />
+        <meta property="og:image" content="@($"{NavigationManager.BaseUri}{productDetail?.ImageUrl?.TrimStart('/')}")" />
+        <meta property="og:type" content="product" />
+        <meta property="og:url" content="@NavigationManager.Uri" />
+        <meta property="product:price:amount" content="@productDetail?.Price" />
+        <meta property="product:price:currency" content="GEL" />
+        <meta property="product:availability" content="@(productDetail?.StockQuantity > 0 ? "instock" : "oos")" />
+
+        <script type="application/ld+json">
+            {
+              "@@context": "https://schema.org/",
+              "@@type": "Product",
+              "name": "@productDetail?.Name",
+              "image": "@productDetail?.ImageUrl",
+              "description": "@productDetail?.Description",
+              "brand": {
+                "@@type": "Brand",
+                "name": "FishCoin"
+              },
+              "offers": {
+                "@@type": "Offer",
+                "url": "@NavigationManager.Uri",
+                "priceCurrency": "GEL",
+                "price": "@productDetail?.Price",
+                "availability": "https://schema.org/@(productDetail?.StockQuantity > 0 ? "InStock" : "OutOfStock")",
+                "itemCondition": "https://schema.org/NewCondition"
+              }
+            }
+        </script>
+    </HeadContent>
+
+    @* --- Breadcrumbs Section --- *@
+    <div class="row mb-3">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/" class="text-primary text-decoration-none">მთავარი</a></li>
+                    <li class="breadcrumb-item"><a href="/products" class="text-primary text-decoration-none">პროდუქტები</a></li>
+                    <li class="breadcrumb-item active text-muted" aria-current="page">@productDetail?.Name</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div id="carouselExampleFade" class="carousel slide carousel-fade" data-bs-ride="carousel">
+                        <div class="carousel-inner" role="listbox">
+                            <div class="carousel-item active">
+                                <img src="@(productDetail!.ImageUrl)" alt="" class="img-fluid rounded shadow-sm">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer border-top bg-light-subtle">
+                    <div class="row g-2">
+                        <div class="col-lg-6">
+                            <button class="btn btn-primary d-flex align-items-center justify-content-center gap-2 w-100 py-2"
+                                    disabled="@(productDetail.StockQuantity < 1)"
+                                    @onclick="() => OrderRedeemProduct(productDetail.Id, productDetail.Name)">
+                                <i class="bx bx-cart fs-20"></i>
+                                @(productDetail.StockQuantity >= 1 ? "საჩუქრის მიღება" : "ამოიწურა")
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h3 class="mt-2 text-dark fw-semibold">@productDetail.Name</h3>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-3 my-3">
+                        <h2 class="fw-bold text-primary mb-0">@productDetail.PointsPrice ქულა</h2>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <h5 class="text-dark fw-semibold">აღწერა :</h5>
+                    <p class="text-muted lh-lg">@productDetail.Description</p>
+
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="@(productDetail.StockQuantity >= 1 ? "bg-success-subtle" : "bg-danger-subtle") rounded-circle p-1 d-flex align-items-center justify-content-center">
+                                    <i class='bx @(productDetail.StockQuantity >= 1 ? "bx-check text-success" : "bx-x text-danger") fs-18'></i>
+                                </div>
+                                <span class="@(productDetail.StockQuantity >= 1 ? "text-success" : "text-danger") fw-medium fs-14">
+                                    @(productDetail.StockQuantity >= 1 ? "მარაგშია" : "არ არის მარაგში")
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@code {
+    private IJSObjectReference? _module;
+    private ProductDetailModel? productDetail;
+    private bool showToast = false;
+    private bool isNotFound = false;
+    private List<ProductDetailModel>? relatedProducts;
+    private int selectedQuantity = 1;
+
+    [Parameter]
+    public int Id { get; set; }
+    [Parameter]
+    public string? Slug { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JsRuntime.InvokeVoidAsync("window.scrollTo", 0, 0);
+            _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/pages/ecommerce-product-details.js");
+            await JsRuntime.InvokeVoidAsync("loadProductDetails");
+            await JsRuntime.InvokeVoidAsync("loadThemeConfig");
+            await JsRuntime.InvokeVoidAsync("loadApps");
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // როცა ერთი პროდუქტიდან მეორეზე გადადიხარ (Related), გვერდი თავიდან უნდა დაინიციალიზდეს
+        await OnInitializedAsync();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        productDetail = await ProductService.GetProductById(Id);
+
+        if (productDetail == null)
+        {
+            isNotFound = true;
+        }
+        else
+        {
+            isNotFound = false;
+            relatedProducts = await ProductService.GetProductByCategory(Id);
+        }
+    }
+
+    private async Task HandleRelatedAddToCart(ProductDetailModel item)
+    {
+        await CartService.AddToCart(item, 1);
+        showToast = true;
+        StateHasChanged();
+        await Task.Delay(3000);
+        showToast = false;
+        StateHasChanged();
+    }
+
+    private async Task AddToCart()
+    {
+        if (productDetail != null)
+        {
+            await CartService.AddToCart(productDetail, selectedQuantity);
+            showToast = true;
+            StateHasChanged();
+            await Task.Delay(3000);
+            showToast = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task BuyNow()
+    {
+        if (productDetail != null && productDetail.StockQuantity >= 1)
+        {
+            // ჯერ ვშლით არსებულ მონაცემებს
+            await CartService.ClearCart();
+            // ჯერ ვამატებთ კალათაში
+            await CartService.AddToCart(productDetail, selectedQuantity);
+
+            // გადავდივართ Checkout გვერდზე
+            NavigationManager.NavigateTo("/checkout");
+        }
+    }
+
+    private void IncreaseQuantity()
+    {
+        if (productDetail != null && selectedQuantity < productDetail.StockQuantity)
+        {
+            selectedQuantity++;
+        }
+    }
+
+    private void DecreaseQuantity()
+    {
+        if (selectedQuantity > 1)
+        {
+            selectedQuantity--;
+        }
+    }
+
+    private async Task OrderRedeemProduct(int productId, string name)
+    {
+        var user = await UserService.GetCurrentUserAsync();
+        if (user == null)
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+
+        NavigationManager.NavigateTo($"/RedeemCheckout/{name.ToUrlSlug()}?rid={productId}");
+    }
+}
