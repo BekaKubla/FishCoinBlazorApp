@@ -14,5 +14,7 @@
 
         public int? DiscountPrecentage { get; set; }
         public decimal? DiscountPrice { get; set; }
+
+        public int? PointsPrice { get; set; } // ფასი ქულებში (თუ null, მაშინ არ იყიდება ქულებით)
     }
 }

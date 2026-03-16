@@ -1,5 +1,6 @@
 ﻿using FishCoinBlazorApp.Data;
 using FishCoinBlazorApp.Entites.Customer;
+using FishCoinBlazorApp.Services.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
@@ -57,8 +58,38 @@ namespace FishCoinBlazorApp.Services
             var userId = GetUserId(); // წინა მესიჯში დაწერილი დამხმარე მეთოდი
             if (string.IsNullOrEmpty(userId)) return null;
 
-            return await _context.Users
+            return await _context.Users.Include(u => u.Orders)
                 .FirstOrDefaultAsync(u => u.Id == userId);
+        }
+
+        public async Task<UserModel?> GetCurrentUserPaidOrders(int productPointPrice)
+        {
+            var result = new UserModel();
+            var currentUser = await GetCurrentUserAsync();
+            if (currentUser == null)
+            {
+                return null;
+            }
+            result.PhoneNumber = currentUser.PhoneNumber;
+            result.Address = currentUser.PhoneNumber;
+            result.Name = currentUser.FirstName;
+            var loyaltyCard = await GetUserLoyaltyCardAsync();
+            if (loyaltyCard == null)
+            {
+                result.CurrentPoints = 0;
+            }
+            result.CurrentPoints = loyaltyCard!.CurrentPoints;
+            var orders = currentUser.Orders.Where(x => x.Status != Entites.Product.OrderStatus.Pending && 
+            x.Status != Entites.Product.OrderStatus.Cancelled).ToList();
+            if (orders != null && orders.Count > 0)
+            {
+                foreach (var order in orders)
+                {
+                    result.TotalAmountGEL += order.TotalAmountGEL;
+                }
+            }
+
+            return result;
         }
     }
 }

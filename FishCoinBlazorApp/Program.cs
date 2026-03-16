@@ -4,6 +4,7 @@ using FishCoinBlazorApp.Data;
 using FishCoinBlazorApp.Entites.Customer;
 using FishCoinBlazorApp.Services;
 using FishCoinBlazorApp.Services.Models;
+using FishCoinBlazorApp.Services.RouteServices;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -47,6 +48,7 @@ builder.Services.AddScoped<CartService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<WhatsAppService>();
 builder.Services.AddScoped<SubCategoryService>();
+builder.Services.AddScoped<RedeemStateService>();
 
 builder.Services.AddControllers();
 builder.Services.AddBlazoredLocalStorage();

@@ -105,7 +105,33 @@ namespace FishCoinBlazorApp.Services
                     TagNumber = product.TagNumber,
                     IsNew = product.ArrivalDate.AddDays(15) >= DateTime.Now,
                     DiscountPrecentage = product.DiscountPrecentage,
-                    DiscountPrice = product.DiscountPrice
+                    DiscountPrice = product.DiscountPrice,
+                    PointsPrice = product.PointsPrice
+                };
+                return resultmodel;
+            }
+            return null;
+        }
+
+        public async Task<ProductDetailModel?> GetRedeemProductById(int id)
+        {
+            var product = await _context.Products.AsNoTracking().SingleOrDefaultAsync(p => p.Id == id && p.IsRedeemable && p.PointsPrice.HasValue);
+            if (product != null)
+            {
+                var resultmodel = new ProductDetailModel()
+                {
+                    StockQuantity = product.StockQuantity,
+                    Description = product.Description,
+                    Id = id,
+                    ImageUrl = product.ImageUrl,
+                    Name = product.Name,
+                    PointsReward = product.PointsReward,
+                    Price = product.Price,
+                    TagNumber = product.TagNumber,
+                    IsNew = product.ArrivalDate.AddDays(15) >= DateTime.Now,
+                    DiscountPrecentage = product.DiscountPrecentage,
+                    DiscountPrice = product.DiscountPrice,
+                    PointsPrice = product.PointsPrice
                 };
                 return resultmodel;
             }

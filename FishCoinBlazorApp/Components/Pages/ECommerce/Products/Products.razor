@@ -1,5 +1,6 @@
 ﻿@page "/products"
 @using FishCoinBlazorApp.Services
+@using FishCoinBlazorApp.Services.RouteServices
 @using FishCoinBlazorApp.Entites.Product
 @using FishCoinBlazorApp.Entites.Product.Category
 @using FishCoinBlazorApp.Helpers
@@ -7,8 +8,11 @@
 @inject ProductService ProductService
 @inject ProductCategoryService ProductCategoryService
 @inject SubCategoryService SubCategoryService
+@inject UserService UserService
+@inject RedeemStateService RedeemStateService
 @rendermode InteractiveServer
 @inject IJSRuntime JsRuntime
+@inject NavigationManager NavigationManager
 
 <Topbar Title="პროდუქტები" />
 
@@ -117,7 +121,7 @@
                 @foreach (var item in products)
                 {
                     if ((selectedSubCategoryIds != null && selectedSubCategoryIds.Count > 0 && selectedSubCategoryIds.Contains(6))
-                         || categoryId == 3)
+                    || categoryId == 3)
                     {
                         <div class="col-md-6 col-xl-4">
                             <div class="card h-100 shadow-sm border-0 product-card rounded-4 overflow-hidden custom-bg border">
@@ -136,7 +140,7 @@
                                         </div>
                                         <button class="btn btn-primary w-100 rounded-3 py-2 d-flex align-items-center justify-content-center gap-2 shadow-sm"
                                                 disabled="@(item.StockQuantity < 1)"
-                                                @onclick="() => HandleAddToCart(item)">
+                                                @onclick="() => OrderRedeemProduct(item.Id, item.Name)">
                                             <i class='bx bx-cart-add fs-18'></i>
                                             <span class="fw-bold fs-13">@(item.StockQuantity > 0 ? "საჩუქრის მიღება" : "ამოიწურა")</span>
                                         </button>
@@ -368,13 +372,38 @@
             Name = item.Name,
             Price = item.Price,
             ImageUrl = item.ImageUrl,
-            StockQuantity = item.StockQuantity
+            StockQuantity = item.StockQuantity,
+            PointsReward = item.PointsReward
         }, 1);
         showToast = true;
         StateHasChanged();
         await Task.Delay(2500);
         showToast = false;
         StateHasChanged();
+    }
+
+    private async Task OrderRedeemProduct(int productId, string name)
+    {
+        var user = await UserService.GetCurrentUserAsync();
+        if (user == null)
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+
+        NavigationManager.NavigateTo($"/RedeemCheckout/{name.ToUrlSlug()}?rid={productId}");
+    }
+
+    private async Task<bool> CheckUserIsAuthorized()
+    {
+        var user = await UserService.GetCurrentUserAsync();
+        if (user == null)
+        {
+            // ამოვიღეთ forceLoad: true
+            NavigationManager.NavigateTo("/login");
+            return false;
+        }
+        return true;
     }
 
     private async Task OnSortChanged(ChangeEventArgs e)

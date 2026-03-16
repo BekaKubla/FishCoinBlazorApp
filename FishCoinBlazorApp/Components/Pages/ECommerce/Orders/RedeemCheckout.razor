@@ -1,0 +1,290 @@
+﻿@page "/RedeemCheckout/{ProductName}"
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using FishCoinBlazorApp.Entites.Customer
+@using FishCoinBlazorApp.Services.Models
+@using FishCoinBlazorApp.Services.RouteServices
+@using FishCoinBlazorApp.Entites
+@inject FishCoinBlazorApp.Services.CartService CartService
+@inject FishCoinBlazorApp.Services.ProductService ProductService
+@inject FishCoinBlazorApp.Services.OrderService OrderService
+@inject FishCoinBlazorApp.Services.UserService UserService
+@inject NavigationManager NavigationManager
+@inject RedeemStateService RedeemState
+@inject IJSRuntime JsRuntime
+
+<Topbar Title="საჩუქრის მიღება" />
+
+<div class="container mt-3 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
+
+            <div class="card border-0 shadow-sm rounded-4 bg-card-custom mb-3 overflow-hidden">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fs-12 fw-bold text-muted text-uppercase tracking-wider">საჩუქრის აქტივაციის პროგრესი</span>
+                        @if (userTotalSpent > 50)
+                        {
+                            <span class="fs-13 fw-black @(IsLimitReached ? "text-success" : "text-primary")">
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="fs-13 fw-black @(IsLimitReached ? "text-success" : "text-primary")">
+                                @userTotalSpent.ToString("N2") ₾ / @RequiredAmount.ToString("N2") ₾
+                            </span>
+                        }
+                    </div>
+                    <div class="progress" style="height: 12px; border-radius: 20px; background-color: var(--bs-tertiary-bg);">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated @(IsLimitReached ? "bg-success" : "bg-primary")"
+                             role="progressbar"
+                             style="width: @(ProgressPercentage)%; transition: width 1s ease-in-out;"></div>
+                    </div>
+                    @if (!IsLimitReached)
+                    {
+                        <div class="d-flex align-items-center gap-2 mt-3 p-2 rounded-3 bg-info-subtle border border-info-subtle">
+                            <iconify-icon icon="solar:info-circle-bold-duotone" class="text-info fs-20"></iconify-icon>
+                            <span class="fs-12 text-info-emphasis">
+                                საჩუქრის ასაღებად საჭიროა მინიმუმ 50 ₾-ის შენაძენი. გაკლიათ <strong>@((RequiredAmount - userTotalSpent).ToString("N2")) ₾</strong>
+                            </span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex align-items-center gap-2 mt-3 p-2 rounded-3 bg-success-subtle border border-success-subtle">
+                            <iconify-icon icon="solar:check-circle-bold-duotone" class="text-success fs-20"></iconify-icon>
+                            <span class="fs-12 text-success-emphasis">ლიმიტი შევსებულია! შეგიძლიათ გააგრძელოთ შეკვეთა.</span>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <EditForm Model="@orderModel" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+
+                <div class="card border-0 shadow-sm rounded-4 bg-card-custom overflow-hidden">
+                    <div class="card-body p-4">
+
+                        @* 2. საკონტაქტო სექცია *@
+                        <div class="checkout-section mb-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="step-badge me-2">1</div>
+                                <h6 class="fw-bold mb-0 text-uppercase tracking-wider fs-13">მიწოდების დეტალები</h6>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="fs-12 fw-bold text-muted mb-1 px-1">სახელი და გვარი</label>
+                                    <InputText @bind-Value="orderModel.FullName" class="form-control custom-minimal-input" placeholder="ვინ ჩაიბარებს საჩუქარს?" />
+                                    <ValidationMessage For="@(() => orderModel.FullName)" class="text-danger fs-11 mt-1 px-1" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="fs-12 fw-bold text-muted mb-1 px-1">ტელეფონის ნომერი</label>
+                                    <InputText @bind-Value="orderModel.Phone" class="form-control custom-minimal-input" placeholder="5xx xx xx xx" />
+                                    <ValidationMessage For="@(() => orderModel.Phone)" class="text-danger fs-11 mt-1 px-1" />
+                                </div>
+                                <div class="col-12">
+                                    <label class="fs-12 fw-bold text-muted mb-1 px-1">მიწოდების მისამართი</label>
+                                    <InputText @bind-Value="orderModel.Address" class="form-control custom-minimal-input" placeholder="ქალაქი, ქუჩა, ბინა/სადარბაზო" />
+                                    <ValidationMessage For="@(() => orderModel.Address)" class="text-danger fs-11 mt-1 px-1" />
+                                </div>
+                            </div>
+                        </div>
+
+                        @* 3. არჩეული საჩუქრის შეჯამება *@
+                        <div class="checkout-section bg-light-subtle rounded-4 p-3 mb-4 border border-light">
+                            <div class="d-flex justify-content-between align-items-center border-bottom border-dashed pb-2 mb-3">
+                                <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill px-2 py-1 fs-11">საჩუქარი</span>
+                            </div>
+
+                            @if (redeemProduct != null)
+                            {
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="position-relative">
+                                            <img src="@redeemProduct.ImageUrl" style="width: 55px; height: 55px; object-fit: cover; border-radius: 12px;" />
+                                        </div>
+                                        <div>
+                                            <span class="fs-14 fw-bold d-block text-dark">@redeemProduct.Name</span>
+                                            <span class="fs-12 text-muted">საჩუქარი ქულების სანაცვლოდ</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="d-flex align-items-center justify-content-end gap-1">
+                                            <iconify-icon icon="solar:star-circle-bold" class="text-warning fs-16"></iconify-icon>
+                                            <span class="fs-16 fw-black text-warning">@redeemProduct.PointsPrice</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center py-2">
+                                    <div class="spinner-border spinner-border-sm text-primary"></div>
+                                </div>
+                            }
+                        </div>
+
+                        <button type="submit" disabled="@(isProcessing || !IsLimitReached || redeemProduct == null)"
+                                class="btn @(IsLimitReached ? "btn-primary" : "btn-secondary") w-100 py-3 rounded-3 fw-bold shadow-sm confirm-order-btn mt-2">
+                            @if (isProcessing)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                                <span>მუშავდება...</span>
+                            }
+                            else
+                            {
+                                <iconify-icon icon="solar:gift-bold-duotone" class="me-2 fs-20"></iconify-icon>
+                                <span>საჩუქრის გაფორმება</span>
+                            }
+                        </button>
+                    </div>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* სტილები იგივე რჩება რაც გქონდა, დავამატე მხოლოდ პროგრესის ფერი */
+    .bg-card-custom {
+        background-color: var(--bs-card-bg);
+    }
+
+    .bg-light-subtle {
+        background-color: var(--bs-tertiary-bg) !important;
+    }
+
+    .custom-minimal-input {
+        background-color: var(--bs-tertiary-bg);
+        border: 1px solid var(--bs-border-color);
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+
+        .custom-minimal-input:focus {
+            background-color: var(--bs-card-bg);
+            border-color: var(--bs-primary);
+            box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1);
+            outline: none;
+        }
+
+    .step-badge {
+        width: 24px;
+        height: 24px;
+        background: var(--bs-primary);
+        color: white;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .border-dashed {
+        border-top: 1px dashed var(--bs-border-color) !important;
+    }
+
+    .fw-black {
+        font-weight: 900;
+    }
+
+    .confirm-order-btn {
+        font-size: 17px;
+        transition: all 0.2s ease;
+    }
+
+        .confirm-order-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3) !important;
+        }
+</style>
+
+@code {
+
+    private CheckoutModel orderModel = new();
+    private bool isProcessing = false;
+
+    [Parameter] public string ProductName { get; set; }
+
+    [SupplyParameterFromQuery(Name = "rid")]
+    public int ProductIdFromUrl { get; set; }
+    private int productId;
+    private ProductDetailModel? redeemProduct;
+    private decimal userTotalSpent = 0;
+    private const decimal RequiredAmount = 50m;
+
+    public UserModel? UserModel;
+
+    public class CheckoutModel
+    {
+        [Required(ErrorMessage = "მიუთითეთ სახელი და გვარი")]
+        public string FullName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "მიუთითეთ ტელეფონი")]
+        [RegularExpression(@"^5\d{8}$", ErrorMessage = "არასწორი ფორმატი")]
+        public string Phone { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "მიუთითეთ მისამართი")]
+        public string Address { get; set; } = string.Empty;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // თუ URL-ში pid არ არის, ან 0-ია, მაშინ გადავიყვანოთ პროდუქტებზე
+        if (ProductIdFromUrl == 0)
+        {
+            NavigationManager.NavigateTo("/products");
+            return;
+        }
+
+        productId = ProductIdFromUrl;
+
+        redeemProduct = await ProductService.GetRedeemProductById(productId);
+
+        if (redeemProduct == null)
+        {
+            NavigationManager.NavigateTo("/products");
+        }
+
+        await GetCurrentUserInfo(redeemProduct!.PointsPrice.HasValue ? redeemProduct.PointsPrice.Value : 0);
+
+        userTotalSpent = UserModel != null ? UserModel.TotalAmountGEL : 0;
+    }
+
+    private bool IsLimitReached => userTotalSpent >= RequiredAmount;
+    private decimal ProgressPercentage => Math.Min((userTotalSpent / RequiredAmount) * 100, 100);
+
+    private async Task HandleValidSubmit()
+    {
+        if (!IsLimitReached) return;
+
+        isProcessing = true;
+        try
+        {
+            // აქ დაწერე შეკვეთის გაფორმების ლოგიკა
+            // await OrderService.PlaceRedeemOrder(orderModel, redeemProduct);
+            await Task.Delay(2000); // სიმულაცია
+            NavigationManager.NavigateTo("/order-success");
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JsRuntime.InvokeVoidAsync("window.scrollTo", 0, 0);
+        }
+    }
+    private async Task GetCurrentUserInfo(int productPointPrice)
+    {
+        UserModel = await UserService.GetCurrentUserPaidOrders(productPointPrice);
+    }
+}
