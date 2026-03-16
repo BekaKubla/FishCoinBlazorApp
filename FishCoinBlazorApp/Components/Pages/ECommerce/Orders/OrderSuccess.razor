@@ -2,6 +2,7 @@
 @using FishCoinBlazorApp.Entites.Product
 @inject FishCoinBlazorApp.Services.OrderService OrderService
 @inject NavigationManager NavigationManager
+@inject Services.WhatsAppService WhatsAppService
 @inject IJSRuntime JsRuntime
 
 <Topbar Title="სტატუსი" />
@@ -56,12 +57,29 @@
 
                         @if (order.PointsEarned > 0)
                         {
-                            <div class="points-toast d-flex align-items-center gap-2 p-2 rounded-3 mb-4 bg-warning-subtle border-start border-warning border-3">
-                                <iconify-icon icon="solar:star-bold" class="text-warning fs-18 ms-1"></iconify-icon>
-                                <span class="fs-12 text-warning-emphasis">დაგერიცხათ <strong>@order.PointsEarned</strong> ქულა</span>
+                            <div class="points-toast d-flex flex-column gap-1 p-3 rounded-3 mb-4 bg-warning-subtle border-start border-warning border-3 shadow-sm">
+                                <div class="d-flex align-items-center gap-2">
+                                    <iconify-icon icon="solar:star-bold" class="text-warning fs-18"></iconify-icon>
+                                    <span class="fs-14 fw-bold text-warning-emphasis">თქვენ დაგერიცხებათ @order.PointsEarned ქულა</span>
+                                </div>
+
+                                <div class="mt-2 pt-2 border-top border-warning-subtle">
+                                    <p class="fs-11 text-muted mb-0 lh-sm">
+                                        <iconify-icon icon="solar:info-circle-bold" class="me-1 vertical-middle"></iconify-icon>
+                                        <strong>გაითვალისწინეთ:</strong> ქულები გააქტიურდება ანგარიშსწორების დასრულებისთანავე.
+                                        ონლაინ გადახდისას ქულები აისახება მომენტალურად.
+                                    </p>
+                                </div>
                             </div>
                         }
-
+                        <div class="col-lg-12 mt-2">
+                            <a href="@WhatsAppService.GetSettlementOrderUrl(order)"
+                               target="_blank"
+                               class="btn btn-outline-success d-flex align-items-center justify-content-center gap-2 w-100 py-2 shadow-sm">
+                                <i class="bx bxl-whatsapp fs-24"></i>
+                                <span class="fw-bold">ანგარიშსწორება WhatsApp-ით</span>
+                            </a>
+                        </div>
                         <div class="d-grid mt-2">
                             <button @onclick="GoHome" class="btn btn-primary py-2-5 rounded-3 fw-bold fs-14 shadow-sm">
                                 <iconify-icon icon="solar:home-2-linear" class="me-1 align-middle"></iconify-icon>
@@ -156,7 +174,7 @@
 
     private void GoHome()
     {
-        NavigationManager.NavigateTo("/");
+        NavigationManager.NavigateTo("/products");
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
