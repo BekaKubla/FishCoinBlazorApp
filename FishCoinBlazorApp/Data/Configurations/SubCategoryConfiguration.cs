@@ -21,11 +21,10 @@ namespace FishCoinBlazorApp.Data.Configurations
 
             builder.HasData(
                 new SubCategory { Id = 1, SubCategoryName = "სპინინგი", CategoryId = 1 },
-                new SubCategory { Id = 2, SubCategoryName = "კარპი", CategoryId = 1 },
-                new SubCategory { Id = 3, SubCategoryName = "ფიდერი", CategoryId = 1 },
-                new SubCategory { Id = 4, SubCategoryName = "ტივტივა", CategoryId = 1 },
-                new SubCategory { Id = 5, SubCategoryName = "აქსესუარი", CategoryId = 1 },
-                new SubCategory { Id = 6, SubCategoryName = "საჩუქარი", CategoryId = 1 }
+                new SubCategory { Id = 2, SubCategoryName = "ფიდერი", CategoryId = 1 },
+                new SubCategory { Id = 3, SubCategoryName = "ტივტივა", CategoryId = 1 },
+                new SubCategory { Id = 4, SubCategoryName = "აქსესუარი", CategoryId = 1 },
+                new SubCategory { Id = 5, SubCategoryName = "საჩუქარი", CategoryId = 1 }
             );
         }
     }
