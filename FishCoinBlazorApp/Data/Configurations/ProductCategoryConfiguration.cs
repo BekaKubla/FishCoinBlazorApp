@@ -35,22 +35,22 @@ namespace FishCoinBlazorApp.Data.Configurations
             #endregion
 
             #region Feeder (SubCategoryId = 2)
-                new ProductCategory { Id = 11, ProductCategoryName = "ჯოხი", SubCategoryId = 3 },
-                new ProductCategory { Id = 12, ProductCategoryName = "კოჭა", SubCategoryId = 3 },
-                new ProductCategory { Id = 13, ProductCategoryName = "ნემსკავი/სადავე", SubCategoryId = 3 },
-                new ProductCategory { Id = 14, ProductCategoryName = "ძუა/წნული", SubCategoryId = 3 },
-                new ProductCategory { Id = 15, ProductCategoryName = "დასაკვები/დანამატები", SubCategoryId = 3 },
-                new ProductCategory { Id = 16, ProductCategoryName = "საკვებურა", SubCategoryId = 3 },
-                new ProductCategory { Id = 17, ProductCategoryName = "აღჭურვილობა (სკამი/ბადე)", SubCategoryId = 3 },
-                new ProductCategory { Id = 18, ProductCategoryName = "აქსესუარები", SubCategoryId = 3 },
+                new ProductCategory { Id = 11, ProductCategoryName = "ჯოხი", SubCategoryId = 2 },
+                new ProductCategory { Id = 12, ProductCategoryName = "კოჭა", SubCategoryId = 2 },
+                new ProductCategory { Id = 13, ProductCategoryName = "ნემსკავი/სადავე", SubCategoryId = 2 },
+                new ProductCategory { Id = 14, ProductCategoryName = "ძუა/წნული", SubCategoryId = 2 },
+                new ProductCategory { Id = 15, ProductCategoryName = "დასაკვები/დანამატები", SubCategoryId = 2 },
+                new ProductCategory { Id = 16, ProductCategoryName = "საკვებურა", SubCategoryId = 2 },
+                new ProductCategory { Id = 17, ProductCategoryName = "აღჭურვილობა (სკამი/ბადე)", SubCategoryId = 2 },
+                new ProductCategory { Id = 18, ProductCategoryName = "აქსესუარები", SubCategoryId = 2 },
             #endregion
 
             #region Floating (SubCategoryId = 3)
-                new ProductCategory { Id = 19, ProductCategoryName = "ჯოხი", SubCategoryId = 4 },
-                new ProductCategory { Id = 20, ProductCategoryName = "კოჭა", SubCategoryId = 4 },
-                new ProductCategory { Id = 21, ProductCategoryName = "ტივტივა", SubCategoryId = 4 },
-                new ProductCategory { Id = 22, ProductCategoryName = "ნემსკავი/ძუა/სიმძიმე", SubCategoryId = 4 },
-                new ProductCategory { Id = 23, ProductCategoryName = "აქსესუარები", SubCategoryId = 4 }
+                new ProductCategory { Id = 19, ProductCategoryName = "ჯოხი", SubCategoryId = 3 },
+                new ProductCategory { Id = 20, ProductCategoryName = "კოჭა", SubCategoryId = 3 },
+                new ProductCategory { Id = 21, ProductCategoryName = "ტივტივა", SubCategoryId = 3 },
+                new ProductCategory { Id = 22, ProductCategoryName = "ნემსკავი/ძუა/სიმძიმე", SubCategoryId = 3 },
+                new ProductCategory { Id = 23, ProductCategoryName = "აქსესუარები", SubCategoryId = 3 }
                 #endregion
 );
         }
