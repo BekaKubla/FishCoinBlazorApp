@@ -57,11 +57,11 @@
                             </div>
 
                             <div class="d-flex gap-2">
-                                <div class="payment-pill @(orderModel.PaymentMethod == "cash" ? "active" : "")" @onclick='() => SetPayment("cash")'>
+                                <div class="payment-pill @(orderModel.PaymentMethod == "Cash" ? "active" : "")" @onclick='() => SetPayment("Cash")'>
                                     <iconify-icon icon="solar:wallet-money-bold-duotone" class="fs-18"></iconify-icon>
                                     <span>ნაღდი</span>
                                 </div>
-                                <div class="payment-pill @(orderModel.PaymentMethod == "transfer" ? "active" : "")" @onclick='() => SetPayment("transfer")'>
+                                <div class="payment-pill @(orderModel.PaymentMethod == "Transfer" ? "active" : "")" @onclick='() => SetPayment("Transfer")'>
                                     <iconify-icon icon="solar:bank-transfer-bold-duotone" class="fs-18"></iconify-icon>
                                     <span>გადარიცხვა</span>
                                 </div>

@@ -1,6 +1,8 @@
-﻿using FishCoinBlazorApp.Entites.Customer;
+﻿using FishCoinBlazorApp.Data;
+using FishCoinBlazorApp.Entites.Customer;
 using FishCoinBlazorApp.Services.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace FishCoinBlazorApp.Services
 {
@@ -15,26 +17,43 @@ namespace FishCoinBlazorApp.Services
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly LoyaltyService _loyaltyService;
+        private readonly FishCoinDbContext dbContext;
 
         public AccountService(
                 UserManager<ApplicationUser> userManager,
                 SignInManager<ApplicationUser> signInManager,
-                LoyaltyService loyaltyService)
+                LoyaltyService loyaltyService,
+                FishCoinDbContext dbContext)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _loyaltyService = loyaltyService;
+            this.dbContext = dbContext;
         }
 
         public async Task<(bool Succeeded, string[] Errors)> RegisterUserAsync(RegisterModel model)
         {
             // 1. ვქმნით იუზერის ობიექტს ახალი მოდელის მიხედვით
-            var user = new ApplicationUser
+            var user = await dbContext.Users.FirstOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber && string.IsNullOrEmpty(u.PasswordHash));
+            if (user != null)
+            {
+                try
+                {
+                    user.FirstName = model.FullName;
+                    await _userManager.AddPasswordAsync(user, model.Password);
+                    return (true, Array.Empty<string>());
+                }
+                catch
+                {
+                    return (false, new[] { "შეცდომა მომხარებლის რეგისტრაციისას." });
+                }
+            }
+            user = new ApplicationUser
             {
                 UserName = model.PhoneNumber,
                 PhoneNumber = model.PhoneNumber,
                 FirstName = model.FullName,
-                LastName = "" 
+                LastName = ""
             };
 
             // 2. ვინახავთ ბაზაში Identity-ს მეშვეობით
