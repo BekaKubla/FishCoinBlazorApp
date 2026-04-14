@@ -37,7 +37,7 @@
                                     <InputText @bind-Value="orderModel.Phone" class="form-control custom-minimal-input" placeholder="5xx xx xx xx" />
                                     <ValidationMessage For="@(() => orderModel.Phone)" class="text-danger fs-11 mt-1 px-1" />
                                 </div>
-                                <div class="col-12">
+@*                                 <div class="col-12">
                                     <label class="fs-12 fw-bold text-muted mb-1 px-1">მიწოდების მისამართი</label>
                                     <InputText @bind-Value="orderModel.Address" class="form-control custom-minimal-input" placeholder="ქალაქი, ქუჩა, ბინა/სადარბაზო" />
                                     <ValidationMessage For="@(() => orderModel.Address)" class="text-danger fs-11 mt-1 px-1" />
@@ -45,12 +45,12 @@
                                 <div class="col-12">
                                     <label class="fs-12 fw-bold text-muted mb-1 px-1">კომენტარი (სურვილისამებრ)</label>
                                     <InputTextArea @bind-Value="orderModel.Comment" class="form-control custom-minimal-input" rows="2" placeholder="დამატებითი დეტალები კურიერისთვის..." />
-                                </div>
+                                </div> *@
                             </div>
                         </div>
 
                         @* 2. გადახდის მეთოდი *@
-                        <div class="checkout-section mb-4">
+                        @* <div class="checkout-section mb-4">
                             <div class="d-flex align-items-center mb-3">
                                 <div class="step-badge me-2">2</div>
                                 <h6 class="fw-bold mb-0 text-uppercase tracking-wider fs-13">გადახდის მეთოდი</h6>
@@ -73,7 +73,7 @@
                                     გთხოვთ აირჩიოთ გადახდის მეთოდი
                                 </div>
                             }
-                        </div>
+                        </div> *@
 
                         @* 3. შეკვეთის შეჯამება *@
                         <div class="checkout-section bg-light-subtle rounded-4 p-3 mb-4 border border-light">
@@ -102,7 +102,7 @@
                                 <div class="d-flex justify-content-between mb-1">
                                     <span class="text-muted fs-13">მიწოდება:</span>
                                     <span class="fs-13 fw-bold @(CartService.DeliveryFee == 0 ? "text-success" : "")">
-                                        @(CartService.DeliveryFee == 0 ? "უფასო" : CartService.DeliveryFee.ToString("N2") + " ₾")
+                                        @(CartService.DeliveryFee == 0 ? "მაღაზიაში აღება" : CartService.DeliveryFee.ToString("N2") + " ₾")
                                     </span>
                                 </div>
 
