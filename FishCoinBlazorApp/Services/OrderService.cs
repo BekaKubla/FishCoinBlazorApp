@@ -34,7 +34,7 @@ namespace FishCoinBlazorApp.Services
                 {
                     FirstNameAndLastName = model.FullName,
                     PhoneNumber = model.Phone,
-                    ShippingAddress = model.Address,
+                    ShippingAddress = "მაღაზია",
                     PaymentMethod = model.PaymentMethod,
                     TotalAmountGEL = totalPrice,
                     DeliveryFee = deliveryFee,

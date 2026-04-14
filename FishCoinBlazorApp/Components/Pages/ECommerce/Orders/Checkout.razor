@@ -254,11 +254,11 @@
         [RegularExpression(@"^5\d{8}$", ErrorMessage = "ნომერი უნდა შედგებოდეს 9 ციფრისგან და იწყებოდეს 5-ით")]
         public string Phone { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "მისამართი სავალდებულოა")]
-        public string Address { get; set; } = string.Empty;
+        // [Required(ErrorMessage = "მისამართი სავალდებულოა")]
+        // public string Address { get; set; } = string.Empty;
 
         public string? Comment { get; set; }
-        public string? PaymentMethod { get; set; }
+        public string? PaymentMethod { get; set; } = "Cash";
     }
 
     private void SetPayment(string method)
@@ -269,11 +269,11 @@
 
     private async Task HandleValidSubmit()
     {
-        if (string.IsNullOrEmpty(orderModel.PaymentMethod))
-        {
-            showPaymentError = true;
-            return;
-        }
+        // if (string.IsNullOrEmpty(orderModel.PaymentMethod))
+        // {
+        //     showPaymentError = true;
+        //     return;
+        // }
 
         if (isProcessing) return;
         isProcessing = true;
