@@ -33,37 +33,37 @@
                             <h5 class="fw-black text-dark mb-0">#@OrderNumber</h5>
                         </div>
 
-                        @* Pickup Info Main Block *@
-                        <div class="pickup-container p-3 rounded-4 mb-3 border bg-light-subtle">
-                            <div class="d-flex align-items-center gap-2 mb-2">
-                                <iconify-icon icon="solar:shop-bold" class="text-primary fs-20"></iconify-icon>
-                                <h6 class="text-dark fw-bold mb-0 fs-14">მაღაზიაში აღება</h6>
-                            </div>
-                            
-                            <p class="fs-12 text-muted mb-3 lh-sm">
-                                🎣 შეკვეთა მზადდება. გთხოვთ გვეწვიოთ მითითებულ მისამართზე:
-                            </p>
+                        @* Pickup Info Main Block - შესწორებული Dark Mode-ისთვის *@
+<div class="pickup-container p-3 rounded-4 mb-3 border bg-body-tertiary">
+    <div class="d-flex align-items-center gap-2 mb-2">
+        <iconify-icon icon="solar:shop-bold" class="text-primary fs-20"></iconify-icon>
+        <h6 class="fw-bold mb-0 fs-14 text-body">მაღაზიაში აღება</h6>
+    </div>
+    
+    <p class="fs-12 text-secondary mb-3 lh-sm">
+        🎣 შეკვეთა მზადდება. გთხოვთ გვეწვიოთ მითითებულ მისამართზე:
+    </p>
 
-                            @* მისამართი და საათები *@
-                            <div class="d-flex flex-column gap-2 mb-3">
-                                <a href="https://www.google.com/maps/search/?api=1&query=Kutaisi" target="_blank" class="text-decoration-none d-flex align-items-center gap-2">
-                                    <iconify-icon icon="solar:map-point-bold" class="text-danger fs-18"></iconify-icon>
-                                    <span class="fs-13 fw-medium text-primary text-decoration-underline">ქუთაისი, [ზუსტი ქუჩა]</span>
-                                </a>
-                                <div class="d-flex align-items-center gap-2 text-muted">
-                                    <iconify-icon icon="solar:clock-circle-linear" class="fs-18"></iconify-icon>
-                                    <span class="fs-12">ყოველდღე: 10:00 - 20:00</span>
-                                </div>
-                            </div>
+    @* მისამართი და საათები *@
+    <div class="d-flex flex-column gap-2 mb-3">
+        <a href="https://www.google.com/maps/search/?api=1&query=Kutaisi" target="_blank" class="text-decoration-none d-flex align-items-center gap-2">
+            <iconify-icon icon="solar:map-point-bold" class="text-danger fs-18"></iconify-icon>
+            <span class="fs-13 fw-medium text-primary text-decoration-underline">ქუთაისი, [ზუსტი ქუჩა]</span>
+        </a>
+        <div class="d-flex align-items-center gap-2 text-secondary">
+            <iconify-icon icon="solar:clock-circle-linear" class="fs-18"></iconify-icon>
+            <span class="fs-12">ყოველდღე: 10:00 - 20:00</span>
+        </div>
+    </div>
 
-                            @* გაფრთხილება *@
-                            <div class="bg-warning-subtle border border-warning-subtle rounded-3 p-2 d-flex align-items-start gap-2 shadow-xs">
-                                <iconify-icon icon="solar:info-circle-bold" class="text-warning-emphasis fs-16 mt-1"></iconify-icon>
-                                <p class="fs-11 text-dark mb-0 lh-sm">
-                                    <strong>გაითვალისწინეთ:</strong> ონლაინ შეკვეთა დაგეხმარებათ დროის დაზოგვაში – მაღაზიაში ყველაფერი გამზადებული დაგხვდებათ. თუმცა, ვინაიდან პროდუქცია არ იჯავშნება და მარაგები მუდმივად იცვლება, გირჩევთ მალე გვეწვიოთ, რათა სასურველი ნივთი გაყიდული არ დაგხვდეთ.
-                                </p>
-                            </div>
-                        </div>
+    @* გაფრთხილება - Dark Mode Friendly *@
+    <div class="alert alert-warning py-2 px-3 mb-0 border-0 rounded-3 shadow-xs d-flex align-items-start gap-2">
+        <iconify-icon icon="solar:info-circle-bold" class="fs-16 mt-1 text-warning"></iconify-icon>
+        <p class="fs-11 mb-0 lh-sm text-dark">
+            <strong>გაითვალისწინეთ:</strong> ონლაინ შეკვეთა დაგეხმარებათ დროის დაზოგვაში – მაღაზიაში ყველაფერი გამზადებული დაგხვდებათ. თუმცა, ვინაიდან პროდუქცია არ იჯავშნება და მარაგები მუდმივად იცვლება, გირჩევთ მალე გვეწვიოთ, რათა სასურველი ნივთი გაყიდული არ დაგხვდეთ.
+        </p>
+    </div>
+</div>
 
                         @* მოკლე შეჯამება *@
                         <div class="d-flex justify-content-between align-items-center px-2 mb-3">
