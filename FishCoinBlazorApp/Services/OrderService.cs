@@ -71,7 +71,7 @@ namespace FishCoinBlazorApp.Services
                 throw;
             }
         }
-        public async Task<string?> PlaceRedeemOrder(RedeemCheckout.CheckoutModel checkoutModel, ProductDetailModel redeemProduct)
+        public async Task<string?> PlaceRedeemOrder(ProductDetailModel redeemProduct)
         {
             using var context = _contextFactory.CreateDbContext();
             using var transaction = await context.Database.BeginTransactionAsync();
@@ -79,6 +79,10 @@ namespace FishCoinBlazorApp.Services
             var user = await context.Users.Where(x => x.Id == userId).Include(u => u.LoyaltyCard).FirstOrDefaultAsync();
             var product = await context.Products.FirstOrDefaultAsync(p => p.Id == redeemProduct.Id && p.IsRedeemable && p.PointsPrice.HasValue);
             if (product == null)
+            {
+                return null;
+            }
+            if (product.StockQuantity == 0)
             {
                 return null;
             }
@@ -101,9 +105,9 @@ namespace FishCoinBlazorApp.Services
                 // 1. შეკვეთის მთავარი ჩანაწერი
                 var order = new Order
                 {
-                    FirstNameAndLastName = checkoutModel.FullName,
-                    PhoneNumber = checkoutModel.Phone,
-                    ShippingAddress = checkoutModel.Address,
+                    FirstNameAndLastName = user.FirstName,
+                    PhoneNumber = user.PhoneNumber,
+                    ShippingAddress = "მაღაზია",
                     PaymentMethod = "FishCoins",
                     TotalAmountGEL = 0,
                     DeliveryFee = 0,
@@ -124,11 +128,30 @@ namespace FishCoinBlazorApp.Services
                 };
                 context.OrderItems.Add(orderItem);
 
-                userLoyaltyCard.CurrentPoints -= redeemProduct.PointsPrice.Value;
-                product.StockQuantity -= 1;
+                //userLoyaltyCard.CurrentPoints -= redeemProduct.PointsPrice.Value;
+                var pointsAffected = await context.LoyaltyCards
+                    .Where(l => l.Id == userLoyaltyCard.Id && l.CurrentPoints >= product.PointsPrice)
+                    .ExecuteUpdateAsync(s => s.SetProperty(l => l.CurrentPoints, l => l.CurrentPoints - product.PointsPrice.Value));
+                if (pointsAffected == 0)
+                {
+                    await transaction.RollbackAsync();
+                    return "არასაკმარისი ქულები";
+                }
+
+                //product.StockQuantity -= 1;
+                var affectedRows = await context.Products
+                    .Where(p => p.Id == product.Id && p.StockQuantity > 0)
+                    .ExecuteUpdateAsync(s => s.SetProperty(p => p.StockQuantity, p => p.StockQuantity - 1));
+
+                if (affectedRows == 0)
+                {
+                    await transaction.RollbackAsync();
+                    return "მარაგი ამოიწურა";
+                }
 
                 await context.SaveChangesAsync();
                 await transaction.CommitAsync();
+                await _hubContext.Clients.All.SendAsync("RefreshOrders");
                 return order.OrderNumber;
             }
             catch
