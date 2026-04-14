@@ -27,7 +27,7 @@ namespace FishCoinBlazorApp.Services
             var userId = GetUserId();
             if (string.IsNullOrEmpty(userId)) return null;
 
-            return await _context.LoyaltyCards
+            return await _context.LoyaltyCards.AsNoTracking()
                 .FirstOrDefaultAsync(x => x.UserId == userId);
         }
 

@@ -27,7 +27,10 @@ namespace FishCoinBlazorApp.Services
             int? categoryId = null,
             string? sortBy = null)
         {
-            var query = _context.Products.AsQueryable();
+            var query = _context.Products
+                .AsNoTracking()
+                .Include(p => p.ProductCategory)
+                .AsQueryable();
 
             if ((subCategoryIds != null && subCategoryIds.Count != 0 && subCategoryIds.Contains(6))
                 || (categoryId.HasValue && categoryId == 3))
@@ -181,7 +184,7 @@ namespace FishCoinBlazorApp.Services
             string? search = null,
             string? sortBy = null)
         {
-            var query = _context.Products.AsQueryable();
+            var query = _context.Products.AsNoTracking().AsQueryable();
             //წამოვიღოთ მხოლოდ ის პროდუქტები, რომლებიც ქულებით შეძენად არის ხელმისაწვდომი
             query = query.Where(x => x.IsRedeemable == true && x.PointsPrice.HasValue);
 

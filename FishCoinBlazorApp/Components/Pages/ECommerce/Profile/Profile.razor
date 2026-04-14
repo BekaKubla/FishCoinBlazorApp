@@ -52,7 +52,7 @@
                                         <div class="clickable-info mb-2" @onclick='() => OpenEditModal("name")'>
                                             <label class="card-label">ბარათის მფლობელი</label>
                                             <div class="fw-bold fs-5 text-uppercase text-truncate d-flex align-items-center text-white">
-                                                @(string.IsNullOrEmpty(fullName) ? "BEKA KUBLASHVILI" : fullName)
+                                                @(string.IsNullOrEmpty(fullName) ? "" : fullName)
                                                 <iconify-icon icon="solar:pen-2-linear" class="ms-2 fs-6 text-warning opacity-75"></iconify-icon>
                                             </div>
                                         </div>
