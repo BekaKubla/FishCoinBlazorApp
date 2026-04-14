@@ -248,9 +248,11 @@
 
     private async Task HandleValidSubmit()
     {
+        if (isProcessing) return;
         if (!IsLimitReached) return;
 
         isProcessing = true;
+        StateHasChanged();
         try
         {
             if (redeemProduct == null)
@@ -261,6 +263,7 @@
             var orderNumber = await OrderService.PlaceRedeemOrder(redeemProduct);
             if (string.IsNullOrEmpty(orderNumber))
             {
+                isProcessing = false;
                 NavigationManager.NavigateTo($"/");
             }
             else
@@ -268,9 +271,11 @@
                 NavigationManager.NavigateTo($"/redeemCheckout-success/{orderNumber}");
             }
         }
-        finally
+        catch (Exception ex)
         {
+            Console.WriteLine($"Error: {ex.Message}");
             isProcessing = false;
+            StateHasChanged();
         }
     }
 
