@@ -2,6 +2,7 @@
 using FishCoinBlazorApp.Components;
 using FishCoinBlazorApp.Data;
 using FishCoinBlazorApp.Entites.Customer;
+using FishCoinBlazorApp.Hubs;
 using FishCoinBlazorApp.Services;
 using FishCoinBlazorApp.Services.Models;
 using FishCoinBlazorApp.Services.RouteServices;
@@ -52,6 +53,7 @@ builder.Services.AddScoped<RedeemStateService>();
 
 builder.Services.AddControllers();
 builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddSignalR();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -99,5 +101,5 @@ app.MapPost("Account/Logout", async (SignInManager<ApplicationUser> signInManage
 app.MapControllers();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
-
+app.MapHub<NotificationHub>("/orderHub");
 app.Run();

@@ -1,7 +1,9 @@
 ﻿using FishCoinBlazorApp.Components.Pages.ECommerce.Orders;
 using FishCoinBlazorApp.Data;
 using FishCoinBlazorApp.Entites.Product;
+using FishCoinBlazorApp.Hubs;
 using FishCoinBlazorApp.Services.Models;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using static FishCoinBlazorApp.Components.Pages.ECommerce.Orders.Checkout;
@@ -12,10 +14,12 @@ namespace FishCoinBlazorApp.Services
     {
         private readonly IDbContextFactory<FishCoinDbContext> _contextFactory;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public OrderService(IDbContextFactory<FishCoinDbContext> contextFactory, IHttpContextAccessor httpContextAccessor)
+        IHubContext<NotificationHub> _hubContext;
+        public OrderService(IDbContextFactory<FishCoinDbContext> contextFactory, IHttpContextAccessor httpContextAccessor, IHubContext<NotificationHub> hubContext)
         {
             _contextFactory = contextFactory;
             _httpContextAccessor = httpContextAccessor;
+            _hubContext = hubContext;
         }
 
         public async Task<string> PlaceOrderAsync(CheckoutModel model, List<CartItemModel> items, decimal deliveryFee, decimal totalPrice)
@@ -58,6 +62,7 @@ namespace FishCoinBlazorApp.Services
 
                 await context.SaveChangesAsync();
                 await transaction.CommitAsync();
+                await _hubContext.Clients.All.SendAsync("RefreshOrders");
                 return order.OrderNumber;
             }
             catch
