@@ -71,7 +71,7 @@ namespace FishCoinBlazorApp.Services
                 throw;
             }
         }
-        public async Task PlaceRedeemOrder(RedeemCheckout.CheckoutModel checkoutModel, ProductDetailModel redeemProduct)
+        public async Task<string?> PlaceRedeemOrder(RedeemCheckout.CheckoutModel checkoutModel, ProductDetailModel redeemProduct)
         {
             using var context = _contextFactory.CreateDbContext();
             using var transaction = await context.Database.BeginTransactionAsync();
@@ -80,22 +80,22 @@ namespace FishCoinBlazorApp.Services
             var product = await context.Products.FirstOrDefaultAsync(p => p.Id == redeemProduct.Id && p.IsRedeemable && p.PointsPrice.HasValue);
             if (product == null)
             {
-                return;
+                return null;
             }
             try
             {
                 if (user == null)
                 {
-                    return;
+                    return null;
                 }
                 var userLoyaltyCard = user.LoyaltyCard;
                 if (userLoyaltyCard == null)
                 {
-                    return;
+                    return null;
                 }
                 if (userLoyaltyCard.CurrentPoints < product.PointsPrice)
                 {
-                    return;
+                    return null;
                 }
 
                 // 1. შეკვეთის მთავარი ჩანაწერი
@@ -129,6 +129,7 @@ namespace FishCoinBlazorApp.Services
 
                 await context.SaveChangesAsync();
                 await transaction.CommitAsync();
+                return order.OrderNumber;
             }
             catch
             {

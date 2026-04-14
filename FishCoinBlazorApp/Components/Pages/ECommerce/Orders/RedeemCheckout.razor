@@ -274,8 +274,15 @@
         isProcessing = true;
         try
         {
-            await OrderService.PlaceRedeemOrder(orderModel, redeemProduct);
-            NavigationManager.NavigateTo("/order-success");
+            var orderNumber = await OrderService.PlaceRedeemOrder(orderModel, redeemProduct);
+            if (string.IsNullOrEmpty(orderNumber))
+            {
+                NavigationManager.NavigateTo($"/");
+            }
+            else
+            {
+                NavigationManager.NavigateTo($"/redeemCheckout-success/{orderNumber}");
+            }
         }
         finally
         {
