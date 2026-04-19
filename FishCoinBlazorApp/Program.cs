@@ -13,9 +13,37 @@ using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// 1. CORS პოლიტიკის დამატება (რომ POS-მა შეძლოს მოთხოვნის გამოგზავნა)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("PosPolicy", policy =>
+    {
+        policy.AllowAnyOrigin() // სატესტოდ ყველას ვუშვებთ, მერე POS-ის IP-ით შეზღუდე
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+// API კონტროლერების და გვერდების მხარდაჭერა
+builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
+builder.Services.AddControllers();
+
+// Swagger-ის კონფიგურაცია
+builder.Services.AddEndpointsApiExplorer(); // ეს აუცილებელია მინიმალ API-ების გამოსაჩენად
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "FishCoin POS API",
+        Version = "v1",
+        Description = "API სალაროსთან (POS) და FishCoin-ის ქულებთან ინტეგრაციისთვის"
+    });
+});
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContextFactory<FishCoinDbContext>(options =>
@@ -38,7 +66,7 @@ builder.Services.AddAuthentication(options =>
     options.DefaultSignInScheme = Microsoft.AspNetCore.Identity.IdentityConstants.ExternalScheme;
 });
 
-// ჩვენი სერვისების რეგისტრაცია
+// სერვისების რეგისტრაცია
 builder.Services.AddScoped<LoyaltyService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<OrderService>();
@@ -51,20 +79,36 @@ builder.Services.AddScoped<WhatsAppService>();
 builder.Services.AddScoped<SubCategoryService>();
 builder.Services.AddScoped<RedeemStateService>();
 
-builder.Services.AddControllers();
+builder.Services.AddHttpClient<SmsService>();
+builder.Services.AddScoped<SmsService>();
+
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddSignalR();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
+// Swagger-ის ჩართვა (აქ გავიტანე გარეთ, რომ დეველოპმენტზეც და სატესტოზეც ჩანდეს)
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "FishCoin API V1");
+        // c.RoutePrefix = "swagger"; // თუ გინდა რომ პირდაპირ /swagger-ზე გაიხსნას
+    });
+}
+
 app.UseHttpsRedirection();
+
+// 2. CORS-ის გამოყენება
+app.UseCors("PosPolicy");
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -88,18 +132,21 @@ app.MapGet("Account/DoLogin", async (
         return Results.LocalRedirect("/");
     }
 
-    // თუ ვერ შევიდა, დააბრუნე ლოგინზე შეცდომის მესიჯით
     return Results.LocalRedirect("/login?error=true");
-});
+}).ExcludeFromDescription();
+
 app.MapPost("Account/Logout", async (SignInManager<ApplicationUser> signInManager) =>
 {
     await signInManager.SignOutAsync();
     return Results.LocalRedirect("/");
-});
+}).ExcludeFromDescription();
 #endregion
 
+// 3. კონტროლერების და ჰაბების მეპინგი
 app.MapControllers();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
 app.MapHub<NotificationHub>("/orderHub");
+
 app.Run();

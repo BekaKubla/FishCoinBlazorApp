@@ -8,6 +8,7 @@ namespace FishCoinBlazorApp.Controllers
 {
     [Route("sitemap.xml")]
     [ApiController]
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class SitemapController : ControllerBase
     {
         private readonly FishCoinDbContext _context;
