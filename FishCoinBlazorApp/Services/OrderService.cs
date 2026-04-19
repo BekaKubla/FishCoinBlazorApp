@@ -15,7 +15,9 @@ namespace FishCoinBlazorApp.Services
         private readonly IDbContextFactory<FishCoinDbContext> _contextFactory;
         private readonly IHttpContextAccessor _httpContextAccessor;
         IHubContext<NotificationHub> _hubContext;
-        public OrderService(IDbContextFactory<FishCoinDbContext> contextFactory, IHttpContextAccessor httpContextAccessor, IHubContext<NotificationHub> hubContext)
+        public OrderService(IDbContextFactory<FishCoinDbContext> contextFactory,
+            IHttpContextAccessor httpContextAccessor,
+            IHubContext<NotificationHub> hubContext)
         {
             _contextFactory = contextFactory;
             _httpContextAccessor = httpContextAccessor;
@@ -128,7 +130,6 @@ namespace FishCoinBlazorApp.Services
                 };
                 context.OrderItems.Add(orderItem);
 
-                //userLoyaltyCard.CurrentPoints -= redeemProduct.PointsPrice.Value;
                 var pointsAffected = await context.LoyaltyCards
                     .Where(l => l.Id == userLoyaltyCard.Id && l.CurrentPoints >= product.PointsPrice)
                     .ExecuteUpdateAsync(s => s.SetProperty(l => l.CurrentPoints, l => l.CurrentPoints - product.PointsPrice.Value));
@@ -138,7 +139,6 @@ namespace FishCoinBlazorApp.Services
                     return "არასაკმარისი ქულები";
                 }
 
-                //product.StockQuantity -= 1;
                 var affectedRows = await context.Products
                     .Where(p => p.Id == product.Id && p.StockQuantity > 0)
                     .ExecuteUpdateAsync(s => s.SetProperty(p => p.StockQuantity, p => p.StockQuantity - 1));
