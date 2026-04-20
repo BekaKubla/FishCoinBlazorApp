@@ -25,7 +25,7 @@ namespace FishCoinBlazorApp.Services
             }
             var currentPoints = currentUser.LoyaltyCard.CurrentPoints;
             var redeemProductUrl = "https://tinyurl.com/yr84xuc3";
-            var message = $"{totalAmount:f2}L shenadzenze dagericxat {points:f2} qula. Balansia: {currentPoints:f2} qula. " +
+            var message = $"{totalAmount:0.##} Laris shenadzenze dagericxat {points:0.##} qula. Balansia: {currentPoints:0.##} qula. " +
                           $"Qulebis gadacvla: {redeemProductUrl}";
             var settings = _config.GetSection("SmsSettings");
             string formattedPhone = phoneNumber.StartsWith("+995") ? phoneNumber :
