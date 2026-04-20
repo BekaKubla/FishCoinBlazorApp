@@ -15,23 +15,21 @@ namespace FishCoinBlazorApp.Services
 
         public async Task<bool> SendBuySms(string phoneNumber, decimal totalAmount, decimal points)
         {
-
-            var message = $"FishCoin: თქვენს {totalAmount}₾ შენაძენზე დაგერიცხათ {points} ქულა! გადაცვალეთ მაღაზიაში ან ონლაინ: FishCoin.Ge";
+            var message = $"FishCoin: Tqvens {totalAmount}L shenadzenze dagericxat {points} quala! Gadacvalet magaziashi an onlain: FishCoin.Ge";
             var settings = _config.GetSection("SmsSettings");
-
+            string formattedPhone = phoneNumber.StartsWith("+995") ? phoneNumber :
+                        (phoneNumber.StartsWith("995") ? "+" + phoneNumber : "+995" + phoneNumber.TrimStart('0'));
             // 1. ვამზადებთ პარამეტრებს
-            var queryParams = new Dictionary<string, string?>
-        {
-            { "username", settings["Username"] },
-            { "password", settings["Password"] },
-            { "client_id", settings["ClientId"] },
-            { "service_id", settings["ServiceId"] },
-            { "to", phoneNumber.StartsWith("+") ? phoneNumber : $"+{phoneNumber}" },
-            { "text", message }
-        };
+            var url = $"{settings["BaseUrl"]}?" +
+          $"username={settings["Username"]}&" +
+          $"password={settings["Password"]}&" +
+          $"client_id={settings["ClientId"]}&" +
+          $"service_id={settings["ServiceId"]}&" +
+          $"to={formattedPhone}&" +
+          $"text={message}";
 
             // 2. ვაწყობთ სრულ URL-ს
-            var url = QueryHelpers.AddQueryString(settings["BaseUrl"]!, queryParams);
+            //var url = QueryHelpers.AddQueryString(settings["BaseUrl"]!, queryParams);
 
             try
             {
