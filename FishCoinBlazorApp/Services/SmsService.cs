@@ -15,7 +15,8 @@ namespace FishCoinBlazorApp.Services
 
         public async Task<bool> SendBuySms(string phoneNumber, decimal totalAmount, decimal points)
         {
-            var message = $"FishCoin: Tqvens {totalAmount}L shenadzenze dagericxat {points} quala! Gadacvalet magaziashi an onlain: FishCoin.Ge";
+            var redeemProductUrl = "https://tinyurl.com/yr84xuc3"; // ეს არის შენი მოკლე URL, რომელიც გადამისამართებს რეალურ გვერდზე
+            var message = $"FishCoin: Tqvens {totalAmount}L shenadzenze dagericxat {points} qula! qulebis gadacvla shesadzlebelia magaziashi an onlain: {redeemProductUrl}";
             var settings = _config.GetSection("SmsSettings");
             string formattedPhone = phoneNumber.StartsWith("+995") ? phoneNumber :
                         (phoneNumber.StartsWith("995") ? "+" + phoneNumber : "+995" + phoneNumber.TrimStart('0'));
@@ -27,9 +28,6 @@ namespace FishCoinBlazorApp.Services
           $"service_id={settings["ServiceId"]}&" +
           $"to={formattedPhone}&" +
           $"text={message}";
-
-            // 2. ვაწყობთ სრულ URL-ს
-            //var url = QueryHelpers.AddQueryString(settings["BaseUrl"]!, queryParams);
 
             try
             {
