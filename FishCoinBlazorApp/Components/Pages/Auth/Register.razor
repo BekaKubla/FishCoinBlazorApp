@@ -1,6 +1,8 @@
 ﻿@page "/register"
 @using FishCoinBlazorApp.Services
 @using FishCoinBlazorApp.Services.Models
+@using System.Timers
+@implements IDisposable
 @using System.ComponentModel.DataAnnotations
 @inject IAccountService AccountService
 @inject NavigationManager NavManager
@@ -93,6 +95,53 @@
         </div>
     </div>
 }
+@* მოდალი (otp  კოდისთვის) *@
+@if (isOtpModalVisible)
+{
+    <div class="custom-modal-backdrop">
+        <div class="custom-modal-content shadow-lg modal-fix p-4 text-center">
+            <div class="mb-3">
+                <i class="bi bi-shield-lock text-primary" style="font-size: 2rem;"></i>
+                <h5 class="fw-bold mt-2">ვერიფიკაცია</h5>
+                <p class="fs-12 text-secondary">კოდი გამოიგზავნა ნომერზე:<br/><b>@registerModel.PhoneNumber</b></p>
+            </div>
+
+            <div class="mb-4">
+                <input @bind="otpCode" @bind:event="oninput" 
+                       class="form-control form-control-lg text-center fw-bold otp-input" 
+                       maxlength="4" placeholder="0000" />
+            </div>
+
+            @if (errors != null && errors.Any())
+            {
+                <div class="alert alert-danger py-2 fs-11 border-0 rounded-3 mb-3">
+                    @string.Join(", ", errors)
+                </div>
+            }
+
+            <button @onclick="VerifyOtp" disabled="@(otpCode.Length < 4 || isVerifying)" 
+                    class="btn btn-primary w-100 py-2 fw-bold mb-3">
+                @(isVerifying ? "მოწმდება..." : "დადასტურება")
+            </button>
+
+            <div class="fs-12">
+                @if (!canResend)
+                {
+                    <span class="text-secondary">ხელახლა გაგზავნა (@timerCount წმ)</span>
+                }
+                else
+                {
+                    <span @onclick="ResendOtp" class="text-primary fw-bold cursor-pointer underline-link">
+                        ხელახლა გაგზავნა
+                    </span>
+                }
+            </div>
+            
+            <button class="btn btn-link btn-sm mt-3 text-secondary text-decoration-none" 
+                    @onclick="() => isOtpModalVisible = false">გაუქმება</button>
+        </div>
+    </div>
+}
 
 <style>
     .auth-wrapper { display: flex; justify-content: center; align-items: flex-start; padding-top: 20px; min-height: 80vh; }
@@ -123,6 +172,19 @@
     [data-bs-theme="dark"] .auth-card { background-color: #1a1a1a; }
     [data-bs-theme="dark"] .form-control-custom { border-color: #444; }
     [data-bs-theme="dark"] .modal-fix { background-color: #1a1a1a !important; color: #f8fafc; border-color: #333; }
+
+    .otp-input {
+    letter-spacing: 12px;
+    font-size: 24px;
+    border: 2px solid var(--bs-primary);
+    background: var(--bs-tertiary-bg);
+}
+
+.otp-input::placeholder {
+    letter-spacing: normal;
+    font-size: 14px;
+    opacity: 0.3;
+}
 </style>
 
 @code {
@@ -131,15 +193,100 @@
     private bool isTermsVisible = false;
     private bool isAccepted = false;
 
+    private bool isOtpModalVisible = false;
+    private string otpCode = "";
+    private int timerCount = 60;
+    private Timer? timer;
+    private bool canResend = false;
+    private bool isVerifying = false;
+
     private void ShowTerms() { isTermsVisible = true; StateHasChanged(); }
     private void HideTerms() { isTermsVisible = false; StateHasChanged(); }
 
     private async Task HandleRegistration()
     {
-        if (!isAccepted) return;
-        errors = null;
-        var result = await AccountService.RegisterUserAsync(registerModel);
-        if (result.Succeeded) NavManager.NavigateTo("/login?registered=true");
-        else errors = result.Errors;
+if (!isAccepted) return;
+    errors = null;
+    isVerifying = true; // ღილაკზე დაჭერისას "Loading" სტატუსი რომ გვქონდეს
+    StateHasChanged();
+
+    try 
+    {
+        var result = await AccountService.PrepareRegistrationAsync(registerModel);
+        
+        if (result.Succeeded)
+        {
+            isOtpModalVisible = true; // მოდალის გამოჩენა
+            StartTimer();
+            otpCode = ""; // გავასუფთავოთ ძველი კოდი
+        }
+        else
+        {
+            errors = result.Errors;
+        }
     }
+    catch
+    {
+        errors = new[] { "მოხდა შეცდომა SMS-ის გაგზავნისას. სცადეთ მოგვიანებით." };
+    }
+    finally
+    {
+        isVerifying = false;
+        StateHasChanged(); // აიძულე UI განახლდეს
+    }
+  }
+
+    private void StartTimer()
+{
+    canResend = false;
+    timerCount = 60;
+    timer?.Stop();
+    timer = new Timer(1000);
+    timer.Elapsed += async (s, e) =>
+    {
+        if (timerCount > 0)
+        {
+            timerCount--;
+            await InvokeAsync(StateHasChanged);
+        }
+        else
+        {
+            canResend = true;
+            timer.Stop();
+            await InvokeAsync(StateHasChanged);
+        }
+    };
+    timer.Start();
+}
+
+private async Task ResendOtp()
+{
+    if (!canResend) return;
+    
+    var result = await AccountService.PrepareRegistrationAsync(registerModel);
+    if (result.Succeeded)
+    {
+        StartTimer();
+    }
+}
+
+private async Task VerifyOtp()
+{
+    isVerifying = true;
+    var result = await AccountService.CompleteRegistrationAsync(registerModel,otpCode);
+    
+    if (result.Succeeded)
+    {
+        isOtpModalVisible = false;
+        NavManager.NavigateTo("/login?registered=true");
+    }
+    else
+    {
+        errors = result.Errors; // შეცდომა მოდალის შიგნითაც გამოჩნდება
+    }
+    isVerifying = false;
+    StateHasChanged();
+}
+
+public void Dispose() => timer?.Dispose();
 }

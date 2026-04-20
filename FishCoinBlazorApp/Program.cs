@@ -32,6 +32,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddControllers();
+builder.Services.AddMemoryCache();
 
 // Swagger-ის კონფიგურაცია
 builder.Services.AddEndpointsApiExplorer(); // ეს აუცილებელია მინიმალ API-ების გამოსაჩენად
@@ -78,6 +79,7 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<WhatsAppService>();
 builder.Services.AddScoped<SubCategoryService>();
 builder.Services.AddScoped<RedeemStateService>();
+builder.Services.AddScoped<AuthService>();
 
 builder.Services.AddHttpClient<SmsService>();
 builder.Services.AddScoped<SmsService>();
