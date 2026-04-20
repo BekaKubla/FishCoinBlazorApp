@@ -75,17 +75,47 @@
                     </Authorized>
 
                     <NotAuthorized>
-                        @* გამოჩნდება სტუმრებისთვის *@
-                        <a href="login" class="topbar-button d-flex align-items-center gap-2 px-2">
-                            <iconify-icon icon="solar:user-circle-bold-duotone" class="fs-26 align-middle text-primary"></iconify-icon>
-                            <span class="fw-bold fs-13 d-none d-sm-inline-block">შესვლა</span>
-                        </a>
+                        @* Dropdown სტუმრებისთვის *@
+                        <div class="dropdown topbar-item">
+                            <a type="button" class="topbar-button d-flex align-items-center gap-2"
+                                   id="page-header-guest-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <iconify-icon icon="solar:user-circle-bold-duotone" class="fs-26 align-middle text-primary"></iconify-icon>
+                                <span class="fw-bold fs-13 d-none d-sm-inline-block">ავტორიზაცია</span>
+                                <i class="bx bx-chevron-down d-none d-sm-inline-block"></i>
+                            </a>
+        
+                            <div class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                                <h6 class="dropdown-header text-uppercase fs-11">ანგარიშის მართვა</h6>
+            
+                                <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="login">
+                                    <iconify-icon icon="solar:login-2-linear" class="fs-18 text-muted"></iconify-icon>
+                                    <span class="align-middle">შესვლა</span>
+                                </a>
+
+                                <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="register">
+                                    <iconify-icon icon="solar:user-plus-linear" class="fs-18 text-muted"></iconify-icon>
+                                    <span class="align-middle">რეგისტრაცია</span>
+                                </a>
+                            </div>
+                        </div>
                     </NotAuthorized>
                 </AuthorizeView>
             </div>
         </div>
     </div>
 </header>
+<style>
+    /* NotAuthorized მენიუს პოზიციონირება */
+    .dropdown-menu-end {
+        transform: translate(10px, -5px) !important;
+        margin-top: 0 !important;
+    }
+
+    #page-header-guest-dropdown + .dropdown-menu {
+        right: -5px !important;
+        top: 80% !important;
+    }
+</style>
 
 @code {
     [Parameter] public required string Title { get; set; }
