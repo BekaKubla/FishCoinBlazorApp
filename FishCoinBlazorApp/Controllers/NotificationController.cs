@@ -14,9 +14,9 @@ namespace FishCoinBlazorApp.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> SendBuySms([FromQuery] string phoneNumber, decimal totalAmount, decimal points)
+        public async Task<IActionResult> SendBuySms([FromQuery] string phoneNumber, decimal totalAmount, decimal points,decimal totalAmountPoints)
         {
-            await _smsService.SendBuySms(phoneNumber, totalAmount, points);
+            await _smsService.SendBuySms(phoneNumber, totalAmount, points, totalAmountPoints);
             return Ok();
         }
     }

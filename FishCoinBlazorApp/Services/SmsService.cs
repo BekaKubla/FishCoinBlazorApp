@@ -13,10 +13,11 @@ namespace FishCoinBlazorApp.Services
             _config = config;
         }
 
-        public async Task<bool> SendBuySms(string phoneNumber, decimal totalAmount, decimal points)
+        public async Task<bool> SendBuySms(string phoneNumber, decimal totalAmount, decimal points, decimal totalAmountPoints)
         {
             var redeemProductUrl = "https://tinyurl.com/yr84xuc3";
-            var message = $"FishCoin: Tqvens {totalAmount}L shenadzenze dagericxat {points} qula! qulebis gadacvla shesadzlebelia magaziashi an onlain: {redeemProductUrl}";
+            var message = $"{totalAmount:f2}L shenadzenze dagericxat {points:f2} qula. Balansia: {totalAmountPoints:f2} qula. " +
+                          $"Qulebis gadacvla: {redeemProductUrl}";
             var settings = _config.GetSection("SmsSettings");
             string formattedPhone = phoneNumber.StartsWith("+995") ? phoneNumber :
                         (phoneNumber.StartsWith("995") ? "+" + phoneNumber : "+995" + phoneNumber.TrimStart('0'));
