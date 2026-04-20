@@ -205,81 +205,86 @@
 
     private async Task HandleRegistration()
     {
-if (!isAccepted) return;
-    errors = null;
-    isVerifying = true; // ღილაკზე დაჭერისას "Loading" სტატუსი რომ გვქონდეს
-    StateHasChanged();
+        if (!isAccepted) return;
+        errors = null;
+        isVerifying = true; // ღილაკზე დაჭერისას "Loading" სტატუსი რომ გვქონდეს
+        StateHasChanged();
 
-    try 
-    {
-        var result = await AccountService.PrepareRegistrationAsync(registerModel);
-        
-        if (result.Succeeded)
+        try 
         {
-            isOtpModalVisible = true; // მოდალის გამოჩენა
-            StartTimer();
-            otpCode = ""; // გავასუფთავოთ ძველი კოდი
+            var result = await AccountService.PrepareRegistrationAsync(registerModel);
+
+            if (result.Succeeded)
+            {
+                isOtpModalVisible = true; // მოდალის გამოჩენა
+                StartTimer();
+                otpCode = ""; // გავასუფთავოთ ძველი კოდი
+            }
+            else
+            {
+                errors = result.Errors;
+            }
         }
-        else
+        catch
         {
-            errors = result.Errors;
+            errors = new[] { "მოხდა შეცდომა SMS-ის გაგზავნისას. სცადეთ მოგვიანებით." };
+        }
+        finally
+        {
+            isVerifying = false;
+            StateHasChanged(); // აიძულე UI განახლდეს
         }
     }
-    catch
-    {
-        errors = new[] { "მოხდა შეცდომა SMS-ის გაგზავნისას. სცადეთ მოგვიანებით." };
-    }
-    finally
-    {
-        isVerifying = false;
-        StateHasChanged(); // აიძულე UI განახლდეს
-    }
-  }
 
     private void StartTimer()
-{
-    canResend = false;
-    timerCount = 60;
-    timer?.Stop();
-    timer = new Timer(1000);
-    timer.Elapsed += async (s, e) =>
     {
-        if (timerCount > 0)
+        canResend = false;
+        timerCount = 60;
+        timer?.Stop();
+        timer = new Timer(1000);
+        timer.Elapsed += async (s, e) =>
         {
-            timerCount--;
-            await InvokeAsync(StateHasChanged);
-        }
-        else
+            if (timerCount > 0)
+            {
+                timerCount--;
+                await InvokeAsync(StateHasChanged);
+            }
+            else
+            {
+                canResend = true;
+                timer.Stop();
+                await InvokeAsync(StateHasChanged);
+            }
+        };
+        timer.Start();
+    }
+
+    private async Task ResendOtp()
+    {
+        if (!canResend) return;
+
+        var result = await AccountService.PrepareRegistrationAsync(registerModel);
+        if (result.Succeeded)
         {
-            canResend = true;
-            timer.Stop();
-            await InvokeAsync(StateHasChanged);
+            StartTimer();
         }
-    };
-    timer.Start();
-}
-
-private async Task ResendOtp()
-{
-    if (!canResend) return;
-    
-    var result = await AccountService.PrepareRegistrationAsync(registerModel);
-    if (result.Succeeded)
-    {
-        StartTimer();
     }
-}
 
-private async Task VerifyOtp()
-{
-    isVerifying = true;
-    var result = await AccountService.CompleteRegistrationAsync(registerModel,otpCode);
-    
-    if (result.Succeeded)
+    private async Task VerifyOtp()
     {
-        isOtpModalVisible = false;
-        NavManager.NavigateTo("/login?registered=true");
-    }
+        isVerifying = true;
+        var result = await AccountService.CompleteRegistrationAsync(registerModel,otpCode);
+
+        if (result.Succeeded)
+        {
+            isOtpModalVisible = false;
+            var query = $"?phone={registerModel.PhoneNumber}&pass={registerModel.Password}&remember=true";
+            NavManager.NavigateTo($"/Account/DoLogin{query}", forceLoad: true);
+            NavManager.NavigateTo("/profile");
+            isVerifying = false;
+            StateHasChanged();
+            return;
+        }
     else
     {
         errors = result.Errors; // შეცდომა მოდალის შიგნითაც გამოჩნდება
