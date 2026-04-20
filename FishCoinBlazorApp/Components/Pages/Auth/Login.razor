@@ -168,6 +168,20 @@
         from { transform: translateY(20px); opacity: 0; }
         to { transform: translateY(0); opacity: 1; }
     }
+
+    /* Edge-ისთვის */
+input::-ms-reveal,
+input::-ms-clear {
+    display: none;
+}
+
+/* Chrome და სხვებისთვის (თუ გამოჩნდა) */
+input::-webkit-contacts-auto-fill-button,
+input::-webkit-credentials-auto-fill-button {
+    visibility: hidden;
+    display: none !important;
+    pointer-events: none;
+}
 </style>
 
 @code {
