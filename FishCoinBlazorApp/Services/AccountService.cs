@@ -11,7 +11,10 @@ namespace FishCoinBlazorApp.Services
         Task<(bool Succeeded, string[] Errors)> RegisterUserAsync(RegisterModel model);
         Task<(bool Succeeded, string Error)> LoginUserAsync(LoginModel model);
         Task<(bool Succeeded, string[] Errors)> PrepareRegistrationAsync(RegisterModel model);
-        Task<(bool Succeeded, string[] Errors)> CompleteRegistrationAsync(RegisterModel model,string otpCode);
+        Task<(bool Succeeded, string[] Errors)> SendResetOtpAsync(string phoneNumber);
+        Task<(bool Succeeded, string[] Errors)> CompleteRegistrationAsync(RegisterModel model, string otpCode);
+        Task<(bool Succeeded, string[] Errors)> CompletePasswordResetAsync(string phoneNumber, string otpCode, string newPassword);
+        Task<bool> CheckUserExistsAsync(string phoneNumber);
     }
 
     public class AccountService : IAccountService
@@ -115,6 +118,10 @@ namespace FishCoinBlazorApp.Services
             {
                 return (false, new[] { "მომხმარებელი უკვე არსებობს." });
             }
+            if (_authService.CheckOtpCodeAlreadySent(model.PhoneNumber))
+            {
+                return (false, new[] { "კოდი უკვე გაგზავნილია. გთხოვთ, მოიცადოთ 1წუთი." });
+            }
             string otpCode = Random.Shared.Next(1000, 10000).ToString();
             var otpResult = _authService.SaveOtp(model.PhoneNumber, otpCode);
             if (!otpResult)
@@ -129,7 +136,7 @@ namespace FishCoinBlazorApp.Services
             return (true, Array.Empty<string>());
         }
 
-        public async Task<(bool Succeeded, string[] Errors)> CompleteRegistrationAsync(RegisterModel model,string otpCode)
+        public async Task<(bool Succeeded, string[] Errors)> CompleteRegistrationAsync(RegisterModel model, string otpCode)
         {
             var verifyOtpResult = _authService.VerifyOtp(model.PhoneNumber, otpCode);
             if (verifyOtpResult)
@@ -140,6 +147,62 @@ namespace FishCoinBlazorApp.Services
                     return (false, registerResult.Errors);
                 }
                 return (true, Array.Empty<string>());
+            }
+            return (false, new[] { "სარეგისტრაციო კოდი არასწორია." });
+        }
+
+        public async Task<bool> CheckUserExistsAsync(string phoneNumber)
+        {
+            var existingUser = dbContext.Users.FirstOrDefault(u => u.PhoneNumber == phoneNumber);
+            if (existingUser != null)
+            {
+                return true;
+            }
+            return false;
+
+        }
+
+        public async Task<(bool Succeeded, string[] Errors)> SendResetOtpAsync(string phoneNumber)
+        {
+            if (_authService.CheckOtpCodeAlreadySent(phoneNumber))
+            {
+                return (false, new[] { "კოდი უკვე გაგზავნილია. გთხოვთ, მოიცადოთ 1წუთი." });
+            }
+            string otpCode = Random.Shared.Next(1000, 10000).ToString();
+            var otpResult = _authService.SaveOtp(phoneNumber, otpCode);
+            if (!otpResult)
+            {
+                return (false, new[] { "შეცდომა კოდის დაგენერირებისას." });
+            }
+            var sendSms = await _smsService.SendPasswordResetOtpSms(phoneNumber, otpCode);
+            if (!sendSms)
+            {
+                return (false, new[] { "შეცდომა კოდის გაგზავნისას." });
+            }
+            return (true, Array.Empty<string>());
+        }
+
+        public async Task<(bool Succeeded, string[] Errors)> CompletePasswordResetAsync(string phoneNumber, string otpCode, string newPassword)
+        {
+            var existingUser = dbContext.Users.FirstOrDefault(u => u.PhoneNumber == phoneNumber);
+            if (existingUser == null)
+            {
+                return (false, new[] { "მომხმარებელი არ არსებობს." });
+            }
+            var verifyOtpResult = _authService.VerifyOtp(phoneNumber, otpCode);
+            if (verifyOtpResult)
+            {
+                try
+                {
+                    existingUser.PasswordHash = _userManager.PasswordHasher.HashPassword(existingUser, newPassword);
+                    dbContext.Users.Update(existingUser);
+                    await dbContext.SaveChangesAsync();
+                    return (true, Array.Empty<string>());
+                }
+                catch
+                {
+                    return (false, new[] { "მოხდა გაუთვალისწინებელი შეცდომა,სცადეთ მოგვიანებით." });
+                }
             }
             return (false, new[] { "სარეგისტრაციო კოდი არასწორია." });
         }

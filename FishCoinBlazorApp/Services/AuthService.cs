@@ -5,7 +5,7 @@ namespace FishCoinBlazorApp.Services
     public class AuthService
     {
         private readonly IMemoryCache _cache;
-        private readonly TimeSpan _otpExpiry = TimeSpan.FromMinutes(2);
+        private readonly TimeSpan _otpExpiry = TimeSpan.FromMinutes(1);
 
         public AuthService(IMemoryCache cache)
         {
@@ -22,7 +22,7 @@ namespace FishCoinBlazorApp.Services
 
                 _cache.Set(phoneNumber, code, cacheOptions);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return false;
             }
@@ -40,6 +40,18 @@ namespace FishCoinBlazorApp.Services
                 }
             }
             return false;
+        }
+
+        public bool CheckOtpCodeAlreadySent(string phonenumber)
+        {
+            if (_cache.TryGetValue(phonenumber, out string? code))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }

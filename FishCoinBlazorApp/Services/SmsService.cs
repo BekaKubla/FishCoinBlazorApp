@@ -53,7 +53,36 @@ namespace FishCoinBlazorApp.Services
             var settings = _config.GetSection("SmsSettings");
             string formattedPhone = phoneNumber.StartsWith("+995") ? phoneNumber :
                         (phoneNumber.StartsWith("995") ? "+" + phoneNumber : "+995" + phoneNumber.TrimStart('0'));
-            var message = $"FishCoin: Tqveni saregistracio kodi aris {code}.";
+            var message = $"Tqveni saregistracio kodi aris {code}.";
+            var url = $"{settings["BaseUrl"]}?" +
+                      $"username={settings["Username"]}&" +
+                      $"password={settings["Password"]}&" +
+                      $"client_id={settings["ClientId"]}&" +
+                      $"service_id={settings["ServiceId"]}&" +
+                      $"to={formattedPhone}&" +
+                      $"text={message}";
+            try
+            {
+                var response = await _httpClient.GetAsync(url);
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadAsStringAsync();
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> SendPasswordResetOtpSms(string phoneNumber, string code)
+        {
+            var settings = _config.GetSection("SmsSettings");
+            string formattedPhone = phoneNumber.StartsWith("+995") ? phoneNumber :
+                        (phoneNumber.StartsWith("995") ? "+" + phoneNumber : "+995" + phoneNumber.TrimStart('0'));
+            var message = $"Parolis agdgenis kodi: {code}";
             var url = $"{settings["BaseUrl"]}?" +
                       $"username={settings["Username"]}&" +
                       $"password={settings["Password"]}&" +
