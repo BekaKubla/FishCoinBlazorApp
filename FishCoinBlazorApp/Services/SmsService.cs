@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.WebUtilities;
+﻿using FishCoinBlazorApp.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace FishCoinBlazorApp.Services
 {
@@ -6,17 +7,25 @@ namespace FishCoinBlazorApp.Services
     {
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _config;
+        private readonly FishCoinDbContext _dbContext;
 
-        public SmsService(HttpClient httpClient, IConfiguration config)
+        public SmsService(HttpClient httpClient, IConfiguration config, FishCoinDbContext dbContext)
         {
             _httpClient = httpClient;
             _config = config;
+            _dbContext = dbContext;
         }
 
-        public async Task<bool> SendBuySms(string phoneNumber, decimal totalAmount, decimal points, decimal totalAmountPoints)
+        public async Task<bool> SendBuySms(string phoneNumber, decimal totalAmount, decimal points)
         {
+            var currentUser = await _dbContext.Users.Include(x => x.LoyaltyCard).FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
+            if (currentUser == null)
+            {
+                return false;
+            }
+            var currentPoints = currentUser.LoyaltyCard.CurrentPoints;
             var redeemProductUrl = "https://tinyurl.com/yr84xuc3";
-            var message = $"{totalAmount:f2}L shenadzenze dagericxat {points:f2} qula. Balansia: {totalAmountPoints:f2} qula. " +
+            var message = $"{totalAmount:f2}L shenadzenze dagericxat {points:f2} qula. Balansia: {currentPoints:f2} qula. " +
                           $"Qulebis gadacvla: {redeemProductUrl}";
             var settings = _config.GetSection("SmsSettings");
             string formattedPhone = phoneNumber.StartsWith("+995") ? phoneNumber :
