@@ -90,7 +90,7 @@
                 </div>
             </div>
 
-            <div class="row">
+            <div class="row g-4">
                 <div class="col-lg-4">
                     <div class="card h-100">
                         <div class="card-body">
@@ -135,28 +135,24 @@
                 <div class="col-lg-8">
                     <div class="card h-100">
                         <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
+                            @* შესწორებული სექცია: ბონუსის ქარდი მობილურზე სრულ სიგრძეზე *@
+                            <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                                <div class="w-100 w-sm-auto mb-2 mb-sm-0">
                                     <span class="badge bg-success-subtle text-success border border-success-subtle fs-12 px-2 py-1 uppercase">
                                         @(productDetail.IsNew ? "ახალი მიღებული" : "")
                                     </span>
-                                    <h3 class="mt-2 text-dark fw-semibold">@productDetail.Name</h3>
-                                </div>
-                                <div class="text-end">
-                                    <div class="bg-warning-subtle border border-warning-subtle rounded-3 p-2 d-inline-block text-center">
-                                        <span class="d-block fs-12 text-warning-emphasis fw-bold uppercase">ბონუსი</span>
-                                        <span class="fs-18 fw-bold text-dark">+@productDetail.PointsReward ქულა</span>
-                                        <i class='bx bxs-coin-stack text-warning ms-1'></i>
-                                    </div>
+                                    <h3 class="mt-2 text-dark fw-semibold lh-sm">@productDetail.Name</h3>
                                 </div>
                             </div>
 
-                            <div class="d-flex align-items-center gap-3 my-3">
+                            <div class="d-flex flex-wrap align-items-baseline gap-2 my-3">
                                 @if (productDetail.DiscountPrecentage.HasValue)
                                 {
                                     <h2 class="fw-bold text-primary mb-0">@productDetail.DiscountPrice ₾</h2>
-                                    <h4 class="text-muted text-decoration-line-through mb-0 fs-18">@productDetail.Price ₾</h4>
-                                    <span class="badge bg-danger-subtle text-danger rounded-pill fs-12">-@productDetail.DiscountPrecentage% ფასდაკლება</span>
+                                    <h4 class="text-muted text-decoration-line-through mb-0 fs-16">@productDetail.Price ₾</h4>
+                                    <span class="badge bg-danger-subtle text-danger rounded-pill fs-12 py-1 px-2">
+                                        -@productDetail.DiscountPrecentage% ფასდაკლება
+                                    </span>
                                 }
                                 else
                                 {
@@ -164,9 +160,9 @@
                                 }
                             </div>
 
-                            <div class="alert alert-info border-0 bg-info-subtle d-flex align-items-center gap-2 mt-3" role="alert">
+                            <div class="alert alert-info border-0 bg-info-subtle d-flex align-items-center gap-2 mt-4" role="alert">
                                 <i class='bx bx-info-circle fs-20'></i>
-                                <span class="fs-14">ამ პროდუქტის შეძენით თქვენს ბალანსზე დაგერიცხებათ <strong>@productDetail.PointsReward ქულა</strong>, რომელსაც გამოიყენებთ შემდეგ შენაძენზე.</span>
+                                <span class="fs-14">ამ პროდუქტის შეძენით თქვენს ბალანსზე დაგერიცხებათ <strong>@productDetail.PointsReward ქულა</strong>, რომელიც დაგეხმარებათ საჩუქრის მიღებაში.</span>
                             </div>
 
                             <div class="quantity mt-4">
