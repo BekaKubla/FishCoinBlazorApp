@@ -4,6 +4,7 @@
 @inject FishCoinBlazorApp.Services.CartService CartService
 @inject FishCoinBlazorApp.Services.ProductService ProductService
 @inject FishCoinBlazorApp.Services.OrderService OrderService
+@inject FishCoinBlazorApp.Services.UserService UserService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 
@@ -37,7 +38,7 @@
                                     <InputText @bind-Value="orderModel.Phone" class="form-control custom-minimal-input" placeholder="5xx xx xx xx" />
                                     <ValidationMessage For="@(() => orderModel.Phone)" class="text-danger fs-11 mt-1 px-1" />
                                 </div>
-@*                                 <div class="col-12">
+                                @*                                 <div class="col-12">
                                     <label class="fs-12 fw-bold text-muted mb-1 px-1">მიწოდების მისამართი</label>
                                     <InputText @bind-Value="orderModel.Address" class="form-control custom-minimal-input" placeholder="ქალაქი, ქუჩა, ბინა/სადარბაზო" />
                                     <ValidationMessage For="@(() => orderModel.Address)" class="text-danger fs-11 mt-1 px-1" />
@@ -310,6 +311,16 @@
         }
     }
 
+    private async Task LoadUserData()
+    {
+        var dbUser = await UserService.GetCurrentUserAsync();
+        if (dbUser != null)
+        {
+            orderModel.FullName = $"{dbUser.FirstName} {dbUser.LastName}";
+            orderModel.Phone = dbUser.PhoneNumber ?? "";
+        }
+    }
+
     private int CalculateTotalPoints() =>
         CartService.CartItems.Sum(item => item.Product.PointsReward * item.Quantity);
 
@@ -319,6 +330,7 @@
         {
             await JsRuntime.InvokeVoidAsync("window.scrollTo", 0, 0);
             await CartService.LoadCart();
+            await LoadUserData();
             StateHasChanged();
         }
     }

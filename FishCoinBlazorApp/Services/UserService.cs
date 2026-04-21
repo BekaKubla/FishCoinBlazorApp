@@ -55,7 +55,7 @@ namespace FishCoinBlazorApp.Services
 
         public async Task<ApplicationUser?> GetCurrentUserAsync()
         {
-            var userId = GetUserId(); // წინა მესიჯში დაწერილი დამხმარე მეთოდი
+            var userId = GetUserId();
             if (string.IsNullOrEmpty(userId)) return null;
 
             return await _context.Users.Include(u => u.Orders)
