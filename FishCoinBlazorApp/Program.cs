@@ -151,4 +151,24 @@ app.MapRazorComponents<App>()
 
 app.MapHub<NotificationHub>("/orderHub");
 
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<FishCoinDbContext>(); // შენი DbContext-ის სახელი
+
+        // ამოწმებს არის თუ არა დარჩენილი მიგრაციები და უშვებს მათ
+        if (context.Database.GetPendingMigrations().Any())
+        {
+            context.Database.Migrate();
+        }
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "მიგრაციების გაშვებისას მოხდა შეცდომა.");
+    }
+}
+
 app.Run();
