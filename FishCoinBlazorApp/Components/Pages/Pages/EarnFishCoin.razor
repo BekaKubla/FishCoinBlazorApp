@@ -3,145 +3,153 @@
 @inject IJSRuntime JsRuntime
 
 <style>
+    /* 1. ძირითადი გარემო */
+    .main-wrapper {
+        min-height: 100vh;
+        background-color: var(--bs-body-bg);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* 2. Header-ის სტილი */
     .earn-header {
-        background: linear-gradient(rgba(30, 60, 114, 0.9), rgba(42, 82, 152, 0.9)), url('images/fishing-bg.jpg');
-        background-size: cover;
-        padding: 60px 0;
-        border-radius: 15px;
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        padding: 40px 15px;
+        border-radius: 16px;
         color: white;
+        position: relative;
+        overflow: hidden;
     }
 
+    /* 3. ბარათების სტილი */
     .earning-method-card {
+        border-radius: 15px;
+        border: 1px solid rgba(128, 128, 128, 0.1);
         border-left: 5px solid #FFD700;
-        transition: transform 0.2s;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background: var(--bs-card-bg);
     }
 
-        .earning-method-card:hover {
-            transform: scale(1.02);
-        }
-
-    .coin-float {
-        animation: floating 3s ease-in-out infinite;
+    .earning-method-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
     }
 
-    @@keyframes floating {
-        0% {
-            transform: translateY(0px);
-        }
+    /* აიქონების კონტეინერი */
+    .avatar-md {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+    }
 
-        50% {
-            transform: translateY(-10px);
+    /* ტექსტის ზომები მობილურისთვის */
+    @@media (max-width: 576px) {
+        .earn-header h2 {
+            font-size: 1.5rem !important;
         }
-
-        100% {
-            transform: translateY(0px);
+        .earning-method-card h4 {
+            font-size: 1.1rem;
         }
     }
 </style>
 
-<Topbar Title="როგორ დავაგროვოთ ქულები" />
+<div class="main-wrapper bg-body">
+    <Topbar Title="როგორ დავაგროვოთ ქულები" />
 
-<div class="row pb-5">
-    <div class="col-12">
-
-        @* 1. Hero Section - კომპაქტური და დახვეწილი *@
-        <div class="earn-header text-center mb-4 shadow-sm" style="padding: 40px 15px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); border-radius: 12px;">
-
-            @* პატარა, მინიმალისტური ხატულა *@
+    @* დამატებულია pt-3 და container-fluid სწორი დაშორებისთვის *@
+    <div class="container-fluid px-3 px-md-4 pt-3">
+        
+        @* 1. Hero Section *@
+        <div class="earn-header text-center mb-4 shadow-sm">
             <div class="mb-2">
                 <iconify-icon icon="solar:gift-bold-duotone" class="text-warning" style="font-size: 45px;"></iconify-icon>
             </div>
 
-            @* სათაური - ზომიერი (h2) *@
-            <h2 class="fw-bold text-white mb-2" style="font-size: 1.75rem;">
+            <h2 class="fw-bold text-white mb-2">
                 მიიღეთ მეტი <span class="text-warning">ბონუს ქულა</span> თითოეულ შენაძენზე
             </h2>
 
-            @* ქვესათაური - უფრო პატარა და კონკრეტული *@
-            <p class="text-white-50 mx-auto mb-0" style="max-width: 550px; font-size: 0.95rem; line-height: 1.5;">
-                დააგროვეთ 
-                <span class="text-white fw-bold">FishCoin</span> ბონუსები ყოველ შენაძენზე და გადაცვალეთ ისინი სხვადასხვა პროდუქტებში,როგორც ონლაინ ასევე მაღაზიაში.
+            <p class="text-white-50 mx-auto mb-0" style="max-width: 550px; font-size: 0.95rem;">
+                დააგროვეთ <span class="text-white fw-bold">FishCoin</span> ბონუსები ყოველ შენაძენზე და გადაცვალეთ ისინი პროდუქტებში, როგორც ონლაინ, ასევე მაღაზიაში.
             </p>
 
-            @* მცირე სტატუსის ხაზი *@
             <div class="mt-3">
-                <span class="badge bg-white-subtle text-white border border-white-50 px-3 py-1" style="font-size: 0.8rem; background: rgba(255,255,255,0.1);">
+                <span class="badge bg-white-subtle text-white border border-white-50 px-3 py-1" style="background: rgba(255,255,255,0.1);">
                     <iconify-icon icon="solar:star-circle-bold" class="me-1 text-warning"></iconify-icon>
                     ლოიალობის პროგრამა
                 </span>
             </div>
         </div>
 
-        @* 2. Main Earning Rules *@
-        <div class="row g-4">
-            @* მეთოდი 1: შენაძენი *@
+        @* 2. Earning Methods *@
+        <div class="row g-3 g-md-4 pb-5">
+            
+            @* მეთოდი 1 *@
             <div class="col-md-6">
                 <div class="card earning-method-card h-100 shadow-sm p-4">
                     <div class="d-flex align-items-center mb-3">
-                        <div class="avatar-md bg-primary-subtle rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                        <div class="avatar-md bg-primary-subtle me-3">
                             <iconify-icon icon="solar:bag-heart-bold-duotone" class="fs-2 text-primary"></iconify-icon>
                         </div>
                         <h4 class="fw-bold mb-0">ყოველდღიური შენაძენი</h4>
                     </div>
-                    <p class="text-muted">მიიღეთ ბონუს ქულები ჩვენს მაღაზიაში შეძენილ ნებისმიერ პროდუქტზე.</p>
-                    <div class="bg-light p-3 rounded">
-                        <span class="badge bg-success fs-14">პრინციპი:</span>
-                        <span class="ms-2">შენაძენი -> <strong>დარიცხვა</strong></span>
+                    <p class="text-muted fs-14">მიიღეთ ბონუს ქულები ჩვენს მაღაზიაში შეძენილ ნებისმიერ პროდუქტზე.</p>
+                    <div class="bg-body-tertiary p-3 rounded-3">
+                        <span class="badge bg-success fs-12">პრინციპი:</span>
+                        <span class="ms-2 fs-13">შენაძენი -> <strong>დარიცხვა</strong></span>
                     </div>
                 </div>
             </div>
 
-            @* მეთოდი 2: მეგობრის მოწვევა *@
+            @* მეთოდი 2 *@
             <div class="col-md-6">
                 <div class="card earning-method-card h-100 shadow-sm p-4" style="border-left-color: #00d2ff;">
                     <div class="d-flex align-items-center mb-3">
-                        <div class="avatar-md bg-info-subtle rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                        <div class="avatar-md bg-info-subtle me-3">
                             <iconify-icon icon="solar:fire-bold-duotone" class="fs-2 text-info"></iconify-icon>
                         </div>
                         <h4 class="fw-bold mb-0">ექსკლუზიური შეთავაზებები</h4>
                     </div>
-                    <p class="text-muted">მიიღეთ წვდომა სპეციალურ ფასდაკლებებზე და "ცხელ" შეთავაზებებზე, რომლებიც ხელმისაწვდომია მხოლოდ ლოიალობის პროგრამის წევრებისთვის.</p>
-                    <div class="bg-light p-3 rounded">
-                        <span class="badge bg-info fs-14">უპირატესობა:</span>
-                        <span class="ms-2">დაზოგეთ მეტი "ცხელ" აქციებზე</span>
+                    <p class="text-muted fs-14">წვდომა სპეციალურ ფასდაკლებებზე, რომლებიც ხელმისაწვდომია მხოლოდ პროგრამის წევრებისთვის.</p>
+                    <div class="bg-body-tertiary p-3 rounded-3">
+                        <span class="badge bg-info fs-12">უპირატესობა:</span>
+                        <span class="ms-2 fs-13">დაზოგეთ მეტი "ცხელ" აქციებზე</span>
                     </div>
                 </div>
             </div>
 
-            @* მეთოდი 3: მიმოხილვის დატოვება *@
+            @* მეთოდი 3 *@
             <div class="col-md-6">
                 <div class="card earning-method-card h-100 shadow-sm p-4" style="border-left-color: #ff4b2b;">
                     <div class="d-flex align-items-center mb-3">
-                        @* მრგვალი ოვალი - Danger ფერებში *@
-                        <div class="avatar-md bg-danger-subtle rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
-                            @* შეცვლილი ხატულა უფრო საიმედო ვერსიით *@
+                        <div class="avatar-md bg-danger-subtle me-3">
                             <iconify-icon icon="solar:cup-star-bold-duotone" class="fs-2 text-danger"></iconify-icon>
                         </div>
-
-                        @* ტექსტი *@
                         <h4 class="fw-bold mb-0">სადღესასწაულო საჩუქრები</h4>
                     </div>
-                    <p class="text-muted">გახდით ლოიალობის პროგრამის წევრი და მიიღეთ სიმბოლური FishCoin საჩუქრები ან ფასდაკლებები თქვენს დაბადების დღეზე ან საახალწლო დღესასწაულებზე.</p>
+                    <p class="text-muted fs-14">მიიღეთ FishCoin საჩუქრები თქვენს დაბადების დღეზე ან საახალწლო დღესასწაულებზე.</p>
                 </div>
             </div>
 
-            @* მეთოდი 4: სადღესასწაულო აქციები *@
+            @* მეთოდი 4 *@
             <div class="col-md-6">
                 <div class="card earning-method-card h-100 shadow-sm p-4" style="border-left-color: #a8ff78;">
                     <div class="d-flex align-items-center mb-3">
-                        <div class="avatar-md bg-success-subtle rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                        <div class="avatar-md bg-success-subtle me-3">
                             <iconify-icon icon="solar:calendar-mark-bold-duotone" class="fs-2 text-success"></iconify-icon>
                         </div>
                         <h4 class="fw-bold mb-0">სპეციალური დღეები</h4>
                     </div>
-                    <p class="text-muted">თევზაობისა და ნადირობის სეზონის გახსნაზე ჩვენ ვაორმაგებთ დარიცხულ ქულებს გარკვეულ კატეგორიებზე.</p>
-                    <div class="bg-light p-3 rounded text-success fw-bold">
+                    <p class="text-muted fs-14">სეზონის გახსნაზე ჩვენ ვაორმაგებთ დარიცხულ ქულებს გარკვეულ კატეგორიებზე.</p>
+                    <div class="bg-success bg-opacity-10 p-2 rounded-3 text-success fw-bold fs-13 text-center">
                         🔥 x2 დარიცხვა სეზონურ აქციებზე
                     </div>
                 </div>
             </div>
-        </div>
 
+        </div>
     </div>
 </div>
 
@@ -150,10 +158,13 @@
     {
         if (firstRender)
         {
-            // ეს ხაზი აიტანს სქროლს ზემოთ მხოლოდ ამ გვერდზე შემოსვლისას
-            await JsRuntime.InvokeVoidAsync("window.scrollTo", 0, 0);
-            await JsRuntime.InvokeVoidAsync("loadThemeConfig");
-            await JsRuntime.InvokeVoidAsync("loadApps");
+            try
+            {
+                await JsRuntime.InvokeVoidAsync("window.scrollTo", 0, 0);
+                await JsRuntime.InvokeVoidAsync("loadThemeConfig");
+                await JsRuntime.InvokeVoidAsync("loadApps");
+            }
+            catch { }
         }
     }
 }

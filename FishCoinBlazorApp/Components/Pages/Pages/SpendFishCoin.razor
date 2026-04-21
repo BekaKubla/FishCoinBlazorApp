@@ -3,113 +3,154 @@
 @inject IJSRuntime JsRuntime
 
 <style>
-    /* Hero Section - მუქი გრადიენტი, რომელიც ორივე რეჟიმში იდეალურია */
+    /* 1. ძირითადი გარემო */
+    .main-wrapper {
+        min-height: 100vh;
+        background-color: var(--bs-body-bg);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* 2. Hero Section - მუქი გრადიენტი */
     .spend-header {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        padding: 50px 20px;
-        border-radius: 15px;
+        padding: 45px 20px;
+        border-radius: 16px;
         color: white;
         border: 1px solid rgba(255, 255, 255, 0.05);
+        position: relative;
     }
 
-    /* ბარათების სტილი - ამოღებულია background-color: #ffffff */
+    /* 3. ბარათების სტილი */
     .spending-method-card {
+        border-radius: 15px;
+        border: 1px solid rgba(128, 128, 128, 0.1);
         border-top: 4px solid #f39c12;
         transition: all 0.3s ease;
-        /* ფონი აქ აღარ გვიწერია, რომ სისტემურმა card-მა იმუშაოს */
+        background: var(--bs-card-bg);
     }
 
-        .spending-method-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.15) !important;
-        }
+    .spending-method-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 25px rgba(0,0,0,0.15) !important;
+    }
 
+    /* ხატულების წრიული ფონი */
+    .avatar-lg {
+        width: 70px;
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        border-radius: 50%;
+    }
+
+    /* ტექსტის ჩრდილი */
     .text-shadow-sm {
         text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
     }
 
-    /* ხაზები, რომლებიც Dark Mode-შიც კარგად ჩანს */
-    .border-opacity-10 {
-        border-color: rgba(128, 128, 128, 0.1) !important;
+    /* რესპონსივი */
+    @@media (max-width: 576px) {
+        .spend-header h2 {
+            font-size: 1.5rem !important;
+        }
+        .spend-header p {
+            font-size: 0.9rem !important;
+        }
     }
 </style>
 
-<Topbar Title="როგორ გადავცვალოთ ქულები" />
+<div class="main-wrapper bg-body">
+    <Topbar Title="როგორ გადავცვალოთ ქულები" />
 
-<div class="row pb-5">
-    <div class="col-12">
+    <div class="container-fluid px-3 px-md-4 pt-3">
+        <div class="row pb-5">
+            <div class="col-12">
 
-        @* 1. Hero Section *@
-        <div class="spend-header text-center mb-5 shadow-lg">
-            <div class="mb-3">
-                <iconify-icon icon="solar:box-minimalistic-bold-duotone" class="text-warning" style="font-size: 60px; filter: drop-shadow(0 0 10px rgba(243, 156, 18, 0.3));"></iconify-icon>
-            </div>
-            <h2 class="fw-bold text-white mb-3 text-shadow-sm" style="font-size: 2rem;">
-                გადაცვალე ქულები <span class="text-warning">ექსკლუზიურ ნივთებში</span>
-            </h2>
-            <p class="text-white opacity-75 mx-auto mb-0" style="max-width: 650px; font-size: 1rem; line-height: 1.6;">
-                დაგროვილი <span class="text-warning fw-bold">FishCoin</span>-ები შენი პრივილეგიაა.
-                გამოიყენე ისინი სპეციალურ კატალოგში და აირჩიე საუკეთესო აღჭურვილობა სრულიად უფასოდ.
-            </p>
-        </div>
-
-        @* 2. Spending Process *@
-        <div class="row g-4 justify-content-center">
-
-            <div class="col-md-6 col-lg-4">
-                @* დამატებულია card კლასი *@
-                <div class="card spending-method-card h-100 shadow-sm p-4 text-center border-0">
-                    <div class="avatar-lg bg-warning-subtle rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px;">
-                        <iconify-icon icon="solar:cart-large-minimalistic-bold" class="fs-1 text-warning"></iconify-icon>
+                @* 1. Hero Section *@
+                <div class="spend-header text-center mb-4 shadow-lg">
+                    <div class="mb-3">
+                        <iconify-icon icon="solar:box-minimalistic-bold-duotone" class="text-warning" style="font-size: 55px; filter: drop-shadow(0 0 10px rgba(243, 156, 18, 0.3));"></iconify-icon>
                     </div>
-                    @* ამოღებულია text-dark *@
-                    <h5 class="fw-bold">1. აირჩიე საჩუქარი</h5>
-                    <p class="text-muted small">ეწვიე "ბონუს მაღაზიას" და შეარჩიე ნივთი, რომელიც მხოლოდ ქულებით გაიცემა.</p>
+                    <h2 class="fw-bold text-white mb-3 text-shadow-sm">
+                        გადაცვალე ქულები <span class="text-warning">ექსკლუზიურ ნივთებში</span>
+                    </h2>
+                    <p class="text-white opacity-75 mx-auto mb-0" style="max-width: 650px; font-size: 0.95rem; line-height: 1.6;">
+                        დაგროვილი <span class="text-warning fw-bold">FishCoin</span>-ები შენი პრივილეგიაა.
+                        გამოიყენე ისინი სპეციალურ კატალოგში და აირჩიე საუკეთესო აღჭურვილობა.
+                    </p>
                 </div>
-            </div>
 
-            <div class="col-md-6 col-lg-4">
-                <div class="card spending-method-card h-100 shadow-sm p-4 text-center border-0" style="border-top-color: #3498db;">
-                    <div class="avatar-lg bg-info-subtle rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px;">
-                        <iconify-icon icon="solar:medal-ribbon-bold" class="fs-1 text-info"></iconify-icon>
-                    </div>
-                    <h5 class="fw-bold">2. დაადასტურე ბალანსი</h5>
-                    <p class="text-muted small">თითოეულ ნივთს მითითებული აქვს ფასი ქულებში. გადაცვლა შესაძლებელია მხოლოდ სრული რაოდენობის ფლობისას.</p>
-                </div>
-            </div>
+                @* 2. Spending Process *@
+                <div class="row g-3 g-md-4 justify-content-center">
 
-            <div class="col-md-6 col-lg-4">
-                <div class="card spending-method-card h-100 shadow-sm p-4 text-center border-0" style="border-top-color: #2ecc71;">
-                    <div class="avatar-lg bg-success-subtle rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px;">
-                        <iconify-icon icon="solar:hand-stars-bold" class="fs-1 text-success"></iconify-icon>
-                    </div>
-                    <h5 class="fw-bold">3. მიიღე ინვენტარი</h5>
-                    <p class="text-muted small">საჩუქრის მისაღებად,უნდა მობრძანდეთ ფიზიკურ მაღაზიაში და გაიტანოთ ის.</p>
-                </div>
-            </div>
-
-        </div>
-
-        @* 3. მკაცრი წესები - გამოყენებულია bg-body-tertiary უკეთესი ადაპტაციისთვის *@
-        <div class="row justify-content-center mt-5">
-            <div class="col-xl-9">
-                <div class="card bg-body-tertiary border-0 shadow-lg overflow-hidden">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center mb-3">
-                            <iconify-icon icon="solar:shield-warning-bold-duotone" class="text-warning fs-1 me-3"></iconify-icon>
-                            <h5 class="mb-0 fw-bold">მნიშვნელოვანი ინფორმაცია</h5>
+                    @* Step 1 *@
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card spending-method-card h-100 shadow-sm p-4 text-center">
+                            <div class="avatar-lg bg-warning-subtle">
+                                <iconify-icon icon="solar:cart-large-minimalistic-bold" class="fs-1 text-warning"></iconify-icon>
+                            </div>
+                            <h5 class="fw-bold">1. აირჩიე საჩუქარი</h5>
+                            <p class="text-muted small mb-0">ეწვიე "ბონუს მაღაზიას" და შეარჩიე ნივთი, რომელიც მხოლოდ ქულებით გაიცემა.</p>
                         </div>
-                        <hr class="opacity-10">
-                        <ul class="list-unstyled text-muted small mb-0">
-                            <li class="mb-2"><iconify-icon icon="bi:dot" class="text-warning me-1"></iconify-icon> FishCoin-ების გადაცვლა შესაძლებელია <strong>მხოლოდ</strong> ბონუს კატალოგის პროდუქციაზე.</li>
-                            <li class="mb-2"><iconify-icon icon="bi:dot" class="text-warning me-1"></iconify-icon> ქულები არ გამოიყენება სხვა ნივთების ღირებულების დასაკლებად.</li>
-                            <li><iconify-icon icon="bi:dot" class="text-warning me-1"></iconify-icon> დაუშვებელია ქულების გადაცემა ან ჩუქება სხვა მომხმარებლისთვის.</li>
-                        </ul>
+                    </div>
+
+                    @* Step 2 *@
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card spending-method-card h-100 shadow-sm p-4 text-center" style="border-top-color: #3498db;">
+                            <div class="avatar-lg bg-info-subtle">
+                                <iconify-icon icon="solar:medal-ribbon-bold" class="fs-1 text-info"></iconify-icon>
+                            </div>
+                            <h5 class="fw-bold">2. დაადასტურე ბალანსი</h5>
+                            <p class="text-muted small mb-0">გადაცვლა შესაძლებელია მხოლოდ იმ შემთხვევაში, თუ ქულების რაოდენობა სრულად ფარავს ნივთის ღირებულებას.</p>
+                        </div>
+                    </div>
+
+                    @* Step 3 *@
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card spending-method-card h-100 shadow-sm p-4 text-center" style="border-top-color: #2ecc71;">
+                            <div class="avatar-lg bg-success-subtle">
+                                <iconify-icon icon="solar:hand-stars-bold" class="fs-1 text-success"></iconify-icon>
+                            </div>
+                            <h5 class="fw-bold">3. მიიღე ინვენტარი</h5>
+                            <p class="text-muted small mb-0">საჩუქრის მისაღებად უნდა მობრძანდეთ ფიზიკურ მაღაზიაში და გაიტანოთ ის.</p>
+                        </div>
+                    </div>
+
+                </div>
+
+                @* 3. Important Info *@
+                <div class="row justify-content-center mt-5">
+                    <div class="col-xl-9">
+                        <div class="card bg-body-tertiary border-0 shadow-sm rounded-4 overflow-hidden">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <iconify-icon icon="solar:shield-warning-bold-duotone" class="text-warning fs-1 me-3"></iconify-icon>
+                                    <h5 class="mb-0 fw-bold">მნიშვნელოვანი ინფორმაცია</h5>
+                                </div>
+                                <hr class="opacity-10 my-3">
+                                <ul class="list-unstyled text-muted mb-0">
+                                    <li class="mb-2 d-flex align-items-start">
+                                        <iconify-icon icon="solar:check-circle-bold" class="text-warning me-2 mt-1"></iconify-icon>
+                                        <span>FishCoin-ების გადაცვლა შესაძლებელია <strong>მხოლოდ</strong> ბონუს კატალოგის პროდუქციაზე.</span>
+                                    </li>
+                                    <li class="mb-2 d-flex align-items-start">
+                                        <iconify-icon icon="solar:check-circle-bold" class="text-warning me-2 mt-1"></iconify-icon>
+                                        <span>ქულები არ გამოიყენება სხვა ნივთების ღირებულების დასაკლებად.</span>
+                                    </li>
+                                    <li class="d-flex align-items-start">
+                                        <iconify-icon icon="solar:check-circle-bold" class="text-warning me-2 mt-1"></iconify-icon>
+                                        <span>დაუშვებელია ქულების გადაცემა ან ჩუქება სხვა მომხმარებლისთვის.</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
             </div>
         </div>
-
     </div>
 </div>
 
@@ -118,10 +159,13 @@
     {
         if (firstRender)
         {
-            // ეს ხაზი აიტანს სქროლს ზემოთ მხოლოდ ამ გვერდზე შემოსვლისას
-            await JsRuntime.InvokeVoidAsync("window.scrollTo", 0, 0);
-            await JsRuntime.InvokeVoidAsync("loadThemeConfig");
-            await JsRuntime.InvokeVoidAsync("loadApps");
+            try
+            {
+                await JsRuntime.InvokeVoidAsync("window.scrollTo", 0, 0);
+                await JsRuntime.InvokeVoidAsync("loadThemeConfig");
+                await JsRuntime.InvokeVoidAsync("loadApps");
+            }
+            catch { }
         }
     }
 }
