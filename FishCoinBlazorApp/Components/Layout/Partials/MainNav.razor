@@ -32,10 +32,7 @@
     </div>
 
     <!-- Menu Toggle Button (sm-hover) -->
-    <button type="button"
-            class="button-sm-hover"
-            onclick="document.querySelector('.main-nav')?.classList.toggle('sm-hover')"
-            aria-label="Show Full Sidebar">
+    <button type="button" class="button-sm-hover" aria-label="Show Full Sidebar" @onclick="ToggleSmHoverMenu">
         <iconify-icon icon="solar:double-alt-arrow-right-bold-duotone" class="button-sm-hover-icon"></iconify-icon>
     </button>
 
