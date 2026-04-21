@@ -1169,36 +1169,6 @@ window.updateBodyAttributes = function (attr, value) {
     }
 };
 
-// Store original functions
-window.originalToggleSmHoverMenu = window.toggleSmHoverMenu;
-
-// Override toggleSmHoverMenu to work with Blazor
-window.toggleSmHoverMenu = function () {
-    const html = document.documentElement;
-
-    // Store attributes before toggle
-    const savedAttributes = {
-        'data-bs-theme': html.getAttribute('data-bs-theme'),
-        'data-topbar-color': html.getAttribute('data-topbar-color'),
-        'data-menu-color': html.getAttribute('data-menu-color'),
-        'data-menu-size': html.getAttribute('data-menu-size')
-    };
-
-    // Call original function
-    if (window.originalToggleSmHoverMenu) {
-        window.originalToggleSmHoverMenu();
-    }
-
-    // Restore attributes after toggle
-    setTimeout(() => {
-        Object.entries(savedAttributes).forEach(([attr, value]) => {
-            if (value && html.getAttribute(attr) !== value) {
-                html.setAttribute(attr, value);
-            }
-        });
-    }, 50);
-};
-
 // Listen for Blazor re-renders
 document.addEventListener('blazor:reconnect', function () {
     const menuElement = document.querySelector('.main-nav');

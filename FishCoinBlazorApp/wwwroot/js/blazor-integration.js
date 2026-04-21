@@ -244,16 +244,6 @@ function handleBlazorCollapseClick(e) {
     }
 }
 
-// Override toggleSmHoverMenu
-window.toggleSmHoverMenu = function () {
-    if (typeof window.originalToggleSmHoverMenu === 'function') {
-        window.originalToggleSmHoverMenu();
-    }
-    setTimeout(preserveHtmlAttributes, 0);
-    setTimeout(preserveHtmlAttributes, 50);
-    setTimeout(preserveHtmlAttributes, 100);
-};
-
 // Override loadApps
 window.loadApps = function () {
     if (typeof window.originalLoadApps === 'function') {
