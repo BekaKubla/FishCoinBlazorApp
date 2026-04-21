@@ -24,13 +24,14 @@
 
     <script src="/js/config.js"></script>
 <style>
+    /* 1. მთავარი კონტეინერი - თავიდან დამალულია */
     #components-reconnect-modal {
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.8); /* უფრო მუქი ფონი უკეთესი კონტრასტისთვის */
+        background: rgba(0, 0, 0, 0.8);
         display: none;
         flex-direction: column;
         justify-content: center;
@@ -40,25 +41,25 @@
         font-family: sans-serif;
     }
 
-    /* გამოაჩინე მხოლოდ მაშინ, როცა Blazor აქტიურებს */
+    /* 2. გამოჩნდეს მხოლოდ მაშინ, როცა Blazor-ს რეალურად სჭირდება */
     #components-reconnect-modal.components-reconnect-show {
-        display: flex;
+        display: flex !important;
     }
 
-    /* დამალე ყველა შიდა დივი ნაგულისხმევად */
+    /* 3. დამალე შიდა ტექსტები */
     #components-reconnect-modal > div {
         display: none;
     }
 
-    /* გამოაჩინე მხოლოდ კონკრეტული სტატუსის შესაბამისი დივი */
+    /* 4. გამოაჩინე კონკრეტული სტატუსის ტექსტი */
     #components-reconnect-modal.components-reconnect-show > .show,
     #components-reconnect-modal.components-reconnect-failed > .failed,
     #components-reconnect-modal.components-reconnect-rejected > .rejected {
-        display: block;
+        display: block !important;
     }
 
-    /* სპინერის სტილი */
-    .show::before {
+    /* 5. სპინერი - მიბმული მხოლოდ ამ ID-ზე, რომ სხვაგან არ გამოხტეს */
+    #components-reconnect-modal .show::before {
         content: "";
         display: block;
         margin: 0 auto 15px;
