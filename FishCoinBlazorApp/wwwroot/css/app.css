@@ -199,7 +199,40 @@ html[data-bs-theme=dark][data-topbar-color=light] {
   --bs-form-invalid-color: #ef5f5f;
   --bs-form-invalid-border-color: #ef5f5f;
 }
+.main-nav.collapsed {
+    width: 70px;
+}
 
+    .main-nav.collapsed .nav-text {
+        display: none;
+    }
+
+    .main-nav.collapsed .logo-box span {
+        display: none;
+    }
+
+/* სუბ-მენიუები */
+.sub-menu {
+    display: none;
+    padding-left: 2rem;
+}
+
+    .sub-menu.show {
+        display: block;
+    }
+
+.menu-arrow {
+    cursor: pointer;
+}
+
+/* ღილაკის ანიმაცია */
+.button-sm-hover-icon {
+    transition: transform 0.3s ease;
+}
+
+.main-nav.collapsed .button-sm-hover-icon {
+    transform: rotate(180deg);
+}
 [data-bs-theme=dark] {
   color-scheme: dark;
   --bs-body-color: #aab8c5;

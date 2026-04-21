@@ -2,10 +2,8 @@
 @using FishCoinBlazorApp.Entites.Product.Category
 @inject CategoryService CategoryService
 @rendermode InteractiveServer
-@inject IJSRuntime JsRuntime;
-@implements IDisposable
 
-<div class="main-nav" @ref="mainNavElement">
+<div class="main-nav @(isCollapsed ? "collapsed" : "")">
     <!-- Sidebar Logo -->
     <div class="logo-box">
         <a href="/" class="logo-dark">
@@ -31,11 +29,8 @@
         </a>
     </div>
 
-    <!-- Menu Toggle Button (sm-hover) -->
-    <button type="button"
-            class="button-sm-hover"
-            onclick="toggleSmHoverMenu()"
-            aria-label="Show Full Sidebar">
+    <!-- Menu Toggle Button -->
+    <button type="button" class="button-sm-hover" @onclick="ToggleCollapse" aria-label="Toggle Menu">
         <iconify-icon icon="solar:double-alt-arrow-right-bold-duotone" class="button-sm-hover-icon"></iconify-icon>
     </button>
 
@@ -53,13 +48,13 @@
             @if (categories != null && categories.Any())
             {
                 <li class="nav-item">
-                    <a class="nav-link menu-arrow" href="#sidebarProducts" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarProducts">
+                    <a class="nav-link menu-arrow" @onclick="@(() => ToggleSubMenu(" products"))" role="button">
                         <span class="nav-icon">
                             <iconify-icon icon="solar:shop-line-duotone"></iconify-icon>
                         </span>
                         <span class="nav-text"> პროდუქტები </span>
                     </a>
-                    <div class="collapse" id="sidebarProducts">
+                    <div class="sub-menu @(openSubMenu == "products" ? "show" : "")">
                         <ul class="nav sub-navbar-nav">
                             @foreach (var category in categories)
                             {
@@ -71,71 +66,34 @@
                     </div>
                 </li>
             }
-            else
-            {
-                <li class="nav-item">
-                    <a class="nav-link menu-arrow" href="#sidebarProducts" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarProducts">
-                        <span class="nav-icon">
-                            <iconify-icon icon="solar:shop-line-duotone"></iconify-icon>
-                        </span>
-                        <span class="nav-text"> პროდუქტები </span>
-                    </a>
-                    <div class="collapse" id="sidebarProducts">
-                        <ul class="nav sub-navbar-nav">
-                            <li class="sub-nav-item">
-                                <a class="sub-nav-link" href="#">ჩატვირთვა...</a>
-                            </li>
-                        </ul>
-                    </div>
-                </li>
-            }
 
             <li class="nav-item">
-                <a class="nav-link menu-arrow" href="#sidebarCategory" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarCategory">
+                <a class="nav-link menu-arrow" @onclick="@(() => ToggleSubMenu(" howto"))" role="button">
                     <span class="nav-icon">
                         <iconify-icon icon="solar:clipboard-list-bold-duotone"></iconify-icon>
                     </span>
                     <span class="nav-text"> როგორ შევუკვეთო </span>
                 </a>
-                <div class="collapse" id="sidebarCategory">
+                <div class="sub-menu @(openSubMenu == "howto" ? "show" : "")">
                     <ul class="nav sub-navbar-nav">
                         <li class="sub-nav-item">
-                            <a class="sub-nav-link" href="category-list">ინსტურქცია</a>
+                            <a class="sub-nav-link" href="category-list">ინსტრუქცია</a>
                         </li>
                         <li class="sub-nav-item">
-                            <a class="sub-nav-link" href="category-edit">ვიდეო ინსტურქაცია</a>
+                            <a class="sub-nav-link" href="category-edit">ვიდეო ინსტრუქცია</a>
                         </li>
                     </ul>
                 </div>
             </li>
 
-            @*             <li class="nav-item">
-                <a class="nav-link menu-arrow" href="#sidebarInventory" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarInventory">
-                    <span class="nav-icon">
-                        <iconify-icon icon="ph:car-duotone"></iconify-icon>
-                    </span>
-                    <span class="nav-text"> მიწოდების სერვისი </span>
-                </a>
-                <div class="collapse" id="sidebarInventory">
-                    <ul class="nav sub-navbar-nav">
-                        <li class="sub-nav-item">
-                            <a class="sub-nav-link" href="delivery-kutaisi">მიწოდება ქუთაისში</a>
-                        </li>
-                        <li class="sub-nav-item">
-                            <a class="sub-nav-link" href="delivery-regions">მიწოდება რეგიონებში</a>
-                        </li>
-                    </ul>
-                </div>
-            </li> *@
-
             <li class="nav-item">
-                <a class="nav-link menu-arrow" href="#sidebarPurchases" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarPurchases">
+                <a class="nav-link menu-arrow" @onclick="@(() => ToggleSubMenu(" points"))" role="button">
                     <span class="nav-icon">
                         <iconify-icon icon="ph:coin-vertical-duotone"></iconify-icon>
                     </span>
                     <span class="nav-text"> ქულების სისტემა </span>
                 </a>
-                <div class="collapse" id="sidebarPurchases">
+                <div class="sub-menu @(openSubMenu == "points" ? "show" : "")">
                     <ul class="nav sub-navbar-nav">
                         <li class="sub-nav-item">
                             <a class="sub-nav-link" href="earn-fishcoin">ქულების გამომუშავება</a>
@@ -148,13 +106,13 @@
             </li>
 
             <li class="nav-item">
-                <a class="nav-link menu-arrow" href="#sidebarOrders" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarOrders">
+                <a class="nav-link menu-arrow" @onclick="@(() => ToggleSubMenu(" about"))" role="button">
                     <span class="nav-icon">
                         <iconify-icon icon="solar:map-line-duotone"></iconify-icon>
                     </span>
                     <span class="nav-text"> ჩვენს შესახებ </span>
                 </a>
-                <div class="collapse" id="sidebarOrders">
+                <div class="sub-menu @(openSubMenu == "about" ? "show" : "")">
                     <ul class="nav sub-navbar-nav">
                         <li class="sub-nav-item">
                             <a class="sub-nav-link" href="about-us">ვინ ვართ ჩვენ?</a>
@@ -171,39 +129,24 @@
 
 @code {
     private List<Category> categories;
-    private ElementReference mainNavElement;
-    private DotNetObjectReference<MainNav>? dotNetRef;
+    private bool isCollapsed = false;
+    private string? openSubMenu = null;
 
-    private async Task ToggleSmHoverMenu()
+    private void ToggleCollapse()
     {
-        await JsRuntime.InvokeVoidAsync("toggleSmHoverMenu");
+        isCollapsed = !isCollapsed;
+    }
+
+    private void ToggleSubMenu(string menuName)
+    {
+        if (openSubMenu == menuName)
+            openSubMenu = null;
+        else
+            openSubMenu = menuName;
     }
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadCategories();
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            // Create a .NET reference for callbacks
-            dotNetRef = DotNetObjectReference.Create(this);
-
-            // Initialize the menu after first render
-            await JsRuntime.InvokeVoidAsync("initializeBlazorMenu", mainNavElement, dotNetRef);
-        }
-    }
-
-    private async Task LoadCategories()
-    {
         categories = await CategoryService.GetAllCategoriesAsync();
-        StateHasChanged();
-    }
-
-    public void Dispose()
-    {
-        dotNetRef?.Dispose();
     }
 }
