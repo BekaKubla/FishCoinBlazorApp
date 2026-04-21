@@ -23,13 +23,85 @@
     <link href="/css/app.min.css" rel="stylesheet" type="text/css" />
 
     <script src="/js/config.js"></script>
+<style>
+    #components-reconnect-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8); /* უფრო მუქი ფონი უკეთესი კონტრასტისთვის */
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+        color: white;
+        font-family: sans-serif;
+    }
 
+    /* გამოაჩინე მხოლოდ მაშინ, როცა Blazor აქტიურებს */
+    #components-reconnect-modal.components-reconnect-show {
+        display: flex;
+    }
+
+    /* დამალე ყველა შიდა დივი ნაგულისხმევად */
+    #components-reconnect-modal > div {
+        display: none;
+    }
+
+    /* გამოაჩინე მხოლოდ კონკრეტული სტატუსის შესაბამისი დივი */
+    #components-reconnect-modal.components-reconnect-show > .show,
+    #components-reconnect-modal.components-reconnect-failed > .failed,
+    #components-reconnect-modal.components-reconnect-rejected > .rejected {
+        display: block;
+    }
+
+    /* სპინერის სტილი */
+    .show::before {
+        content: "";
+        display: block;
+        margin: 0 auto 15px;
+        width: 50px;
+        height: 50px;
+        border: 5px solid rgba(255, 255, 255, 0.1);
+        border-top: 5px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    #components-reconnect-modal p {
+        font-size: 1.2rem;
+        margin: 10px 0;
+    }
+
+    #components-reconnect-modal a {
+        color: #3498db;
+        text-decoration: underline;
+        font-weight: bold;
+    }
+
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
     <ImportMap />
     <HeadOutlet /> @* ეს კრიტიკულია SEO-სთვის *@
 </head>
 <body>
     <Routes />
-
+    <div id="components-reconnect-modal" class="components-reconnect-hide">
+        <div class="show">
+            <p>კავშირი გაწყდა. ვუკავშირდები FishCoin.Ge-ს...</p>
+        </div>
+        <div class="failed">
+            <p>დაკავშირება ვერ მოხერხდა. <a href="javascript:window.location.reload()">გვერდის განახლება</a></p>
+        </div>
+        <div class="rejected">
+            <p>სესია დასრულდა. <a href="javascript:window.location.reload()">გვერდის განახლება</a></p>
+        </div>
+    </div>
     <script src="/js/vendor.js"></script>
     <script src="/js/app.js"></script>
     <script src="_framework/blazor.web.js"></script>
