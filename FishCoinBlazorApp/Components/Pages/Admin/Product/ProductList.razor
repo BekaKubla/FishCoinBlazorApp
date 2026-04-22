@@ -24,7 +24,9 @@
                         <tr>
                             <th>ფოტო</th>
                             <th>დასახელება</th>
-                            <th>ფასი</th>
+                            <th>საწყისი ფასი</th>
+                            <th>ფასდაკლება</th>
+                            <th>გასაყიდი ფასი</th>
                             <th>რაოდენობა</th>
                             <th></th>
                         </tr>
@@ -41,11 +43,35 @@
                                         </div>
                                     </td>
                                     <td>@product.Name</td>
-                                    <td>₾@product.Price</td>
+                                    <td>
+                                        @if (product.DiscountPrecentage > 0)
+                                        {
+                                            <span class="text-decoration-line-through text-muted">₾@product.Price</span>
+                                        }
+                                        else
+                                        {
+                                            <span>₾@product.Price</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (product.DiscountPrecentage > 0)
+                                        {
+                                            <span class="badge bg-danger-subtle text-danger">-@product.DiscountPrecentage%</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">---</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold text-dark">₾@CalculateDiscountedPrice(product.Price, product.DiscountPrecentage)</span>
+                                    </td>
                                     <td>@product.StockQuantity</td>
                                     <td>
                                         <div class="d-flex gap-2">
-                                            <a href="/Admin/CreateOrUpdate/@product.Id" class="btn btn-soft-primary btn-sm"><iconify-icon icon="solar:pen-2-broken" class="align-middle fs-18"></iconify-icon></a>
+                                            <a href="/Admin/CreateOrUpdate/@product.Id" class="btn btn-soft-primary btn-sm">
+                                                <iconify-icon icon="solar:pen-2-broken" class="align-middle fs-18"></iconify-icon>
+                                            </a>
                                         </div>
                                     </td>
                                 </tr>
@@ -59,17 +85,17 @@
                 <nav>
                     <ul class="pagination justify-content-end mb-0">
                         <li class="page-item @(CurrentPage == 1 ? "disabled" : "")">
-                            <a class="page-link" @onclick="() => ChangePage(CurrentPage - 1)">წინა</a>
+                            <a class="page-link" @onclick="() => ChangePage(CurrentPage - 1)" style="cursor:pointer">წინა</a>
                         </li>
                         @for (int i = 1; i <= TotalPages; i++)
                         {
                             var pageNumber = i;
                             <li class="page-item @(CurrentPage == pageNumber ? "active" : "")">
-                                <a class="page-link" @onclick="() => ChangePage(pageNumber)">@pageNumber</a>
+                                <a class="page-link" @onclick="() => ChangePage(pageNumber)" style="cursor:pointer">@pageNumber</a>
                             </li>
                         }
                         <li class="page-item @(CurrentPage == TotalPages ? "disabled" : "")">
-                            <a class="page-link" @onclick="() => ChangePage(CurrentPage + 1)">შემდეგი</a>
+                            <a class="page-link" @onclick="() => ChangePage(CurrentPage + 1)" style="cursor:pointer">შემდეგი</a>
                         </li>
                     </ul>
                 </nav>
@@ -79,7 +105,7 @@
 </div>
 
 @code {
-    private List<Product> Products; // შენი მოდელი FishCoinDb-დან
+    private List<Product> Products;
     private string SearchTerm = "";
     private int CurrentPage = 1;
     private int TotalPages;
@@ -92,10 +118,17 @@
 
     private async Task LoadProducts()
     {
-        // ბექენდთან დაკავშირება
         var result = await AdminProductService.GetPagedProductsAsync(CurrentPage, PageSize, SearchTerm);
         Products = result.Products;
         TotalPages = result.TotalPages;
+    }
+
+    private decimal CalculateDiscountedPrice(decimal price, decimal? discountPercent)
+    {
+        if (discountPercent == null || discountPercent <= 0)
+            return price;
+
+        return Math.Round(price * (1 - (discountPercent.Value / 100m)), 2);
     }
 
     private async Task HandleSearch()
@@ -106,7 +139,10 @@
 
     private async Task ChangePage(int page)
     {
-        CurrentPage = page;
-        await LoadProducts();
+        if (page >= 1 && page <= TotalPages)
+        {
+            CurrentPage = page;
+            await LoadProducts();
+        }
     }
 }
