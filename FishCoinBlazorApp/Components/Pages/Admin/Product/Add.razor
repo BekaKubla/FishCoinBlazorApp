@@ -45,6 +45,11 @@
                             </div>
                         </div>
 
+                        <div class="d-flex justify-content-between border-bottom pb-2 mt-2">
+                            <span class="text-muted">სუფთა მოგება:</span>
+                            <span class="text-success fw-bold">@ProfitAmount ₾</span>
+                        </div>
+
                         <div class="bg-primary-subtle p-2 rounded mt-3">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <small class="text-primary fw-medium"><i class="bx bxs-coin-stack me-1"></i>მისაღები ქულები:</small>
@@ -94,7 +99,7 @@
             </div>
 
             <div class="card">
-                <div class="card-header"><h4 class="card-title">ფასწარმოქმნა და ზოგადი ინფორმაცია</h4></div>
+                <div class="card-header"><h4 class="card-title">ფასწარმოქმნა და მოგების გაანგარიშება</h4></div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-lg-12 mb-3">
@@ -103,21 +108,21 @@
                             <ValidationMessage For="@(() => newProduct.Name)" />
                         </div>
 
-                        <div class="col-lg-3 mb-3">
+                        <div class="col-lg-2 mb-3">
                             <label class="form-label">თვითღირებულება (₾)</label>
                             <InputNumber TValue="decimal" Value="newProduct.CostPrice"
                                          ValueExpression="() => newProduct.CostPrice"
                                          ValueChanged="OnCostPriceChanged" class="form-control" />
                         </div>
 
-                        <div class="col-lg-3 mb-3">
+                        <div class="col-lg-2 mb-3">
                             <label class="form-label">მარჟა (%)</label>
                             <InputNumber TValue="decimal" Value="marginPercentage"
                                          ValueExpression="() => marginPercentage"
                                          ValueChanged="OnMarginChanged" class="form-control" />
                         </div>
 
-                        <div class="col-lg-3 mb-3">
+                        <div class="col-lg-2 mb-3">
                             <label class="form-label">გასაყიდი ფასი (₾)</label>
                             <InputNumber TValue="decimal" Value="newProduct.Price"
                                          ValueExpression="() => newProduct.Price"
@@ -126,7 +131,14 @@
 
                         <div class="col-lg-3 mb-3">
                             <label class="form-label">ფასდაკლება (%)</label>
-                            <InputNumber @bind-Value="newProduct.DiscountPrecentage" class="form-control" />
+                            <InputNumber TValue="decimal?" Value="newProduct.DiscountPrecentage"
+                                         ValueExpression="() => newProduct.DiscountPrecentage"
+                                         ValueChanged="OnDiscountChanged" class="form-control" />
+                        </div>
+
+                        <div class="col-lg-3 mb-3">
+                            <label class="form-label">მოგება (₾)</label>
+                            <input type="text" class="form-control fw-bold text-success" value="@ProfitAmount ₾" disabled />
                         </div>
 
                         <div class="col-lg-6 mb-3">
@@ -176,34 +188,32 @@
     private decimal rewardPercentage;
     private decimal marginPercentage;
 
+    // გამოთვლილი ფასი ფასდაკლებით
     private decimal DiscountedPrice => Math.Round(newProduct.Price * (1 - (newProduct.DiscountPrecentage ?? 0) / 100m), 2);
 
-    // როცა იცვლება თვითღირებულება
+    // მოგების გამოთვლა (DiscountedPrice - CostPrice)
+    private decimal ProfitAmount => Math.Round(DiscountedPrice - newProduct.CostPrice, 2);
+
     private void OnCostPriceChanged(decimal value)
     {
         newProduct.CostPrice = value;
-        CalculatePriceByMargin();
+        // როცა თვითღირებულება იცვლება, ვინარჩუნებთ გასაყიდ ფასს და ვცვლით მარჟას
+        if (newProduct.Price > 0 && newProduct.CostPrice > 0)
+        {
+            marginPercentage = Math.Round(((newProduct.Price - newProduct.CostPrice) / newProduct.CostPrice) * 100m, 2);
+        }
     }
 
-    // როცა იცვლება მარჟა
     private void OnMarginChanged(decimal value)
     {
         marginPercentage = value;
-        CalculatePriceByMargin();
-    }
-
-    // ფასის გამოთვლა მარჟით
-    private void CalculatePriceByMargin()
-    {
         if (marginPercentage > 0 && newProduct.CostPrice > 0)
         {
-            // ფასი = თვითღირებულება + (თვითღირებულება * მარჟა / 100)
             newProduct.Price = Math.Round(newProduct.CostPrice + (newProduct.CostPrice * marginPercentage / 100m), 2);
         }
         CalculateLoyalty();
     }
 
-    // ფასის ხელით შეცვლისას (ასევე გადათვლის მარჟას უკუღმა)
     private void OnPriceChanged(decimal value)
     {
         newProduct.Price = value;
@@ -212,6 +222,12 @@
             marginPercentage = Math.Round(((newProduct.Price - newProduct.CostPrice) / newProduct.CostPrice) * 100m, 2);
         }
         CalculateLoyalty();
+    }
+
+    private void OnDiscountChanged(decimal? value)
+    {
+        newProduct.DiscountPrecentage = value;
+        // აქ არაფრის გადათვლა არ გვჭირდება, რადგან ProfitAmount ავტომატურად რეაგირებს UI-ში
     }
 
     private void OnRewardPercentageChanged(decimal value)
