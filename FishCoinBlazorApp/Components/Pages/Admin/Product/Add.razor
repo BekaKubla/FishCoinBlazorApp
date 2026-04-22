@@ -87,6 +87,11 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-lg-12 mb-3">
+                            <label class="form-label fw-bold">პროდუქტის დასახელება</label>
+                            <InputText @bind-Value="newProduct.Name" class="form-control" placeholder="მაგ: Shimano Reel 4000" />
+                            <ValidationMessage For="@(() => newProduct.Name)" />
+                        </div>
+                        <div class="col-lg-12 mb-3">
                             <label class="form-label">პროდუქტის ფოტო</label>
                             <InputFile OnChange="OnInputFileChange" class="form-control" accept=".jpg,.jpeg,.png" />
                         </div>
@@ -102,12 +107,6 @@
                 <div class="card-header"><h4 class="card-title">ფასწარმოქმნა და მოგების გაანგარიშება</h4></div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-lg-12 mb-3">
-                            <label class="form-label">დასახელება</label>
-                            <InputText @bind-Value="newProduct.Name" class="form-control" />
-                            <ValidationMessage For="@(() => newProduct.Name)" />
-                        </div>
-
                         <div class="col-lg-2 mb-3">
                             <label class="form-label">თვითღირებულება (₾)</label>
                             <InputNumber TValue="decimal" Value="newProduct.CostPrice"
@@ -197,11 +196,11 @@
     private void OnCostPriceChanged(decimal value)
     {
         newProduct.CostPrice = value;
-        // როცა თვითღირებულება იცვლება, ვინარჩუნებთ გასაყიდ ფასს და ვცვლით მარჟას
         if (newProduct.Price > 0 && newProduct.CostPrice > 0)
         {
             marginPercentage = Math.Round(((newProduct.Price - newProduct.CostPrice) / newProduct.CostPrice) * 100m, 2);
         }
+        CalculateLoyalty();
     }
 
     private void OnMarginChanged(decimal value)
@@ -227,7 +226,8 @@
     private void OnDiscountChanged(decimal? value)
     {
         newProduct.DiscountPrecentage = value;
-        // აქ არაფრის გადათვლა არ გვჭირდება, რადგან ProfitAmount ავტომატურად რეაგირებს UI-ში
+        // როცა ფასდაკლება იცვლება, ქულები უნდა გადაითვალოს რეალური გასაყიდი ფასიდან
+        CalculateLoyalty();
     }
 
     private void OnRewardPercentageChanged(decimal value)
@@ -241,7 +241,8 @@
         newProduct.IsRedeemable = value;
         if (value)
         {
-            newProduct.PointsPrice = (int)(newProduct.Price * 10);
+            // გამოსასყიდი ქულებიც DiscountedPrice-დან დაითვალოს
+            newProduct.PointsPrice = (int)(DiscountedPrice * 10);
         }
         else
         {
@@ -251,12 +252,14 @@
 
     private void CalculateLoyalty()
     {
-        decimal rewardInGEL = newProduct.Price * (rewardPercentage / 100m);
+        // ქეშბექი ითვლება რეალური (ფასდაკლებული) გასაყიდი ფასიდან
+        decimal rewardInGEL = DiscountedPrice * (rewardPercentage / 100m);
         newProduct.PointsReward = (int)(rewardInGEL / 0.10m);
         
         if (newProduct.IsRedeemable)
         {
-            newProduct.PointsPrice = (int)(newProduct.Price * 10);
+            // თუ პროდუქტის ყიდვა ქულებით მოსულა, მისი ფასი ქულებშიც რეალურ ფასს მიყვეს
+            newProduct.PointsPrice = (int)(DiscountedPrice * 10);
         }
     }
 
