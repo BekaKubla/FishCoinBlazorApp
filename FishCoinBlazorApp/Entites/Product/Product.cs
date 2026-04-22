@@ -32,7 +32,7 @@ namespace FishCoinBlazorApp.Entites.Product
             {
                 if (DiscountPrecentage.HasValue && DiscountPrecentage > 0)
                 {
-                    return Price - (Price * DiscountPrecentage.Value / 100m);
+                    return Math.Round(Price - (Price * DiscountPrecentage.Value / 100m),2);
                 }
                 return Price;
             }

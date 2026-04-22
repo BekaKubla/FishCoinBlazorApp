@@ -20,6 +20,12 @@ namespace FishCoinBlazorApp.Data.Configurations
             builder.Property(p => p.CostPrice)
                 .HasPrecision(18, 2);
 
+            // ავტომატური TagNumber-ის გენერაცია (SQL Server-ისთვის)
+            // RIGHT('0000' + CAST(Id AS VARCHAR), 4) ნიშნავს:
+            // აიღე Id, გადააქციე ტექსტად, წინ მიუწერე ნულები და ბოლოდან დატოვე 4 სიმბოლო.
+            builder.Property(p => p.TagNumber)
+                .HasComputedColumnSql("RIGHT('0000' + CAST(Id AS AS VARCHAR(10)), 4)");
+
             // კავშირი კატეგორიასთან
             builder.HasOne(p => p.ProductCategory)
                 .WithMany(p=>p.Products)

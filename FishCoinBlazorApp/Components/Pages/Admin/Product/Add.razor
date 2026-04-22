@@ -1,5 +1,7 @@
 @page "/product-add"
 @rendermode InteractiveServer
+@using FishCoinBlazorApp.Services.Models.Admin
+@inject FishCoinBlazorApp.Services.Admin.AdminProductService AdminProductService
 @inject IJSRuntime JsRuntime
 @using System.ComponentModel.DataAnnotations
 @using System.Net.Http.Headers
@@ -235,6 +237,7 @@
 
             // TODO: HttpClient-ით გაგზავნა
             await JsRuntime.InvokeVoidAsync("alert", "პროდუქტი და ფაილი მზადაა IFormFile ფორმატში!");
+            await AdminProductService.CreateProduct(newProduct);
         }
         catch (Exception ex)
         {
@@ -248,20 +251,5 @@
         rewardPercentage = 0;
         previewUrl = null;
         selectedFile = null;
-    }
-
-    public class ProductModel
-    {
-        [Required(ErrorMessage = "სახელი აუცილებელია")]
-        public string Name { get; set; } = "";
-        public string? Description { get; set; }
-        public decimal Price { get; set; }
-        public int PointsReward { get; set; }
-        public int StockQuantity { get; set; }
-        public int ProductCategoryId { get; set; }
-        public decimal? DiscountPrecentage { get; set; }
-        public decimal CostPrice { get; set; }
-        public bool IsRedeemable { get; set; }
-        public int? PointsPrice { get; set; }
     }
 }

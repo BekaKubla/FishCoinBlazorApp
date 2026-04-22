@@ -4,6 +4,7 @@ using FishCoinBlazorApp.Data;
 using FishCoinBlazorApp.Entites.Customer;
 using FishCoinBlazorApp.Hubs;
 using FishCoinBlazorApp.Services;
+using FishCoinBlazorApp.Services.Admin;
 using FishCoinBlazorApp.Services.Models;
 using FishCoinBlazorApp.Services.RouteServices;
 using Microsoft.AspNetCore.Components;
@@ -83,6 +84,8 @@ builder.Services.AddScoped<AuthService>();
 
 builder.Services.AddHttpClient<SmsService>();
 builder.Services.AddScoped<SmsService>();
+
+builder.Services.AddScoped<AdminProductService>();
 
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddSignalR();
