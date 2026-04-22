@@ -19,9 +19,9 @@
 
                     <select class="form-select form-select-sm w-auto" @onchange="OnStatusFilterChanged">
                         <option value="">ყველა სტატუსი</option>
-                        <option value="Pending">🕒 Pending</option>
-                        <option value="Paid">✅ Paid</option>
-                        <option value="Cancelled">❌ Cancelled</option>
+                        <option value="Pending">🕒 მუშავდება</option>
+                        <option value="Paid">✅ გადახდილია</option>
+                        <option value="Cancelled">❌ გაუქმებულია</option>
                     </select>
 
                     <select class="form-select form-select-sm w-auto" @onchange="OnPaymentFilterChanged">
@@ -67,7 +67,10 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <span class="badge @GetStatusClass(order.Status.ToString())">@order.Status</span>
+                                        <span class="badge @GetStatusClass(order.Status.ToString())">
+                                            @(order.Status.ToString() == "Pending" ? "მუშავდება" :
+                                              order.Status.ToString() == "Paid" ? "გადახდილია" : "გაუქმებულია")
+                                        </span>
                                     </td>
                                     <td>
                                         @if (order.OrderItems.Any(x => x.PointsPriceAtPurchase > 0))
@@ -225,9 +228,9 @@
                         <div class="col-12">
                             <label class="form-label fw-medium">შეცვალეთ სტატუსი:</label>
                             <select class="form-select shadow-none border-primary" @bind="NewStatus">
-                                <option value="Pending">🕒 Pending</option>
-                                <option value="Paid">✅ Paid</option>
-                                <option value="Cancelled">❌ Cancelled</option>
+                                <option value="Pending">🕒 მუშავდება</option>
+                                <option value="Paid">✅ გადახდილია</option>
+                                <option value="Cancelled">❌ გაუქმებულია</option>
                             </select>
                         </div>
                     </div>
@@ -277,18 +280,15 @@
 
     private async Task LoadOrders()
     {
-        // შენი სერვისის მეთოდი უნდა იღებდეს ახალ პარამეტრებსაც, თუ არა და ფრონტზე გაფილტრავ (თუმცა პეიჯინგი არ იმუშავებს სწორად)
         var result = await OrderService.GetPagedOrdersAsync(CurrentPage, PageSize, SearchTerm);
         
         var query = result.Orders.AsQueryable();
 
-        // ფილტრაცია სტატუსით
         if (!string.IsNullOrEmpty(StatusFilter))
         {
             query = query.Where(o => o.Status.ToString() == StatusFilter);
         }
 
-        // ფილტრაცია გადახდის მეთოდით
         if (!string.IsNullOrEmpty(PaymentFilter))
         {
             if (PaymentFilter == "Points")
@@ -331,7 +331,7 @@
 
     private async Task UpdateOrderStatus()
     {
-        // აქ გამოიძახებ შენს სერვისს: მაგ. await OrderService.UpdateStatusAsync(SelectedOrder.Id, NewStatus);
+        // await OrderService.UpdateStatusAsync(SelectedOrder.Id, NewStatus);
         CloseModal();
         await LoadOrders();
     }
