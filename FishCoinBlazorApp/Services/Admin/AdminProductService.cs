@@ -126,6 +126,11 @@ namespace FishCoinBlazorApp.Services.Admin
             return _dbContext.ProductCategories.Where(pc => pc.SubCategoryId == id).ToList();
         }
 
+        public async Task<int> GetProductSubCategoryByProductId(int id)
+        {
+            return _dbContext.ProductCategories.FirstOrDefault(pc => pc.Id == id).SubCategoryId;
+        }
+
         #region Save Image
         public async Task<string?> SaveImage(IBrowserFile? file)
         {
