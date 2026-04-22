@@ -12,7 +12,7 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="card-title">შეკვეთების ისტორია</h4>
                 <div class="search-box">
-                    <input type="text" class="form-control form-control-sm" placeholder="ძებნა (Order #)..." @bind="SearchTerm" @bind:event="oninput" />
+                    <input type="text" class="form-control form-control-sm" placeholder="ძებნა (Order #)..." @bind="SearchText" @bind:event="oninput" />
                 </div>
             </div>
 
@@ -89,12 +89,10 @@
                                 {
                                     <tr class="bg-transparent">
                                         <td colspan="9">
-                                            @* bg-white შეიცვალა bg-body-თ და დაემატა text-body *@
                                             <div class="p-3 border rounded bg-body m-2 shadow-sm text-body">
                                                 <h5 class="mb-3">პროდუქტების ჩამონათვალი</h5>
                                                 <table class="table table-sm table-bordered align-middle text-body">
                                                     <thead class="table-light-subtle">
-                                                        @* დარკ მოუდზე უკეთესი ჰედერი *@
                                                         <tr>
                                                             <th>პროდუქტის ID</th>
                                                             <th>რაოდენობა</th>
@@ -128,7 +126,6 @@
                                                     </tbody>
                                                 </table>
                                                 <div class="mt-2 small opacity-75">
-                                                    @* text-muted-ის ნაცვლად opacity-ს გამოყენება უფრო უნივერსალურია *@
                                                     <strong>მისამართი:</strong> @order.ShippingAddress |
                                                     <strong>მიტანის საფასური:</strong> ₾@order.DeliveryFee
                                                 </div>
@@ -169,10 +166,26 @@
 @code {
     private List<FishCoinBlazorApp.Entites.Product.Order> Orders;
     private string SearchTerm = "";
+
+    // ახალი ფროფერთი ავტომატური ძებნისთვის
+    private string SearchText
+    {
+        get => SearchTerm;
+        set
+        {
+            if (SearchTerm != value)
+            {
+                SearchTerm = value;
+                CurrentPage = 1; // ძებნისას ვაბრუნებთ პირველ გვერდზე
+                _ = LoadOrders();
+            }
+        }
+    }
+
     private int CurrentPage = 1;
     private int TotalPages = 1;
     private int PageSize = 10;
-    private int? ExpandedOrderId; // რომელი ორდერია ჩამოშლილი
+    private int? ExpandedOrderId;
 
     protected override async Task OnInitializedAsync()
     {
@@ -184,6 +197,7 @@
         var result = await OrderService.GetPagedOrdersAsync(CurrentPage, PageSize, SearchTerm);
         Orders = result.Orders;
         TotalPages = result.TotalPages;
+        StateHasChanged(); // საჭიროა set-იდან გამოძახებისას
     }
 
     private void ToggleOrderDetails(int orderId)
