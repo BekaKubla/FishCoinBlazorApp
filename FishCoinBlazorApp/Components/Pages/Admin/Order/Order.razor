@@ -1,0 +1,203 @@
+﻿@page "/Admin/Orders"
+@rendermode InteractiveServer
+@using FishCoinBlazorApp.Services.Admin
+@inject AdminOrderService OrderService
+@inject IJSRuntime JsRuntime
+
+<Topbar Title="შეკვეთების მართვა" />
+
+<div class="row">
+    <div class="col-xl-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="card-title">შეკვეთების ისტორია</h4>
+                <div class="search-box">
+                    <input type="text" class="form-control form-control-sm" placeholder="ძებნა (Order #)..." @bind="SearchTerm" @bind:event="oninput" />
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table align-middle table-hover mb-0">
+                    <thead class="bg-light-subtle">
+                        <tr>
+                            <th style="width: 40px;"></th> @* დროპის ღილაკისთვის *@
+                            <th>ორდერის #</th>
+                            <th>თარიღი</th>
+                            <th>მომხმარებელი</th>
+                            <th>სტატუსი</th>
+                            <th>გადახდის მეთოდი</th>
+                            <th>სულ ჯამი</th>
+                            <th>მოქმედება</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Orders != null)
+                        {
+                            @foreach (var order in Orders)
+                            {
+                                <tr>
+                                    <td>
+                                        <button class="btn btn-sm btn-light" @onclick="() => ToggleOrderDetails(order.Id)">
+                                            <iconify-icon icon="@(ExpandedOrderId == order.Id ? "solar:alt-arrow-up-broken" : "solar:alt-arrow-down-broken")"></iconify-icon>
+                                        </button>
+                                    </td>
+                                    <td class="fw-bold">@order.OrderNumber</td>
+                                    <td>@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <span>@order.FirstNameAndLastName</span>
+                                            <small class="text-muted">@order.PhoneNumber</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge @GetStatusClass(order.Status.ToString())">@order.Status</span>
+                                    </td>
+                                    <td>
+                                        @if (order.OrderItems.Any(x => x.PointsPriceAtPurchase > 0))
+                                        {
+                                            <span class="badge bg-info-subtle text-info">გადახდა: ქულები</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success-subtle text-success">გადახდა: თანხა</span>
+                                        }
+                                    </td>
+                                    <td class="fw-bold text-dark">
+                                        @if (order.TotalAmountPoints > 0)
+                                        {
+                                            <span>@order.TotalAmountPoints <i class="bx bxs-coin-stack text-warning"></i></span>
+                                        }
+                                        else
+                                        {
+                                            <span>₾@order.TotalAmountGEL</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-soft-danger btn-sm"><iconify-icon icon="solar:trash-bin-trash-broken"></iconify-icon></button>
+                                    </td>
+                                </tr>
+
+                                @* ჩამოსაშლელი დეტალების სექცია *@
+                                @if (ExpandedOrderId == order.Id)
+                                {
+                                    <tr class="bg-light-subtle">
+                                        <td colspan="8">
+                                            <div class="p-3 border rounded bg-white m-2 shadow-sm">
+                                                <h5 class="mb-3">პროდუქტების ჩამონათვალი</h5>
+                                                <table class="table table-sm table-bordered align-middle">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th>პროდუქტის ID</th>
+                                                            <th>რაოდენობა</th>
+                                                            <th>ერთეულის ფასი</th>
+                                                            <th>ჯამი</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var item in order.OrderItems)
+                                                        {
+                                                            <tr>
+                                                                <td>#@item.ProductId</td>
+                                                                <td>@item.Quantity ცალი</td>
+                                                                <td>
+                                                                    @if (item.PointsPriceAtPurchase > 0)
+                                                                    {
+                                                                        <span>@item.PointsPriceAtPurchase ქულა</span>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <span>₾@item.PriceAtPurchase</span>
+                                                                    }
+                                                                </td>
+                                                                <td class="fw-medium">
+                                                                    @(item.PointsPriceAtPurchase > 0
+                                                                        ? (item.PointsPriceAtPurchase * item.Quantity) + " ქულა"
+                                                                        : "₾" + (item.PriceAtPurchase * item.Quantity))
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                                <div class="mt-2 text-muted small">
+                                                    <strong>მისამართი:</strong> @order.ShippingAddress |
+                                                    <strong>მიტანის საფასური:</strong> ₾@order.DeliveryFee
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @* ფეიჯინგი *@
+            <div class="card-footer border-top">
+                <nav>
+                    <ul class="pagination justify-content-end mb-0">
+                        <li class="page-item @(CurrentPage == 1 ? "disabled" : "")">
+                            <a class="page-link" @onclick="() => ChangePage(CurrentPage - 1)" style="cursor:pointer">წინა</a>
+                        </li>
+                        @for (int i = 1; i <= TotalPages; i++)
+                        {
+                            var p = i;
+                            <li class="page-item @(CurrentPage == p ? "active" : "")">
+                                <a class="page-link" @onclick="() => ChangePage(p)" style="cursor:pointer">@p</a>
+                            </li>
+                        }
+                        <li class="page-item @(CurrentPage == TotalPages ? "disabled" : "")">
+                            <a class="page-link" @onclick="() => ChangePage(CurrentPage + 1)" style="cursor:pointer">შემდეგი</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<FishCoinBlazorApp.Entites.Product.Order> Orders;
+    private string SearchTerm = "";
+    private int CurrentPage = 1;
+    private int TotalPages = 1;
+    private int PageSize = 10;
+    private int? ExpandedOrderId; // რომელი ორდერია ჩამოშლილი
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadOrders();
+    }
+
+    private async Task LoadOrders()
+    {
+        var result = await OrderService.GetPagedOrdersAsync(CurrentPage, PageSize, SearchTerm);
+        Orders = result.Orders;
+        TotalPages = result.TotalPages;
+    }
+
+    private void ToggleOrderDetails(int orderId)
+    {
+        if (ExpandedOrderId == orderId)
+            ExpandedOrderId = null;
+        else
+            ExpandedOrderId = orderId;
+    }
+
+    private async Task ChangePage(int page)
+    {
+        if (page >= 1 && page <= TotalPages)
+        {
+            CurrentPage = page;
+            await LoadOrders();
+        }
+    }
+
+    private string GetStatusClass(string status) => status switch
+    {
+        "Pending" => "bg-warning-subtle text-warning",
+        "Paid" => "bg-success-subtle text-success",
+        "Cancelled" => "bg-danger-subtle text-danger",
+        _ => "bg-secondary-subtle text-secondary"
+    };
+}

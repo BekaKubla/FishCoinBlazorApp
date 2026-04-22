@@ -87,6 +87,7 @@ builder.Services.AddHttpClient<SmsService>();
 builder.Services.AddScoped<SmsService>();
 
 builder.Services.AddScoped<AdminProductService>();
+builder.Services.AddScoped<AdminOrderService>();
 
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddSignalR();
