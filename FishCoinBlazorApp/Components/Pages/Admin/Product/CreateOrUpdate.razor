@@ -59,6 +59,13 @@
                                 <small class="text-primary fw-medium"><i class="bx bxs-coin-stack me-1"></i>მისაღები ქულები:</small>
                                 <span class="badge bg-primary">@newProduct.PointsReward</span>
                             </div>
+                            @if (newProduct.IsRedeemable)
+                            {
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    <small class="text-secondary fw-medium"><i class="bx bxs-cart-add me-1"></i>ღირებულება:</small>
+                                    <span class="badge bg-secondary">@newProduct.PointsPrice ქულა</span>
+                                </div>
+                            }
                         </div>
 
                         <div class="row mt-3 text-center">
