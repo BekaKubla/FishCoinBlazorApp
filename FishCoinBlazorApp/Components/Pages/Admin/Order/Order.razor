@@ -9,10 +9,26 @@
 <div class="row">
     <div class="col-xl-12">
         <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <h4 class="card-title">შეკვეთების ისტორია</h4>
-                <div class="search-box">
-                    <input type="text" class="form-control form-control-sm" placeholder="ძებნა (Order #)..." @bind="SearchText" @bind:event="oninput" />
+                
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <div class="search-box">
+                        <input type="text" class="form-control form-control-sm" placeholder="ძებნა (Order #)..." @bind="SearchText" @bind:event="oninput" />
+                    </div>
+
+                    <select class="form-select form-select-sm w-auto" @onchange="OnStatusFilterChanged">
+                        <option value="">ყველა სტატუსი</option>
+                        <option value="Pending">🕒 Pending</option>
+                        <option value="Paid">✅ Paid</option>
+                        <option value="Cancelled">❌ Cancelled</option>
+                    </select>
+
+                    <select class="form-select form-select-sm w-auto" @onchange="OnPaymentFilterChanged">
+                        <option value="">გადახდის ტიპი</option>
+                        <option value="Cash">💵 თანხა</option>
+                        <option value="Points">🪙 ქულები</option>
+                    </select>
                 </div>
             </div>
 
@@ -228,6 +244,9 @@
 @code {
     private List<FishCoinBlazorApp.Entites.Product.Order> Orders;
     private string SearchTerm = "";
+    private string StatusFilter = "";
+    private string PaymentFilter = "";
+    
     private bool ShowEditModal = false;
     private FishCoinBlazorApp.Entites.Product.Order SelectedOrder;
     private string NewStatus;
@@ -258,10 +277,43 @@
 
     private async Task LoadOrders()
     {
+        // შენი სერვისის მეთოდი უნდა იღებდეს ახალ პარამეტრებსაც, თუ არა და ფრონტზე გაფილტრავ (თუმცა პეიჯინგი არ იმუშავებს სწორად)
         var result = await OrderService.GetPagedOrdersAsync(CurrentPage, PageSize, SearchTerm);
-        Orders = result.Orders;
+        
+        var query = result.Orders.AsQueryable();
+
+        // ფილტრაცია სტატუსით
+        if (!string.IsNullOrEmpty(StatusFilter))
+        {
+            query = query.Where(o => o.Status.ToString() == StatusFilter);
+        }
+
+        // ფილტრაცია გადახდის მეთოდით
+        if (!string.IsNullOrEmpty(PaymentFilter))
+        {
+            if (PaymentFilter == "Points")
+                query = query.Where(o => o.OrderItems.Any(x => x.PointsPriceAtPurchase > 0));
+            else if (PaymentFilter == "Cash")
+                query = query.Where(o => o.OrderItems.All(x => x.PointsPriceAtPurchase == 0));
+        }
+
+        Orders = query.ToList();
         TotalPages = result.TotalPages;
         StateHasChanged();
+    }
+
+    private async Task OnStatusFilterChanged(ChangeEventArgs e)
+    {
+        StatusFilter = e.Value?.ToString() ?? "";
+        CurrentPage = 1;
+        await LoadOrders();
+    }
+
+    private async Task OnPaymentFilterChanged(ChangeEventArgs e)
+    {
+        PaymentFilter = e.Value?.ToString() ?? "";
+        CurrentPage = 1;
+        await LoadOrders();
     }
 
     private void OpenEditModal(FishCoinBlazorApp.Entites.Product.Order order)
