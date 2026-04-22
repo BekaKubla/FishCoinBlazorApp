@@ -97,10 +97,10 @@
                         <select class="form-select form-select-sm w-auto border-0 custom-bg-alt shadow-sm cursor-pointer fw-bold rounded-3 px-3 py-2"
                                 style="min-width: 160px;"
                                 @onchange="OnSortChanged">
+                            <option value="price_asc">ზრდადობით</option>
+                            <option value="price_desc">კლებადობით</option>
                             <option value="newest">უახლესი</option>
                             <option value="discount">ფასდაკლებული</option>
-                            <option value="price_desc">ფასი: კლებადობით</option>
-                            <option value="price_asc">ფასი: ზრდადობით</option>
                         </select>
                     </div>
 
@@ -281,7 +281,7 @@
     private List<ProductCategory>? productCategories;
     private List<int?> selectedSubCategoryIds = new();
     private List<int?> selectedProductCategoryIds = new();
-    private string sortBy = "newest";
+    private string sortBy = "price_asc";
     private string searchTerm = "";
     private int totalCount;
     private int pageSize = 9;
