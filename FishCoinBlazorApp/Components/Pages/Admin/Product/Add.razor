@@ -5,6 +5,7 @@
 @inject IJSRuntime JsRuntime
 @using System.ComponentModel.DataAnnotations
 @using System.Net.Http.Headers
+@using Microsoft.AspNetCore.Components.Forms
 
 <Topbar Title="პროდუქტის დამატება" />
 
@@ -81,7 +82,7 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-lg-12 mb-3">
-                            <label class="form-label">პროდუქტის ფოტო (IFormFile)</label>
+                            <label class="form-label">პროდუქტის ფოტო</label>
                             <InputFile OnChange="OnInputFileChange" class="form-control" accept=".jpg,.jpeg,.png" />
                         </div>
                         <div class="col-lg-12">
@@ -93,7 +94,7 @@
             </div>
 
             <div class="card">
-                <div class="card-header"><h4 class="card-title">ზოგადი ინფორმაცია</h4></div>
+                <div class="card-header"><h4 class="card-title">ფასწარმოქმნა და ზოგადი ინფორმაცია</h4></div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-lg-12 mb-3">
@@ -101,19 +102,33 @@
                             <InputText @bind-Value="newProduct.Name" class="form-control" />
                             <ValidationMessage For="@(() => newProduct.Name)" />
                         </div>
-                        <div class="col-lg-4 mb-3">
-                            <label class="form-label">ძირითადი ფასი (₾)</label>
-                            <InputNumber TValue="decimal" Value="newProduct.Price" ValueExpression="() => newProduct.Price"
+
+                        <div class="col-lg-3 mb-3">
+                            <label class="form-label">თვითღირებულება (₾)</label>
+                            <InputNumber TValue="decimal" Value="newProduct.CostPrice"
+                                         ValueExpression="() => newProduct.CostPrice"
+                                         ValueChanged="OnCostPriceChanged" class="form-control" />
+                        </div>
+
+                        <div class="col-lg-3 mb-3">
+                            <label class="form-label">მარჟა (%)</label>
+                            <InputNumber TValue="decimal" Value="marginPercentage"
+                                         ValueExpression="() => marginPercentage"
+                                         ValueChanged="OnMarginChanged" class="form-control" />
+                        </div>
+
+                        <div class="col-lg-3 mb-3">
+                            <label class="form-label">გასაყიდი ფასი (₾)</label>
+                            <InputNumber TValue="decimal" Value="newProduct.Price"
+                                         ValueExpression="() => newProduct.Price"
                                          ValueChanged="OnPriceChanged" class="form-control" />
                         </div>
-                        <div class="col-lg-4 mb-3">
-                            <label class="form-label">ფასდაკლება %</label>
+
+                        <div class="col-lg-3 mb-3">
+                            <label class="form-label">ფასდაკლება (%)</label>
                             <InputNumber @bind-Value="newProduct.DiscountPrecentage" class="form-control" />
                         </div>
-                        <div class="col-lg-4 mb-3">
-                            <label class="form-label">თვითღირებულება</label>
-                            <InputNumber @bind-Value="newProduct.CostPrice" class="form-control" />
-                        </div>
+
                         <div class="col-lg-6 mb-3">
                             <label class="form-label">რაოდენობა საწყობში</label>
                             <InputNumber @bind-Value="newProduct.StockQuantity" class="form-control" />
@@ -159,12 +174,43 @@
     private IBrowserFile? selectedFile;
     private string? previewUrl;
     private decimal rewardPercentage;
+    private decimal marginPercentage;
 
-    private decimal DiscountedPrice => Math.Round(newProduct.Price * (1 - (newProduct.DiscountPrecentage ?? 0) / 100), 2);
+    private decimal DiscountedPrice => Math.Round(newProduct.Price * (1 - (newProduct.DiscountPrecentage ?? 0) / 100m), 2);
 
+    // როცა იცვლება თვითღირებულება
+    private void OnCostPriceChanged(decimal value)
+    {
+        newProduct.CostPrice = value;
+        CalculatePriceByMargin();
+    }
+
+    // როცა იცვლება მარჟა
+    private void OnMarginChanged(decimal value)
+    {
+        marginPercentage = value;
+        CalculatePriceByMargin();
+    }
+
+    // ფასის გამოთვლა მარჟით
+    private void CalculatePriceByMargin()
+    {
+        if (marginPercentage > 0 && newProduct.CostPrice > 0)
+        {
+            // ფასი = თვითღირებულება + (თვითღირებულება * მარჟა / 100)
+            newProduct.Price = Math.Round(newProduct.CostPrice + (newProduct.CostPrice * marginPercentage / 100m), 2);
+        }
+        CalculateLoyalty();
+    }
+
+    // ფასის ხელით შეცვლისას (ასევე გადათვლის მარჟას უკუღმა)
     private void OnPriceChanged(decimal value)
     {
         newProduct.Price = value;
+        if (newProduct.CostPrice > 0)
+        {
+            marginPercentage = Math.Round(((newProduct.Price - newProduct.CostPrice) / newProduct.CostPrice) * 100m, 2);
+        }
         CalculateLoyalty();
     }
 
@@ -179,7 +225,6 @@
         newProduct.IsRedeemable = value;
         if (value)
         {
-            // 10 თეთრი = 1 ქულა -> 1 ლარი = 10 ქულა
             newProduct.PointsPrice = (int)(newProduct.Price * 10);
         }
         else
@@ -190,11 +235,9 @@
 
     private void CalculateLoyalty()
     {
-        // დარიცხული ქულების ლოგიკა
-        decimal rewardInGEL = newProduct.Price * (rewardPercentage / 100);
+        decimal rewardInGEL = newProduct.Price * (rewardPercentage / 100m);
         newProduct.PointsReward = (int)(rewardInGEL / 0.10m);
         
-        // თუ ყიდვა ჩართულია, ფასის ცვლილებაზე ქულების ღირებულებაც განახლდეს
         if (newProduct.IsRedeemable)
         {
             newProduct.PointsPrice = (int)(newProduct.Price * 10);
@@ -215,20 +258,6 @@
     {
         try
         {
-            using var content = new MultipartFormDataContent();
-
-            content.Add(new StringContent(newProduct.Name ?? ""), "Name");
-            content.Add(new StringContent(newProduct.Description ?? ""), "Description");
-            content.Add(new StringContent(newProduct.Price.ToString()), "Price");
-            content.Add(new StringContent((newProduct.DiscountPrecentage ?? 0).ToString()), "DiscountPrecentage");
-            content.Add(new StringContent(newProduct.PointsReward.ToString()), "PointsReward");
-            content.Add(new StringContent(newProduct.IsRedeemable.ToString()), "IsRedeemable");
-            content.Add(new StringContent((newProduct.PointsPrice ?? 0).ToString()), "PointsPrice");
-            content.Add(new StringContent(newProduct.CostPrice.ToString()), "CostPrice");
-            content.Add(new StringContent(newProduct.StockQuantity.ToString()), "StockQuantity");
-            content.Add(new StringContent(newProduct.ProductCategoryId.ToString()), "ProductCategoryId");
-
-            // TODO: HttpClient-ით გაგზავნა
             await AdminProductService.CreateProduct(newProduct, selectedFile);
             await JsRuntime.InvokeVoidAsync("alert", "პროდუქტი წარმატებით დაემატა ბაზაში!");
             ResetForm();
@@ -236,6 +265,7 @@
         catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
+            await JsRuntime.InvokeVoidAsync("alert", "შეცდომა შენახვისას!");
         }
     }
 
@@ -243,6 +273,7 @@
     {
         newProduct = new ProductModel();
         rewardPercentage = 0;
+        marginPercentage = 0;
         previewUrl = null;
         selectedFile = null;
     }
