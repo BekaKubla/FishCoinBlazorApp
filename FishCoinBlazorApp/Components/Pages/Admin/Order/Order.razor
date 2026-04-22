@@ -1,6 +1,8 @@
 ﻿@page "/Admin/Orders"
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin")]
 @using FishCoinBlazorApp.Services.Admin
+@using Microsoft.AspNetCore.Authorization
 @inject AdminOrderService OrderService
 @inject IJSRuntime JsRuntime
 

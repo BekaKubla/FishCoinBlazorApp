@@ -1,7 +1,9 @@
 @page "/Admin/Product-List"
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin")]
 @inject IJSRuntime JsRuntime
 @using FishCoinBlazorApp.Entites.Product
+@using Microsoft.AspNetCore.Authorization
 @inject FishCoinBlazorApp.Services.Admin.AdminProductService AdminProductService
 
 <Topbar Title="პროდუქტების სია" />
