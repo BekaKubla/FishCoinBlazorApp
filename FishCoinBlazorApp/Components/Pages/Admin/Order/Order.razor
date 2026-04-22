@@ -27,6 +27,7 @@
                             <th>სტატუსი</th>
                             <th>გადახდის მეთოდი</th>
                             <th>სულ ჯამი</th>
+                            <th>დარიცხული ქულები</th> @* ახალი სვეტი *@
                             <th>მოქმედება</th>
                         </tr>
                     </thead>
@@ -73,6 +74,12 @@
                                         }
                                     </td>
                                     <td>
+                                        <div class="d-flex align-items-center gap-1">
+                                            <span class="text-primary fw-medium">+@order.PointsEarned</span>
+                                            <iconify-icon icon="solar:stars-minimalistic-bold-duotone" class="text-primary fs-18"></iconify-icon>
+                                        </div>
+                                    </td>
+                                    <td>
                                         <button class="btn btn-soft-danger btn-sm"><iconify-icon icon="solar:trash-bin-trash-broken"></iconify-icon></button>
                                     </td>
                                 </tr>
@@ -80,12 +87,14 @@
                                 @* ჩამოსაშლელი დეტალების სექცია *@
                                 @if (ExpandedOrderId == order.Id)
                                 {
-                                    <tr class="bg-light-subtle">
-                                        <td colspan="8">
-                                            <div class="p-3 border rounded bg-white m-2 shadow-sm">
+                                    <tr class="bg-transparent">
+                                        <td colspan="9">
+                                            @* bg-white შეიცვალა bg-body-თ და დაემატა text-body *@
+                                            <div class="p-3 border rounded bg-body m-2 shadow-sm text-body">
                                                 <h5 class="mb-3">პროდუქტების ჩამონათვალი</h5>
-                                                <table class="table table-sm table-bordered align-middle">
-                                                    <thead class="table-light">
+                                                <table class="table table-sm table-bordered align-middle text-body">
+                                                    <thead class="table-light-subtle">
+                                                        @* დარკ მოუდზე უკეთესი ჰედერი *@
                                                         <tr>
                                                             <th>პროდუქტის ID</th>
                                                             <th>რაოდენობა</th>
@@ -118,7 +127,8 @@
                                                         }
                                                     </tbody>
                                                 </table>
-                                                <div class="mt-2 text-muted small">
+                                                <div class="mt-2 small opacity-75">
+                                                    @* text-muted-ის ნაცვლად opacity-ს გამოყენება უფრო უნივერსალურია *@
                                                     <strong>მისამართი:</strong> @order.ShippingAddress |
                                                     <strong>მიტანის საფასური:</strong> ₾@order.DeliveryFee
                                                 </div>
