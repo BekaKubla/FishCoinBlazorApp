@@ -1,5 +1,6 @@
 ﻿using FishCoinBlazorApp.Data;
 using FishCoinBlazorApp.Entites.Product;
+using FishCoinBlazorApp.Entites.Product.Category;
 using FishCoinBlazorApp.Services.Models.Admin;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.EntityFrameworkCore;
@@ -87,7 +88,7 @@ namespace FishCoinBlazorApp.Services.Admin
             };
         }
 
-        public async Task UpdateProduct(int id,ProductModel model,IBrowserFile? file)
+        public async Task UpdateProduct(int id, ProductModel model, IBrowserFile? file)
         {
             var product = await _dbContext.Products.FirstOrDefaultAsync(p => p.Id == id);
             if (product == null) return;
@@ -109,6 +110,20 @@ namespace FishCoinBlazorApp.Services.Admin
             product.ImageUrl = photoPath;
             _dbContext.Products.Update(product);
             await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<List<SubCategory>> GetSubCategories()
+        {
+            return _dbContext.SubCategories.ToList();
+        }
+
+        public async Task<int> GetSubCategoryIdByProductCategory(int id)
+        {
+            return _dbContext.SubCategories.FirstOrDefault(sc => sc.Id == id).Id;
+        }
+        public async Task<List<ProductCategory>> GetProductCategoriesBySubCategory(int id)
+        {
+            return _dbContext.ProductCategories.Where(pc => pc.SubCategoryId == id).ToList();
         }
 
         #region Save Image

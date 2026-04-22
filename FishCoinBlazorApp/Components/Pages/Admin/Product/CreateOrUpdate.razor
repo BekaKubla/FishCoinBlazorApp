@@ -1,21 +1,22 @@
 @page "/Admin/CreateOrUpdate"
 @page "/Admin/CreateOrUpdate/{Id:int}"
 @rendermode InteractiveServer
+@using FishCoinBlazorApp.Entites.Product.Category
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize(Roles = "Admin")]
 @using FishCoinBlazorApp.Services.Models.Admin
 @inject FishCoinBlazorApp.Services.Admin.AdminProductService AdminProductService
 @inject IJSRuntime JsRuntime
 @using System.ComponentModel.DataAnnotations
-@using System.Net.Http.Headers
 @using Microsoft.AspNetCore.Components.Forms
 
-<Topbar Title="პროდუქტის დამატება" />
+<Topbar Title="პროდუქტის მართვა" />
 
 <EditForm Model="@newProduct" OnValidSubmit="HandleSubmit">
     <DataAnnotationsValidator />
 
     <div class="row">
+        @* მარცხენა მხარე: პრევიუ *@
         <div class="col-xl-3 col-lg-4">
             <div class="card">
                 <div class="card-body">
@@ -58,14 +59,6 @@
                                 <small class="text-primary fw-medium"><i class="bx bxs-coin-stack me-1"></i>მისაღები ქულები:</small>
                                 <span class="badge bg-primary">@newProduct.PointsReward</span>
                             </div>
-                            
-                            @if (newProduct.IsRedeemable)
-                            {
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <small class="text-success fw-medium"><i class="bx bxs-purchase-tag me-1"></i>ღირებულება ქულებში:</small>
-                                    <span class="badge bg-success">@newProduct.PointsPrice</span>
-                                </div>
-                            }
                         </div>
 
                         <div class="row mt-3 text-center">
@@ -84,16 +77,54 @@
             </div>
         </div>
 
+        @* მარჯვენა მხარე: ფორმები *@
         <div class="col-xl-9 col-lg-8">
             <div class="card">
-                <div class="card-header"><h4 class="card-title">მედია და აღწერა</h4></div>
+                <div class="card-header"><h4 class="card-title">მედია, აღწერა და კატეგორიები</h4></div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-lg-12 mb-3">
+                        <div class="col-lg-6 mb-3">
                             <label class="form-label fw-bold">პროდუქტის დასახელება</label>
                             <InputText @bind-Value="newProduct.Name" class="form-control" placeholder="მაგ: Shimano Reel 4000" />
                             <ValidationMessage For="@(() => newProduct.Name)" />
                         </div>
+                        <div class="col-lg-6 mb-3">
+                            <label class="form-label fw-bold">რაოდენობა საწყობში</label>
+                            <InputNumber @bind-Value="newProduct.StockQuantity" class="form-control" />
+                        </div>
+                        
+                        @* კატეგორიების არჩევა *@
+                        <div class="col-lg-6 mb-3">
+                            <label class="form-label fw-bold">ქვეკატეგორია (SubCategory)</label>
+                            <InputSelect TValue="int?" Value="selectedSubCategoryId"
+                                         ValueChanged="OnSubCategoryChanged"
+                                         ValueExpression="() => selectedSubCategoryId" class="form-select">
+                                <option value="">აირჩიეთ ქვეკატეგორია...</option>
+                                @if (subCategories != null)
+                                {
+                                    foreach (var sub in subCategories)
+                                    {
+                                        <option value="@sub.Id">@sub.SubCategoryName</option>
+                                    }
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="col-lg-6 mb-3">
+                            <label class="form-label fw-bold">პროდუქტის კატეგორია (ProductCategory)</label>
+                            <InputSelect @bind-Value="newProduct.ProductCategoryId" class="form-select" disabled="@(productCategories == null || !productCategories.Any())">
+                                <option value="">აირჩიეთ კატეგორია...</option>
+                                @if (productCategories != null)
+                                {
+                                    foreach (var cat in productCategories)
+                                    {
+                                        <option value="@cat.Id">@cat.ProductCategoryName</option>
+                                    }
+                                }
+                            </InputSelect>
+                            <ValidationMessage For="@(() => newProduct.ProductCategoryId)" />
+                        </div>
+
                         <div class="col-lg-12 mb-3">
                             <label class="form-label">პროდუქტის ფოტო</label>
                             <InputFile OnChange="OnInputFileChange" class="form-control" accept=".jpg,.jpeg,.png" />
@@ -107,49 +138,36 @@
             </div>
 
             <div class="card">
-                <div class="card-header"><h4 class="card-title">ფასწარმოქმნა და მოგების გაანგარიშება</h4></div>
+                <div class="card-header"><h4 class="card-title">ფასწარმოქმნა</h4></div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-lg-2 mb-3">
+                        <div class="col-lg-3 mb-3">
                             <label class="form-label">თვითღირებულება (₾)</label>
                             <InputNumber TValue="decimal" Value="newProduct.CostPrice"
                                          ValueExpression="() => newProduct.CostPrice"
                                          ValueChanged="OnCostPriceChanged" class="form-control" />
                         </div>
-
                         <div class="col-lg-2 mb-3">
                             <label class="form-label">მარჟა (%)</label>
                             <InputNumber TValue="decimal" Value="marginPercentage"
                                          ValueExpression="() => marginPercentage"
                                          ValueChanged="OnMarginChanged" class="form-control" />
                         </div>
-
-                        <div class="col-lg-2 mb-3">
+                        <div class="col-lg-3 mb-3">
                             <label class="form-label">გასაყიდი ფასი (₾)</label>
                             <InputNumber TValue="decimal" Value="newProduct.Price"
                                          ValueExpression="() => newProduct.Price"
                                          ValueChanged="OnPriceChanged" class="form-control" />
                         </div>
-
-                        <div class="col-lg-3 mb-3">
+                        <div class="col-lg-2 mb-3">
                             <label class="form-label">ფასდაკლება (%)</label>
                             <InputNumber TValue="decimal?" Value="newProduct.DiscountPrecentage"
                                          ValueExpression="() => newProduct.DiscountPrecentage"
                                          ValueChanged="OnDiscountChanged" class="form-control" />
                         </div>
-
-                        <div class="col-lg-3 mb-3">
+                        <div class="col-lg-2 mb-3">
                             <label class="form-label">მოგება (₾)</label>
                             <input type="text" class="form-control fw-bold text-success" value="@ProfitAmount ₾" disabled />
-                        </div>
-
-                        <div class="col-lg-6 mb-3">
-                            <label class="form-label">რაოდენობა საწყობში</label>
-                            <InputNumber @bind-Value="newProduct.StockQuantity" class="form-control" />
-                        </div>
-                        <div class="col-lg-6 mb-3">
-                            <label class="form-label">კატეგორიის ID</label>
-                            <InputNumber @bind-Value="newProduct.ProductCategoryId" class="form-control" />
                         </div>
                     </div>
                 </div>
@@ -191,14 +209,19 @@
     private decimal rewardPercentage;
     private decimal marginPercentage;
 
-    // გამოთვლილი ფასი ფასდაკლებით
-    private decimal DiscountedPrice => Math.Round(newProduct.Price * (1 - (newProduct.DiscountPrecentage ?? 0) / 100m), 2);
+    // კატეგორიების მონაცემები
+    private List<SubCategory>? subCategories;
+    private List<ProductCategory>? productCategories;
+    private int? selectedSubCategoryId;
 
-    // მოგების გამოთვლა (DiscountedPrice - CostPrice)
+    private decimal DiscountedPrice => Math.Round(newProduct.Price * (1 - (newProduct.DiscountPrecentage ?? 0) / 100m), 2);
     private decimal ProfitAmount => Math.Round(DiscountedPrice - newProduct.CostPrice, 2);
 
     protected override async Task OnInitializedAsync()
     {
+        // 1. ვტვირთავთ ყველა SubCategory-ს
+        subCategories = await AdminProductService.GetSubCategories();
+
         if (Id.HasValue)
         {
             var productToEdit = await AdminProductService.GetProductById(Id.Value);
@@ -207,6 +230,15 @@
                 newProduct = productToEdit;
                 previewUrl = newProduct.ImageUrl;
                 
+                // რედაქტირებისას ვპოულობთ რომელ SubCategory-ს ეკუთვნის პროდუქტი
+                selectedSubCategoryId = await AdminProductService.GetSubCategoryIdByProductCategory(newProduct.ProductCategoryId);
+                
+                if (selectedSubCategoryId.HasValue)
+                {
+                    productCategories = await AdminProductService.GetProductCategoriesBySubCategory(selectedSubCategoryId.Value);
+                }
+
+                // ფასების გაანგარიშება
                 if (newProduct.CostPrice > 0)
                     marginPercentage = Math.Round(((newProduct.Price - newProduct.CostPrice) / newProduct.CostPrice) * 100m, 2);
                 
@@ -216,74 +248,38 @@
         }
     }
 
-    private void OnCostPriceChanged(decimal value)
+    private async Task OnSubCategoryChanged(int? value)
     {
-        newProduct.CostPrice = value;
-        if (newProduct.Price > 0 && newProduct.CostPrice > 0)
+        selectedSubCategoryId = value;
+        newProduct.ProductCategoryId = 0; // ვასუფთავებთ არჩეულ კატეგორიას
+        
+        if (selectedSubCategoryId.HasValue)
         {
-            marginPercentage = Math.Round(((newProduct.Price - newProduct.CostPrice) / newProduct.CostPrice) * 100m, 2);
-        }
-        CalculateLoyalty();
-    }
-
-    private void OnMarginChanged(decimal value)
-    {
-        marginPercentage = value;
-        if (marginPercentage > 0 && newProduct.CostPrice > 0)
-        {
-            newProduct.Price = Math.Round(newProduct.CostPrice + (newProduct.CostPrice * marginPercentage / 100m), 2);
-        }
-        CalculateLoyalty();
-    }
-
-    private void OnPriceChanged(decimal value)
-    {
-        newProduct.Price = value;
-        if (newProduct.CostPrice > 0)
-        {
-            marginPercentage = Math.Round(((newProduct.Price - newProduct.CostPrice) / newProduct.CostPrice) * 100m, 2);
-        }
-        CalculateLoyalty();
-    }
-
-    private void OnDiscountChanged(decimal? value)
-    {
-        newProduct.DiscountPrecentage = value;
-        // როცა ფასდაკლება იცვლება, ქულები უნდა გადაითვალოს რეალური გასაყიდი ფასიდან
-        CalculateLoyalty();
-    }
-
-    private void OnRewardPercentageChanged(decimal value)
-    {
-        rewardPercentage = value;
-        CalculateLoyalty();
-    }
-
-    private void OnIsRedeemableChanged(bool value)
-    {
-        newProduct.IsRedeemable = value;
-        if (value)
-        {
-            // გამოსასყიდი ქულებიც DiscountedPrice-დან დაითვალოს
-            newProduct.PointsPrice = (int)(DiscountedPrice * 10);
+            // ვტვირთავთ შესაბამის ProductCategory-ებს
+            productCategories = await AdminProductService.GetProductCategoriesBySubCategory(selectedSubCategoryId.Value);
         }
         else
         {
-            newProduct.PointsPrice = null;
+            productCategories = null;
         }
     }
 
+    // ფასის და ლოიალობის ლოგიკა (უცვლელი დარჩა)
+    private void OnCostPriceChanged(decimal value) { newProduct.CostPrice = value; UpdateMargin(); CalculateLoyalty(); }
+    private void OnMarginChanged(decimal value) { marginPercentage = value; UpdatePrice(); CalculateLoyalty(); }
+    private void OnPriceChanged(decimal value) { newProduct.Price = value; UpdateMargin(); CalculateLoyalty(); }
+    private void OnDiscountChanged(decimal? value) { newProduct.DiscountPrecentage = value; CalculateLoyalty(); }
+    private void OnRewardPercentageChanged(decimal value) { rewardPercentage = value; CalculateLoyalty(); }
+    private void OnIsRedeemableChanged(bool value) { newProduct.IsRedeemable = value; if (value) newProduct.PointsPrice = (int)(DiscountedPrice * 10); else newProduct.PointsPrice = null; }
+
+    private void UpdateMargin() { if (newProduct.Price > 0 && newProduct.CostPrice > 0) marginPercentage = Math.Round(((newProduct.Price - newProduct.CostPrice) / newProduct.CostPrice) * 100m, 2); }
+    private void UpdatePrice() { if (marginPercentage > 0 && newProduct.CostPrice > 0) newProduct.Price = Math.Round(newProduct.CostPrice + (newProduct.CostPrice * marginPercentage / 100m), 2); }
+
     private void CalculateLoyalty()
     {
-        // ქეშბექი ითვლება რეალური (ფასდაკლებული) გასაყიდი ფასიდან
         decimal rewardInGEL = DiscountedPrice * (rewardPercentage / 100m);
         newProduct.PointsReward = (int)(rewardInGEL / 0.10m);
-        
-        if (newProduct.IsRedeemable)
-        {
-            // თუ პროდუქტის ყიდვა ქულებით მოსულა, მისი ფასი ქულებშიც რეალურ ფასს მიყვეს
-            newProduct.PointsPrice = (int)(DiscountedPrice * 10);
-        }
+        if (newProduct.IsRedeemable) newProduct.PointsPrice = (int)(DiscountedPrice * 10);
     }
 
     private async Task OnInputFileChange(InputFileChangeEventArgs e)
@@ -300,23 +296,26 @@
     {
         try
         {
+            if (newProduct.ProductCategoryId <= 0)
+            {
+                await JsRuntime.InvokeVoidAsync("alert", "გთხოვთ აირჩიოთ კატეგორია!");
+                return;
+            }
+
             if (Id.HasValue)
             {
-                // რედაქტირების ლოგიკა
                 await AdminProductService.UpdateProduct(Id.Value, newProduct, selectedFile);
-                await JsRuntime.InvokeVoidAsync("alert", "პროდუქტი წარმატებით განახლდა!");
+                await JsRuntime.InvokeVoidAsync("alert", "წარმატებით განახლდა!");
             }
             else
             {
-                // შექმნის ლოგიკა
                 await AdminProductService.CreateProduct(newProduct, selectedFile);
-                await JsRuntime.InvokeVoidAsync("alert", "პროდუქტი წარმატებით დაემატა!");
+                await JsRuntime.InvokeVoidAsync("alert", "წარმატებით დაემატა!");
                 ResetForm();
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
             await JsRuntime.InvokeVoidAsync("alert", "შეცდომა შენახვისას!");
         }
     }
@@ -328,5 +327,7 @@
         marginPercentage = 0;
         previewUrl = null;
         selectedFile = null;
+        selectedSubCategoryId = null;
+        productCategories = null;
     }
 }
