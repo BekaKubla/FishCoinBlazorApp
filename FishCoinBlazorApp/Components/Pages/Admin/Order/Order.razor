@@ -20,14 +20,14 @@
                 <table class="table align-middle table-hover mb-0">
                     <thead class="bg-light-subtle">
                         <tr>
-                            <th style="width: 40px;"></th> @* დროპის ღილაკისთვის *@
+                            <th style="width: 40px;"></th>
                             <th>ორდერის #</th>
                             <th>თარიღი</th>
                             <th>მომხმარებელი</th>
                             <th>სტატუსი</th>
                             <th>გადახდის მეთოდი</th>
                             <th>სულ ჯამი</th>
-                            <th>დარიცხული ქულები</th> @* ახალი სვეტი *@
+                            <th>დარიცხული ქულები</th>
                             <th>მოქმედება</th>
                         </tr>
                     </thead>
@@ -80,11 +80,17 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <button class="btn btn-soft-danger btn-sm"><iconify-icon icon="solar:trash-bin-trash-broken"></iconify-icon></button>
+                                        <div class="d-flex gap-1">
+                                            <button class="btn btn-soft-primary btn-sm" @onclick="() => OpenEditModal(order)">
+                                                <iconify-icon icon="solar:pen-new-square-broken"></iconify-icon>
+                                            </button>
+                                            <button class="btn btn-soft-danger btn-sm">
+                                                <iconify-icon icon="solar:trash-bin-trash-broken"></iconify-icon>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
 
-                                @* ჩამოსაშლელი დეტალების სექცია *@
                                 @if (ExpandedOrderId == order.Id)
                                 {
                                     <tr class="bg-transparent">
@@ -139,7 +145,6 @@
                 </table>
             </div>
 
-            @* ფეიჯინგი *@
             <div class="card-footer border-top">
                 <nav>
                     <ul class="pagination justify-content-end mb-0">
@@ -163,11 +168,70 @@
     </div>
 </div>
 
+@* სტატუსის რედაქტირების მოდალი *@
+@if (ShowEditModal && SelectedOrder != null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title text-white">შეკვეთის მართვა - @SelectedOrder.OrderNumber</h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="p-2 bg-light rounded shadow-sm border">
+                                <p class="mb-1"><strong>მომხმარებელი:</strong> @SelectedOrder.FirstNameAndLastName</p>
+                                <p class="mb-1"><strong>თარიღი:</strong> @SelectedOrder.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+                                <hr class="my-2" />
+                                <p class="mb-1 text-primary">
+                                    <strong>გადახდის მეთოდი:</strong>
+                                    @(SelectedOrder.OrderItems.Any(x => x.PointsPriceAtPurchase > 0) ? "ქულებით გადახდა" : "ფულადი ანგარიშსწორება")
+                                </p>
+                                <p class="mb-1 fw-bold text-dark">
+                                    <strong>ჯამური ღირებულება:</strong>
+                                    @if (SelectedOrder.TotalAmountPoints > 0)
+                                    {
+                                        <span>@SelectedOrder.TotalAmountPoints <i class="bx bxs-coin-stack text-warning"></i></span>
+                                    }
+                                    else
+                                    {
+                                        <span>₾@SelectedOrder.TotalAmountGEL</span>
+                                    }
+                                </p>
+                                <p class="mb-0 text-success">
+                                    <strong>დაგროვილი ქულები:</strong> +@SelectedOrder.PointsEarned <iconify-icon icon="solar:stars-minimalistic-bold-duotone"></iconify-icon>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-medium">შეცვალეთ სტატუსი:</label>
+                            <select class="form-select shadow-none border-primary" @bind="NewStatus">
+                                <option value="Pending">🕒 Pending</option>
+                                <option value="Paid">✅ Paid</option>
+                                <option value="Cancelled">❌ Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary" @onclick="CloseModal">დახურვა</button>
+                    <button type="button" class="btn btn-primary px-4" @onclick="UpdateOrderStatus">ცვლილების შენახვა</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private List<FishCoinBlazorApp.Entites.Product.Order> Orders;
     private string SearchTerm = "";
+    private bool ShowEditModal = false;
+    private FishCoinBlazorApp.Entites.Product.Order SelectedOrder;
+    private string NewStatus;
 
-    // ახალი ფროფერთი ავტომატური ძებნისთვის
     private string SearchText
     {
         get => SearchTerm;
@@ -176,7 +240,7 @@
             if (SearchTerm != value)
             {
                 SearchTerm = value;
-                CurrentPage = 1; // ძებნისას ვაბრუნებთ პირველ გვერდზე
+                CurrentPage = 1;
                 _ = LoadOrders();
             }
         }
@@ -197,7 +261,27 @@
         var result = await OrderService.GetPagedOrdersAsync(CurrentPage, PageSize, SearchTerm);
         Orders = result.Orders;
         TotalPages = result.TotalPages;
-        StateHasChanged(); // საჭიროა set-იდან გამოძახებისას
+        StateHasChanged();
+    }
+
+    private void OpenEditModal(FishCoinBlazorApp.Entites.Product.Order order)
+    {
+        SelectedOrder = order;
+        NewStatus = order.Status.ToString();
+        ShowEditModal = true;
+    }
+
+    private void CloseModal()
+    {
+        ShowEditModal = false;
+        SelectedOrder = null;
+    }
+
+    private async Task UpdateOrderStatus()
+    {
+        // აქ გამოიძახებ შენს სერვისს: მაგ. await OrderService.UpdateStatusAsync(SelectedOrder.Id, NewStatus);
+        CloseModal();
+        await LoadOrders();
     }
 
     private void ToggleOrderDetails(int orderId)
