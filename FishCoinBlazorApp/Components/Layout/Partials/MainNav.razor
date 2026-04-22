@@ -1,10 +1,10 @@
 ﻿@using FishCoinBlazorApp.Services
 @using FishCoinBlazorApp.Entites.Product.Category
+@using Microsoft.AspNetCore.Components.Authorization
 @inject CategoryService CategoryService
 @rendermode InteractiveServer
 
 <div class="main-nav @(isCollapsed ? "collapsed" : "")">
-    <!-- Sidebar Logo -->
     <div class="logo-box">
         <a href="/" class="logo-dark">
             <span style="display: flex; align-items: center;margin-left:25px;">
@@ -29,13 +29,40 @@
         </a>
     </div>
 
-    <!-- Menu Toggle Button -->
     <button type="button" class="button-sm-hover" @onclick="ToggleCollapse" aria-label="Toggle Menu">
         <iconify-icon icon="solar:double-alt-arrow-right-bold-duotone" class="button-sm-hover-icon"></iconify-icon>
     </button>
 
     <div class="scrollbar" data-simplebar>
         <ul class="navbar-nav" id="navbar-nav">
+            
+            @* --- ადმინ პანელი (ჩანს მხოლოდ ადმინისთვის) --- *@
+            <AuthorizeView Roles="Admin">
+                <Authorized>
+                    <li class="nav-item">
+                        <a class="nav-link menu-arrow" @onclick="@(() => ToggleSubMenu("admin"))" role="button">
+                            <span class="nav-icon" style="color: #ef4444;">
+                                <iconify-icon icon="solar:shield-user-bold-duotone"></iconify-icon>
+                            </span>
+                            <span class="nav-text" style="color: #ef4444; font-weight: bold;"> ადმინ პანელი </span>
+                        </a>
+                        <div class="sub-menu @(openSubMenu == "admin" ? "show" : "")">
+                            <ul class="nav sub-navbar-nav">
+                                <li class="sub-nav-item">
+                                    <a class="sub-nav-link" href="Admin/CreateOrUpdate">პროდუქტის დამატება</a>
+                                </li>
+                                <li class="sub-nav-item">
+                                    <a class="sub-nav-link" href="admin/products">პროდუქტების მართვა</a>
+                                </li>
+                                <li class="sub-nav-item">
+                                    <a class="sub-nav-link" href="admin/orders">შეკვეთები</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                </Authorized>
+            </AuthorizeView>
+
             <li class="nav-item">
                 <a class="nav-link" href="/">
                     <span class="nav-icon">
@@ -48,7 +75,7 @@
             @if (categories != null && categories.Any())
             {
                 <li class="nav-item">
-                    <a class="nav-link menu-arrow" @onclick="@(() => ToggleSubMenu(" products"))" role="button">
+                    <a class="nav-link menu-arrow" @onclick="@(() => ToggleSubMenu("products"))" role="button">
                         <span class="nav-icon">
                             <iconify-icon icon="solar:shop-line-duotone"></iconify-icon>
                         </span>
@@ -68,7 +95,7 @@
             }
 
             <li class="nav-item">
-                <a class="nav-link menu-arrow" @onclick="@(() => ToggleSubMenu(" howto"))" role="button">
+                <a class="nav-link menu-arrow" @onclick="@(() => ToggleSubMenu("howto"))" role="button">
                     <span class="nav-icon">
                         <iconify-icon icon="solar:clipboard-list-bold-duotone"></iconify-icon>
                     </span>
@@ -87,7 +114,7 @@
             </li>
 
             <li class="nav-item">
-                <a class="nav-link menu-arrow" @onclick="@(() => ToggleSubMenu(" points"))" role="button">
+                <a class="nav-link menu-arrow" @onclick="@(() => ToggleSubMenu("points"))" role="button">
                     <span class="nav-icon">
                         <iconify-icon icon="ph:coin-vertical-duotone"></iconify-icon>
                     </span>
@@ -106,7 +133,7 @@
             </li>
 
             <li class="nav-item">
-                <a class="nav-link menu-arrow" @onclick="@(() => ToggleSubMenu(" about"))" role="button">
+                <a class="nav-link menu-arrow" @onclick="@(() => ToggleSubMenu("about"))" role="button">
                     <span class="nav-icon">
                         <iconify-icon icon="solar:map-line-duotone"></iconify-icon>
                     </span>
