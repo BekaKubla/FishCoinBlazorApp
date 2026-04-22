@@ -119,6 +119,7 @@ app.UseCors("PosPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
+app.UseStaticFiles();
 
 app.MapStaticAssets();
 
