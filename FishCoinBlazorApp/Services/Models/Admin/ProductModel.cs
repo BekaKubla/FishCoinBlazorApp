@@ -4,6 +4,7 @@ namespace FishCoinBlazorApp.Services.Models.Admin
 {
     public class ProductModel
     {
+        public int Id { get; set; }
         [Required(ErrorMessage = "სახელი აუცილებელია")]
         public string Name { get; set; } = "";
         public string? Description { get; set; }
@@ -15,5 +16,6 @@ namespace FishCoinBlazorApp.Services.Models.Admin
         public decimal CostPrice { get; set; }
         public bool IsRedeemable { get; set; }
         public int? PointsPrice { get; set; }
+        public string? ImageUrl { get; set; }
     }
 }

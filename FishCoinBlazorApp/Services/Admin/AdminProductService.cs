@@ -2,6 +2,7 @@
 using FishCoinBlazorApp.Entites.Product;
 using FishCoinBlazorApp.Services.Models.Admin;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.EntityFrameworkCore;
 
 namespace FishCoinBlazorApp.Services.Admin
 {
@@ -20,7 +21,7 @@ namespace FishCoinBlazorApp.Services.Admin
             var photoPath = "";
             if (file != null)
             {
-               photoPath = await SaveImage(file);
+                photoPath = await SaveImage(file);
             }
             var product = new Product
             {
@@ -39,6 +40,74 @@ namespace FishCoinBlazorApp.Services.Admin
                 ImageUrl = photoPath
             };
             await _dbContext.Products.AddAsync(product);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<(List<Product> Products, int TotalPages)> GetPagedProductsAsync(int page, int pageSize, string searchTerm)
+        {
+            var query = _dbContext.Products.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                query = query.Where(p => p.Name.Contains(searchTerm) ||
+                                         p.TagNumber.Contains(searchTerm) ||
+                                         p.Description.Contains(searchTerm));
+            }
+
+            var totalCount = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+            var products = await query
+                .OrderByDescending(p => p.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new(products, totalPages);
+        }
+        public async Task<ProductModel> GetProductById(int productId)
+        {
+            var product = await _dbContext.Products.FirstOrDefaultAsync(p => p.Id == productId);
+            if (product == null) return null;
+
+            return new ProductModel
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                Price = product.Price,
+                PointsReward = product.PointsReward,
+                StockQuantity = product.StockQuantity,
+                ProductCategoryId = product.ProductCategoryId,
+                DiscountPrecentage = product.DiscountPrecentage,
+                CostPrice = product.CostPrice,
+                IsRedeemable = product.IsRedeemable,
+                PointsPrice = product.PointsPrice,
+                ImageUrl = product.ImageUrl
+            };
+        }
+
+        public async Task UpdateProduct(int id,ProductModel model,IBrowserFile? file)
+        {
+            var product = await _dbContext.Products.FirstOrDefaultAsync(p => p.Id == id);
+            if (product == null) return;
+            var photoPath = product.ImageUrl;
+            if (file != null)
+            {
+                photoPath = await SaveImage(file);
+            }
+            product.Name = model.Name;
+            product.Description = model.Description;
+            product.Price = model.Price;
+            product.PointsReward = model.PointsReward;
+            product.StockQuantity = model.StockQuantity;
+            product.ProductCategoryId = model.ProductCategoryId;
+            product.DiscountPrecentage = (int?)model.DiscountPrecentage;
+            product.CostPrice = model.CostPrice;
+            product.IsRedeemable = model.IsRedeemable;
+            product.PointsPrice = model.PointsPrice;
+            product.ImageUrl = photoPath;
+            _dbContext.Products.Update(product);
             await _dbContext.SaveChangesAsync();
         }
 
