@@ -217,13 +217,6 @@
         {
             using var content = new MultipartFormDataContent();
 
-            if (selectedFile != null)
-            {
-                var fileContent = new StreamContent(selectedFile.OpenReadStream(maxAllowedSize: 1024 * 1024 * 5));
-                fileContent.Headers.ContentType = new MediaTypeHeaderValue(selectedFile.ContentType);
-                content.Add(fileContent, "File", selectedFile.Name);
-            }
-
             content.Add(new StringContent(newProduct.Name ?? ""), "Name");
             content.Add(new StringContent(newProduct.Description ?? ""), "Description");
             content.Add(new StringContent(newProduct.Price.ToString()), "Price");
@@ -236,8 +229,9 @@
             content.Add(new StringContent(newProduct.ProductCategoryId.ToString()), "ProductCategoryId");
 
             // TODO: HttpClient-ით გაგზავნა
-            await JsRuntime.InvokeVoidAsync("alert", "პროდუქტი და ფაილი მზადაა IFormFile ფორმატში!");
-            await AdminProductService.CreateProduct(newProduct);
+            await AdminProductService.CreateProduct(newProduct, selectedFile);
+            await JsRuntime.InvokeVoidAsync("alert", "პროდუქტი წარმატებით დაემატა ბაზაში!");
+            ResetForm();
         }
         catch (Exception ex)
         {
