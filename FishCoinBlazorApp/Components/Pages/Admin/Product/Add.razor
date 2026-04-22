@@ -1,218 +1,267 @@
-@page "/category-add"
+@page "/product-add"
 @rendermode InteractiveServer
-@inject IJSRuntime JsRuntime;
+@inject IJSRuntime JsRuntime
+@using System.ComponentModel.DataAnnotations
+@using System.Net.Http.Headers
 
+<Topbar Title="პროდუქტის დამატება" />
 
-                    <Topbar Title="Create Category" /> 
+<EditForm Model="@newProduct" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
 
-                    <div class="row">
-                         <div class="col-xl-3 col-lg-4">
-                              <div class="card">
-                                   <div class="card-body">
-                                        <div class="bg-light text-center rounded bg-light">
-                                             <img src="/images/product/p-1.png" alt="" class="avatar-xxl">
-                                        </div>
-                                        <div class="mt-3">
-                                             <h4>Fashion Men , Women & Kid's</h4>
-                                             <div class="row">
-                                                  <div class="col-lg-4 col-4">
-                                                       <p class="mb-1 mt-2">Created By :</p>
-                                                       <h5 class="mb-0">Seller</h5>
-                                                  </div>
-                                                  <div class="col-lg-4 col-4">
-                                                       <p class="mb-1 mt-2">Stock :</p>
-                                                       <h5 class="mb-0">46233</h5>
-                                                  </div>
-                                                  <div class="col-lg-4 col-4">
-                                                       <p class="mb-1 mt-2">ID :</p>
-                                                       <h5 class="mb-0">FS16276</h5>
-                                                  </div>
-                                             </div>
-                                        </div>
-                                   </div>
-                                   <div class="card-footer border-top">
-                                        <div class="row g-2">
-                                             <div class="col-lg-6">
-                                                  <a href="#!" class="btn btn-outline-secondary w-100">Create
-                                                       Category</a>
-                                             </div>
-                                             <div class="col-lg-6">
-                                                  <a href="#!" class="btn btn-primary w-100">Cancel</a>
-                                             </div>
-                                        </div>
-                                   </div>
-                              </div>
-                         </div>
-
-                         <div class="col-xl-9 col-lg-8 ">
-                              <div class="card">
-                                   <div class="card-header">
-                                        <h4 class="card-title">Add Thumbnail Photo</h4>
-                                   </div>
-                                   <div class="card-body">
-                                        <div class="dropzone bg-light-subtle py-5">
-                                             <div class="fallback">
-                                                  <input name="file" type="file" multiple="multiple">
-                                             </div>
-                                             <div class="dz-message needsclick">
-                                                  <i class="bx bx-cloud-upload fs-48 text-primary"></i>
-                                                  <h3 class="mt-4">Drop your images here, or <span
-                                                            class="text-primary">click to browse</span></h3>
-                                                  <span class="text-muted fs-13">
-                                                       1600 x 1200 (4:3) recommended. PNG, JPG and GIF files are allowed
-                                                  </span>
-                                             </div>
-                                        </div>
-
-                                        <ul class="list-unstyled mb-0" id="dropzone-preview">
-                                             <li class="mt-2" id="dropzone-preview-list">
-                                                  <!-- This is used as the file preview template -->
-                                                  <div class="border rounded">
-                                                       <div class="d-flex p-2">
-                                                            <div class="flex-shrink-0 me-3">
-                                                                 <div class="avatar-sm bg-light rounded">
-                                                                      <img data-dz-thumbnail
-                                                                           class="img-fluid rounded d-block" src="#"
-                                                                           alt="Dropzone-Image" />
-                                                                 </div>
-                                                            </div>
-                                                            <div class="flex-grow-1">
-                                                                 <div class="pt-1">
-                                                                      <h5 class="fs-14 mb-1" data-dz-name>&</h5>
-                                                                      <p class="fs-13 text-muted mb-0" data-dz-size></p>
-                                                                      <strong class="error text-primary"
-                                                                           data-dz-errormessage></strong>
-                                                                 </div>
-                                                            </div>
-                                                            <div class="flex-shrink-0 ms-3">
-                                                                 <button data-dz-remove
-                                                                      class="btn btn-sm btn-primary">Delete</button>
-                                                            </div>
-                                                       </div>
-                                                  </div>
-                                             </li>
-                                        </ul>
-                                        <!-- end dropzon-preview -->
-                                   </div>
-                              </div>
-                              <div class="card">
-                                   <div class="card-header">
-                                        <h4 class="card-title">General Information</h4>
-                                   </div>
-                                   <div class="card-body">
-                                        <div class="row">
-                                             <div class="col-lg-6">
-                                                  <form>
-                                                       <div class="mb-3">
-                                                            <label for="category-title" class="form-label">Category
-                                                                 Title</label>
-                                                            <input type="text" id="category-title" class="form-control"
-                                                                 placeholder="Enter Title">
-                                                       </div>
-                                                  </form>
-                                             </div>
-
-                                             <div class="col-lg-6">
-                                                  <form>
-                                                       <label for="crater" class="form-label">Created By</label>
-                                                       <select class="form-control" id="crater" data-choices
-                                                            data-choices-groups data-placeholder="Select Crater">
-                                                            <option value="">Select Crater</option>
-                                                            <option value="Seller">Seller</option>
-                                                            <option value="Admin">Admin</option>
-                                                            <option value="Other">Other</option>
-                                                       </select>
-                                                  </form>
-                                             </div>
-                                             <div class="col-lg-6">
-                                                  <form>
-                                                       <div class="mb-3">
-                                                            <label for="product-stock" class="form-label">Stock</label>
-                                                            <input type="number" id="product-stock" class="form-control"
-                                                                 placeholder="Quantity">
-                                                       </div>
-
-                                                  </form>
-                                             </div>
-                                             <div class="col-lg-6">
-                                                  <form>
-                                                       <div class="mb-3">
-                                                            <label for="product-id" class="form-label">Tag ID</label>
-                                                            <input type="number" id="product-id" class="form-control"
-                                                                 placeholder="#******">
-                                                       </div>
-
-                                                  </form>
-                                             </div>
-                                             <div class="col-lg-12">
-                                                  <div class="mb-0">
-                                                       <label for="description" class="form-label">Description</label>
-                                                       <textarea class="form-control bg-light-subtle" id="description"
-                                                            rows="7" placeholder="Type description"></textarea>
-                                                  </div>
-                                             </div>
-                                        </div>
-                                   </div>
-                              </div>
-                              <div class="card">
-                                   <div class="card-header">
-                                        <h4 class="card-title">Meta Options</h4>
-                                   </div>
-                                   <div class="card-body">
-                                        <div class="row">
-                                             <div class="col-lg-6">
-                                                  <form>
-                                                       <div class="mb-3">
-                                                            <label for="meta-title" class="form-label">Meta
-                                                                 Title</label>
-                                                            <input type="text" id="meta-title" class="form-control"
-                                                                 placeholder="Enter Title">
-                                                       </div>
-                                                  </form>
-                                             </div>
-                                             <div class="col-lg-6">
-                                                  <form>
-                                                       <div class="mb-3">
-                                                            <label for="meta-tag" class="form-label">Meta Tag
-                                                                 Keyword</label>
-                                                            <input type="text" id="meta-tag" class="form-control"
-                                                                 placeholder="Enter word">
-                                                       </div>
-                                                  </form>
-                                             </div>
-                                             <div class="col-lg-12">
-                                                  <div class="mb-0">
-                                                       <label for="description" class="form-label">Description</label>
-                                                       <textarea class="form-control bg-light-subtle" id="description"
-                                                            rows="4" placeholder="Type description"></textarea>
-                                                  </div>
-                                             </div>
-                                        </div>
-                                   </div>
-                              </div>
-                              <div class="p-3 bg-light mb-3 rounded">
-                                   <div class="row justify-content-end g-2">
-                                        <div class="col-lg-2">
-                                             <a href="#!" class="btn btn-outline-secondary w-100">Save Change</a>
-                                        </div>
-                                        <div class="col-lg-2">
-                                             <a href="#!" class="btn btn-primary w-100">Cancel</a>
-                                        </div>
-                                   </div>
-                              </div>
-                         </div>
+    <div class="row">
+        <div class="col-xl-3 col-lg-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="bg-light text-center rounded position-relative">
+                        <img src="@(string.IsNullOrEmpty(previewUrl) ? "/images/product/p-1.png" : previewUrl)"
+                             alt="პროდუქტის სურათი" class="avatar-xxl">
+                        
+                        @if (newProduct.DiscountPrecentage > 0)
+                        {
+                            <span class="badge bg-danger position-absolute top-0 start-0 m-2">-@newProduct.DiscountPrecentage%</span>
+                        }
                     </div>
 
+                    <div class="mt-3">
+                        <h4 class="text-center">@(string.IsNullOrEmpty(newProduct.Name) ? "პროდუქტის დასახელება" : newProduct.Name)</h4>
+                        <p class="text-muted text-center small text-truncate">@newProduct.Description</p>
+                        
+                        <div class="d-flex justify-content-between border-bottom pb-2 mt-3">
+                            <span class="text-muted">ფასი:</span>
+                            <div>
+                                @if (newProduct.DiscountPrecentage > 0)
+                                {
+                                    <span class="text-muted text-decoration-line-through me-2" style="font-size: 0.85rem;">@newProduct.Price ₾</span>
+                                    <span class="text-danger fw-bold">@DiscountedPrice ₾</span>
+                                }
+                                else
+                                {
+                                    <span class="fw-bold">@newProduct.Price ₾</span>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="bg-primary-subtle p-2 rounded mt-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <small class="text-primary fw-medium"><i class="bx bxs-coin-stack me-1"></i>მისაღები ქულები:</small>
+                                <span class="badge bg-primary">@newProduct.PointsReward</span>
+                            </div>
+                            
+                            @if (newProduct.IsRedeemable)
+                            {
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-success fw-medium"><i class="bx bxs-purchase-tag me-1"></i>ღირებულება ქულებში:</small>
+                                    <span class="badge bg-success">@newProduct.PointsPrice</span>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="row mt-3 text-center">
+                            <div class="col-12 border-top pt-2">
+                                <p class="mb-0 text-muted small">მარაგი: <b>@newProduct.StockQuantity ცალი</b></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer border-top bg-transparent">
+                    <div class="row g-2">
+                        <div class="col-lg-6"><button type="submit" class="btn btn-primary w-100">შენახვა</button></div>
+                        <div class="col-lg-6"><button type="button" class="btn btn-outline-secondary w-100" @onclick="ResetForm">გასუფთავება</button></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-9 col-lg-8">
+            <div class="card">
+                <div class="card-header"><h4 class="card-title">მედია და აღწერა</h4></div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-12 mb-3">
+                            <label class="form-label">პროდუქტის ფოტო (IFormFile)</label>
+                            <InputFile OnChange="OnInputFileChange" class="form-control" accept=".jpg,.jpeg,.png" />
+                        </div>
+                        <div class="col-lg-12">
+                            <label class="form-label">აღწერა</label>
+                            <InputTextArea @bind-Value="newProduct.Description" class="form-control" rows="3" placeholder="მოკლე ინფორმაცია პროდუქტზე..." />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h4 class="card-title">ზოგადი ინფორმაცია</h4></div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-12 mb-3">
+                            <label class="form-label">დასახელება</label>
+                            <InputText @bind-Value="newProduct.Name" class="form-control" />
+                            <ValidationMessage For="@(() => newProduct.Name)" />
+                        </div>
+                        <div class="col-lg-4 mb-3">
+                            <label class="form-label">ძირითადი ფასი (₾)</label>
+                            <InputNumber TValue="decimal" Value="newProduct.Price" ValueExpression="() => newProduct.Price"
+                                         ValueChanged="OnPriceChanged" class="form-control" />
+                        </div>
+                        <div class="col-lg-4 mb-3">
+                            <label class="form-label">ფასდაკლება %</label>
+                            <InputNumber @bind-Value="newProduct.DiscountPrecentage" class="form-control" />
+                        </div>
+                        <div class="col-lg-4 mb-3">
+                            <label class="form-label">თვითღირებულება</label>
+                            <InputNumber @bind-Value="newProduct.CostPrice" class="form-control" />
+                        </div>
+                        <div class="col-lg-6 mb-3">
+                            <label class="form-label">რაოდენობა საწყობში</label>
+                            <InputNumber @bind-Value="newProduct.StockQuantity" class="form-control" />
+                        </div>
+                        <div class="col-lg-6 mb-3">
+                            <label class="form-label">კატეგორიის ID</label>
+                            <InputNumber @bind-Value="newProduct.ProductCategoryId" class="form-control" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h4 class="card-title">ლოიალობის სისტემა (FishCoin)</h4></div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-4 mb-3">
+                            <label class="form-label">ქეშბექი %</label>
+                            <InputNumber TValue="decimal" Value="rewardPercentage" ValueExpression="() => rewardPercentage"
+                                         ValueChanged="OnRewardPercentageChanged" class="form-control" />
+                            <small class="text-primary fw-bold">დაერიცხება: @newProduct.PointsReward ქულა</small>
+                        </div>
+                        <div class="col-lg-4 mb-3">
+                            <label class="form-label">ქულებით ყიდვა</label>
+                            <div class="form-check form-switch mt-2">
+                                <InputCheckbox TValue="bool" Value="newProduct.IsRedeemable" ValueExpression="() => newProduct.IsRedeemable"
+                                               ValueChanged="OnIsRedeemableChanged" class="form-check-input" />
+                            </div>
+                        </div>
+                        <div class="col-lg-4 mb-3">
+                            <label class="form-label">ღირებულება ქულებში (10 თეთრი = 1ქ)</label>
+                            <InputNumber @bind-Value="newProduct.PointsPrice" class="form-control" disabled="@(!newProduct.IsRedeemable)" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
 @code {
-     private IJSObjectReference? _module;
-     protected override async Task OnAfterRenderAsync(bool firstRender)
-     {
-          if (firstRender)
-          {
-               _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/pages/ecommerce-product-details.js");
-               await JsRuntime.InvokeVoidAsync("loadProductDetails");
-               await JsRuntime.InvokeVoidAsync("loadThemeConfig");
-               await JsRuntime.InvokeVoidAsync("loadApps");
-          }
-     }
+    private ProductModel newProduct = new();
+    private IBrowserFile? selectedFile;
+    private string? previewUrl;
+    private decimal rewardPercentage;
+
+    private decimal DiscountedPrice => Math.Round(newProduct.Price * (1 - (newProduct.DiscountPrecentage ?? 0) / 100), 2);
+
+    private void OnPriceChanged(decimal value)
+    {
+        newProduct.Price = value;
+        CalculateLoyalty();
+    }
+
+    private void OnRewardPercentageChanged(decimal value)
+    {
+        rewardPercentage = value;
+        CalculateLoyalty();
+    }
+
+    private void OnIsRedeemableChanged(bool value)
+    {
+        newProduct.IsRedeemable = value;
+        if (value)
+        {
+            // 10 თეთრი = 1 ქულა -> 1 ლარი = 10 ქულა
+            newProduct.PointsPrice = (int)(newProduct.Price * 10);
+        }
+        else
+        {
+            newProduct.PointsPrice = null;
+        }
+    }
+
+    private void CalculateLoyalty()
+    {
+        // დარიცხული ქულების ლოგიკა
+        decimal rewardInGEL = newProduct.Price * (rewardPercentage / 100);
+        newProduct.PointsReward = (int)(rewardInGEL / 0.10m);
+        
+        // თუ ყიდვა ჩართულია, ფასის ცვლილებაზე ქულების ღირებულებაც განახლდეს
+        if (newProduct.IsRedeemable)
+        {
+            newProduct.PointsPrice = (int)(newProduct.Price * 10);
+        }
+    }
+
+    private async Task OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+        var format = "image/png";
+        var resizedImage = await e.File.RequestImageFileAsync(format, 300, 300);
+        var buffer = new byte[resizedImage.Size];
+        await resizedImage.OpenReadStream().ReadAsync(buffer);
+        previewUrl = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
+    }
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            using var content = new MultipartFormDataContent();
+
+            if (selectedFile != null)
+            {
+                var fileContent = new StreamContent(selectedFile.OpenReadStream(maxAllowedSize: 1024 * 1024 * 5));
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue(selectedFile.ContentType);
+                content.Add(fileContent, "File", selectedFile.Name);
+            }
+
+            content.Add(new StringContent(newProduct.Name ?? ""), "Name");
+            content.Add(new StringContent(newProduct.Description ?? ""), "Description");
+            content.Add(new StringContent(newProduct.Price.ToString()), "Price");
+            content.Add(new StringContent((newProduct.DiscountPrecentage ?? 0).ToString()), "DiscountPrecentage");
+            content.Add(new StringContent(newProduct.PointsReward.ToString()), "PointsReward");
+            content.Add(new StringContent(newProduct.IsRedeemable.ToString()), "IsRedeemable");
+            content.Add(new StringContent((newProduct.PointsPrice ?? 0).ToString()), "PointsPrice");
+            content.Add(new StringContent(newProduct.CostPrice.ToString()), "CostPrice");
+            content.Add(new StringContent(newProduct.StockQuantity.ToString()), "StockQuantity");
+            content.Add(new StringContent(newProduct.ProductCategoryId.ToString()), "ProductCategoryId");
+
+            // TODO: HttpClient-ით გაგზავნა
+            await JsRuntime.InvokeVoidAsync("alert", "პროდუქტი და ფაილი მზადაა IFormFile ფორმატში!");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private void ResetForm()
+    {
+        newProduct = new ProductModel();
+        rewardPercentage = 0;
+        previewUrl = null;
+        selectedFile = null;
+    }
+
+    public class ProductModel
+    {
+        [Required(ErrorMessage = "სახელი აუცილებელია")]
+        public string Name { get; set; } = "";
+        public string? Description { get; set; }
+        public decimal Price { get; set; }
+        public int PointsReward { get; set; }
+        public int StockQuantity { get; set; }
+        public int ProductCategoryId { get; set; }
+        public decimal? DiscountPrecentage { get; set; }
+        public decimal CostPrice { get; set; }
+        public bool IsRedeemable { get; set; }
+        public int? PointsPrice { get; set; }
+    }
 }
