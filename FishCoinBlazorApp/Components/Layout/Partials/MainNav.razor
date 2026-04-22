@@ -2,9 +2,11 @@
 @using FishCoinBlazorApp.Entites.Product.Category
 @using Microsoft.AspNetCore.Components.Authorization
 @inject CategoryService CategoryService
+@inject IJSRuntime JsRuntime
+@implements IDisposable
 @rendermode InteractiveServer
 
-<div class="main-nav @(isCollapsed ? "collapsed" : "")">
+<div class="main-nav" @ref="mainNavElement">
     <div class="logo-box">
         <a href="/" class="logo-dark">
             <span style="display: flex; align-items: center;margin-left:25px;">
@@ -29,24 +31,24 @@
         </a>
     </div>
 
-    <button type="button" class="button-sm-hover" @onclick="ToggleCollapse" aria-label="Toggle Menu">
+    <button type="button" class="button-sm-hover" aria-label="Show Full Sidebar" @onclick="ToggleSmHoverMenu">
         <iconify-icon icon="solar:double-alt-arrow-right-bold-duotone" class="button-sm-hover-icon"></iconify-icon>
     </button>
 
     <div class="scrollbar" data-simplebar>
         <ul class="navbar-nav" id="navbar-nav">
             
-            @* --- ადმინ პანელი (ჩანს მხოლოდ ადმინისთვის) --- *@
+            @* --- ადმინ პანელი (ჩანს მხოლოდ Admin როლისთვის) --- *@
             <AuthorizeView Roles="Admin">
                 <Authorized>
                     <li class="nav-item">
-                        <a class="nav-link menu-arrow" @onclick="@(() => ToggleSubMenu("admin"))" role="button">
+                        <a class="nav-link menu-arrow" href="#sidebarAdmin" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarAdmin">
                             <span class="nav-icon" style="color: #ef4444;">
                                 <iconify-icon icon="solar:shield-user-bold-duotone"></iconify-icon>
                             </span>
                             <span class="nav-text" style="color: #ef4444; font-weight: bold;"> ადმინ პანელი </span>
                         </a>
-                        <div class="sub-menu @(openSubMenu == "admin" ? "show" : "")">
+                        <div class="collapse" id="sidebarAdmin">
                             <ul class="nav sub-navbar-nav">
                                 <li class="sub-nav-item">
                                     <a class="sub-nav-link" href="Admin/CreateOrUpdate">პროდუქტის დამატება</a>
@@ -75,13 +77,13 @@
             @if (categories != null && categories.Any())
             {
                 <li class="nav-item">
-                    <a class="nav-link menu-arrow" @onclick="@(() => ToggleSubMenu("products"))" role="button">
+                    <a class="nav-link menu-arrow" href="#sidebarProducts" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarProducts">
                         <span class="nav-icon">
                             <iconify-icon icon="solar:shop-line-duotone"></iconify-icon>
                         </span>
                         <span class="nav-text"> პროდუქტები </span>
                     </a>
-                    <div class="sub-menu @(openSubMenu == "products" ? "show" : "")">
+                    <div class="collapse" id="sidebarProducts">
                         <ul class="nav sub-navbar-nav">
                             @foreach (var category in categories)
                             {
@@ -95,13 +97,13 @@
             }
 
             <li class="nav-item">
-                <a class="nav-link menu-arrow" @onclick="@(() => ToggleSubMenu("howto"))" role="button">
+                <a class="nav-link menu-arrow" href="#sidebarCategory" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarCategory">
                     <span class="nav-icon">
                         <iconify-icon icon="solar:clipboard-list-bold-duotone"></iconify-icon>
                     </span>
                     <span class="nav-text"> როგორ შევუკვეთო </span>
                 </a>
-                <div class="sub-menu @(openSubMenu == "howto" ? "show" : "")">
+                <div class="collapse" id="sidebarCategory">
                     <ul class="nav sub-navbar-nav">
                         <li class="sub-nav-item">
                             <a class="sub-nav-link" href="category-list">ინსტრუქცია</a>
@@ -114,13 +116,13 @@
             </li>
 
             <li class="nav-item">
-                <a class="nav-link menu-arrow" @onclick="@(() => ToggleSubMenu("points"))" role="button">
+                <a class="nav-link menu-arrow" href="#sidebarPurchases" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarPurchases">
                     <span class="nav-icon">
                         <iconify-icon icon="ph:coin-vertical-duotone"></iconify-icon>
                     </span>
                     <span class="nav-text"> ქულების სისტემა </span>
                 </a>
-                <div class="sub-menu @(openSubMenu == "points" ? "show" : "")">
+                <div class="collapse" id="sidebarPurchases">
                     <ul class="nav sub-navbar-nav">
                         <li class="sub-nav-item">
                             <a class="sub-nav-link" href="earn-fishcoin">ქულების გამომუშავება</a>
@@ -133,13 +135,13 @@
             </li>
 
             <li class="nav-item">
-                <a class="nav-link menu-arrow" @onclick="@(() => ToggleSubMenu("about"))" role="button">
+                <a class="nav-link menu-arrow" href="#sidebarOrders" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarOrders">
                     <span class="nav-icon">
                         <iconify-icon icon="solar:map-line-duotone"></iconify-icon>
                     </span>
                     <span class="nav-text"> ჩვენს შესახებ </span>
                 </a>
-                <div class="sub-menu @(openSubMenu == "about" ? "show" : "")">
+                <div class="collapse" id="sidebarOrders">
                     <ul class="nav sub-navbar-nav">
                         <li class="sub-nav-item">
                             <a class="sub-nav-link" href="about-us">ვინ ვართ ჩვენ?</a>
@@ -156,24 +158,36 @@
 
 @code {
     private List<Category> categories;
-    private bool isCollapsed = false;
-    private string? openSubMenu = null;
+    private ElementReference mainNavElement;
+    private DotNetObjectReference<MainNav>? dotNetRef;
 
-    private void ToggleCollapse()
+    private async Task ToggleSmHoverMenu()
     {
-        isCollapsed = !isCollapsed;
-    }
-
-    private void ToggleSubMenu(string menuName)
-    {
-        if (openSubMenu == menuName)
-            openSubMenu = null;
-        else
-            openSubMenu = menuName;
+        await JsRuntime.InvokeVoidAsync("toggleSmHoverMenu");
     }
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadCategories();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetRef = DotNetObjectReference.Create(this);
+            await JsRuntime.InvokeVoidAsync("initializeBlazorMenu", mainNavElement, dotNetRef);
+        }
+    }
+
+    private async Task LoadCategories()
+    {
         categories = await CategoryService.GetAllCategoriesAsync();
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        dotNetRef?.Dispose();
     }
 }
